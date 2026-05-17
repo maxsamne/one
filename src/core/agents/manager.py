@@ -247,7 +247,9 @@ async def _dispatch(
         starting_ref, base_branch, worktrees = await worktree.setup(task_id, [provider])
         workdir = worktrees[0].path
         tools = list(_PERSISTENT_TOOLS) + list(extra_tools or [])
-        instructions = _build_instructions(_PERSISTENT_BASE, plan.skill_bodies, plan.skill_index, plan.date_ctx)
+        git_skill = skills.join_bodies(["general/git.md"])
+        persistent_bodies = "\n\n---\n\n".join(filter(None, [git_skill, plan.skill_bodies]))
+        instructions = _build_instructions(_PERSISTENT_BASE, persistent_bodies, plan.skill_index, plan.date_ctx)
         write_scope = frozenset({"generated/", "knowledge/", "docs/"})
         _log(Category.AGENT, "dispatching",
              provider=provider, model=ai.model_name, thinking=str(thinking))

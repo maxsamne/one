@@ -10,6 +10,7 @@ website, personal site, homepage, landing page, about page, writing page, blog, 
 - **Design system:** always load `general/design-spec` alongside this skill — it contains the five presets (colour tokens, typography, skeletons). This site defaults to **Atelier Ledger** unless the page type calls for another.
 - **After writing files:** `git add docs/`, `git commit`, `git push` — GitHub Pages auto-deploys on push.
 - **Preferred thinking:** `low` for copy-only updates; `medium` for new page layouts.
+- **Images:** you may generate up to 5 images per task using the `generate_image` tool when a visual would genuinely improve the page. Save them to `docs/images/` and reference with a root-relative path (e.g. `/one/images/filename.png`). Don't generate images speculatively — only when the layout calls for it.
 - **Commonly related skills:** `general/artifact-design/SKILL.md` (for the full DESIGN_SPEC), `general/article-design/SKILL.md` (for writing/essay pages).
 
 ---

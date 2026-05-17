@@ -2,6 +2,6 @@
   "name": "website-iteration",
   "description": "Iterate and improve the personal site in docs/, graded for layout integrity, design alignment, and security hygiene.",
   "tier": "cheap",
-  "skills": ["general/website-design/SKILL.md"],
+  "skills": ["general/website-design/SKILL.md", "general/design-spec/SKILL.md"],
   "graders": ["general/website-quality.md"]
 }
