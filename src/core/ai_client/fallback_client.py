@@ -27,8 +27,6 @@ class FallbackClient(AiClient):
         super().__init__()
         self.primary = primary
         self.fallback = fallback
-        # model_name shown as "primary" so logs read naturally; cost accounting reads
-        # from the underlying clients' counters which land where work actually happened.
         self.model_name = primary.model_name
 
     @property
