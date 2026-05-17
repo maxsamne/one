@@ -5,125 +5,527 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maximilian Samne</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Cardo:wght@400;700&family=Alegreya+SC:wght@400;700&family=Cutive+Mono&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f7f5f1;
-      --surface: #eeecea;
-      --ink: #1c1a18;
-      --ink-muted: #7a756e;
-      --accent: #2d4a3e;
-      --border: #dedad4;
+      --bg: #efe2c6;
+      --bg-strong: #e8d6b2;
+      --surface: rgba(246, 236, 215, 0.78);
+      --surface-strong: #f6ecd7;
+      --ink: #5d3823;
+      --ink-muted: #7f5f46;
+      --accent: #a46738;
+      --accent-strong: #8d5428;
+      --border: rgba(163, 126, 85, 0.28);
+      --shadow: 0 18px 45px rgba(93, 56, 35, 0.08);
+      --radius-lg: 24px;
+      --radius-md: 18px;
+      --max-width: 1120px;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
-      background: var(--bg);
-      color: var(--ink);
-      font-family: 'Inter', sans-serif;
-      font-weight: 400;
-      font-size: 15px;
-      line-height: 1.6;
+      margin: 0;
       min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.35), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(164,103,56,0.10), transparent 24%),
+        linear-gradient(180deg, #f2e6cb 0%, var(--bg) 100%);
+      font: 400 18px/1.7 "Cardo", serif;
     }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: linear-gradient(rgba(93,56,35,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(93,56,35,0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: radial-gradient(circle at center, black 30%, transparent 82%);
+      opacity: 0.4;
+    }
+
+    a { color: inherit; }
 
     nav {
+      width: min(calc(100% - 32px), var(--max-width));
+      margin: 0 auto;
+      padding: 26px 0 18px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 28px 48px;
-      border-bottom: 1px solid var(--border);
+      justify-content: space-between;
+      gap: 24px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(14px);
+    }
+
+    nav::before {
+      content: "";
+      position: absolute;
+      inset: 8px -12px;
+      border: 1px solid rgba(163, 126, 85, 0.18);
+      border-radius: 999px;
+      background: rgba(246, 236, 215, 0.52);
+      z-index: -1;
     }
 
     nav .wordmark {
-      font-family: 'Lora', serif;
-      font-size: 17px;
-      color: var(--ink);
+      font: 700 17px/1 "Alegreya SC", serif;
+      letter-spacing: 0.08em;
       text-decoration: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(234, 216, 184, 0.75);
+      border: 1px solid var(--border);
     }
 
     nav ul {
       list-style: none;
       display: flex;
-      gap: 32px;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
     }
 
-    nav a {
-      color: var(--ink-muted);
+    nav li a {
       text-decoration: none;
-      font-size: 13px;
-      letter-spacing: 0.02em;
-      transition: color 0.15s;
+      color: var(--ink-muted);
+      font: 400 12px/1 "Cutive Mono", monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 11px 14px;
+      border-radius: 999px;
+      transition: color 180ms ease, background 180ms ease, transform 180ms ease;
     }
 
-    nav a:hover { color: var(--ink); }
+    nav li a:hover,
+    nav li a:focus-visible {
+      color: var(--ink);
+      background: rgba(234, 216, 184, 0.8);
+      outline: none;
+      transform: translateY(-1px);
+    }
 
     main {
-      max-width: 720px;
+      width: min(calc(100% - 32px), var(--max-width));
       margin: 0 auto;
-      padding: 96px 48px 120px;
+      padding: 56px 0 72px;
+      display: grid;
+      gap: 26px;
+      position: relative;
+    }
+
+    .eyebrow,
+    .kicker,
+    .meta,
+    summary,
+    .button,
+    .link-row a,
+    footer {
+      font-family: "Cutive Mono", monospace;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.8fr);
+      gap: 26px;
+      align-items: stretch;
+    }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(164,103,56,0.45), transparent);
+    }
+
+    .hero-copy {
+      padding: 36px;
+      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background:
+        radial-gradient(circle at top right, rgba(164,103,56,0.12), transparent 30%),
+        linear-gradient(180deg, rgba(255,255,255,0.20), transparent 52%);
     }
 
     .eyebrow {
-      font-size: 11px;
+      margin: 0 0 18px;
+      font-size: 12px;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--ink-muted);
-      margin-bottom: 20px;
     }
 
     h1 {
-      font-family: 'Lora', serif;
-      font-size: 36px;
-      font-weight: 500;
-      line-height: 1.25;
-      color: var(--ink);
-      margin-bottom: 24px;
+      margin: 0;
+      max-width: 12ch;
+      font: 600 clamp(66px, 10vw, 118px)/0.88 "Cormorant Garamond", serif;
+      letter-spacing: -0.03em;
     }
 
     .lead {
-      font-size: 17px;
+      max-width: 33ch;
+      margin: 22px 0 0;
       color: var(--ink-muted);
-      line-height: 1.7;
-      max-width: 560px;
-      margin-bottom: 48px;
+      font-size: 22px;
+      line-height: 1.55;
     }
 
-    .links {
+    .hero-actions {
       display: flex;
-      gap: 24px;
       flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 30px;
     }
 
-    .links a {
-      font-size: 13px;
-      color: var(--accent);
+    .button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
       text-decoration: none;
-      border-bottom: 1px solid var(--accent);
-      padding-bottom: 1px;
-      transition: opacity 0.15s;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
     }
 
-    .links a:hover { opacity: 0.65; }
+    .button.primary {
+      background: var(--accent);
+      color: #f8f2e7;
+      border-color: transparent;
+    }
+
+    .button.secondary {
+      background: rgba(255,255,255,0.35);
+      color: var(--ink);
+    }
+
+    .button:hover,
+    .button:focus-visible {
+      transform: translateY(-2px);
+      outline: none;
+    }
+
+    .button.primary:hover,
+    .button.primary:focus-visible {
+      background: var(--accent-strong);
+    }
+
+    .button.secondary:hover,
+    .button.secondary:focus-visible {
+      background: rgba(234, 216, 184, 0.85);
+      border-color: rgba(163, 126, 85, 0.45);
+    }
+
+    .hero-side {
+      padding: 24px;
+      display: grid;
+      gap: 18px;
+      align-content: stretch;
+    }
+
+    .microcard {
+      padding: 22px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.26);
+      display: grid;
+      gap: 10px;
+      min-height: 0;
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+
+    .microcard:hover {
+      transform: translateY(-3px);
+      background: rgba(255,255,255,0.38);
+      border-color: rgba(163, 126, 85, 0.45);
+    }
+
+    .kicker {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--ink-muted);
+    }
+
+    .microcard h2,
+    .section h2,
+    details h3 {
+      margin: 0;
+      font: 700 18px/1.15 "Alegreya SC", serif;
+      letter-spacing: 0.04em;
+    }
+
+    .microcard p,
+    .section p,
+    .section li,
+    details p,
+    .note {
+      margin: 0;
+      color: var(--ink-muted);
+    }
+
+    .link-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .link-row a {
+      font-size: 12px;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      padding-bottom: 2px;
+      border-bottom: 1px solid rgba(164,103,56,0.45);
+    }
+
+    .link-row a:hover,
+    .link-row a:focus-visible {
+      border-bottom-color: var(--accent);
+      outline: none;
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 26px;
+    }
+
+    .section {
+      padding: 28px;
+    }
+
+    .section h2 {
+      margin-bottom: 10px;
+      color: var(--ink);
+    }
+
+    .section ul {
+      margin: 14px 0 0 18px;
+      padding: 0;
+    }
+
+    details {
+      padding: 26px 28px;
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--ink);
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    summary::after {
+      content: "+";
+      font-size: 18px;
+      line-height: 1;
+      transition: transform 180ms ease;
+    }
+
+    details[open] summary::after {
+      transform: rotate(45deg);
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+      padding-top: 18px;
+      margin-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .details-grid div {
+      padding: 16px 0 0;
+    }
+
+    footer {
+      width: min(calc(100% - 32px), var(--max-width));
+      margin: 0 auto 36px;
+      padding-top: 8px;
+      color: var(--ink-muted);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      text-transform: uppercase;
+    }
+
+    .note {
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .section-grid,
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-copy {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 720px) {
+      body { font-size: 17px; }
+      nav {
+        width: min(calc(100% - 24px), var(--max-width));
+        padding-top: 18px;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      nav::before { inset: 0; border-radius: 28px; }
+      nav ul { flex-wrap: wrap; }
+      main {
+        width: min(calc(100% - 24px), var(--max-width));
+        padding-top: 28px;
+      }
+      .hero-copy,
+      .hero-side,
+      .section,
+      details {
+        padding: 22px;
+      }
+      h1 {
+        max-width: none;
+        font-size: clamp(58px, 18vw, 86px);
+      }
+      .lead { font-size: 20px; }
+      footer {
+        width: min(calc(100% - 24px), var(--max-width));
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 <body>
   <nav>
-    <a class="wordmark" href="/">MS</a>
+    <a class="wordmark" href="/one/">MS</a>
     <ul>
-      <li><a href="/one/silicon-sociology">Writing</a></li>
+      <li><a href="/one/writing">Writing</a></li>
       <li><a href="/one/work">Work</a></li>
     </ul>
   </nav>
+
   <main>
-    <p class="eyebrow">Maximilian Samne</p>
-    <h1>Building things worth<br>paying attention to.</h1>
-    <p class="lead">Investor, builder, and occasional writer. Working at the intersection of AI and venture.</p>
-    <div class="links">
-      <a href="/one/silicon-sociology">Silicon Sociology</a>
-      <a href="https://www.linkedin.com/in/maximiliansamne/" target="_blank">LinkedIn</a>
-    </div>
+    <section class="hero">
+      <article class="panel hero-copy">
+        <div>
+          <p class="eyebrow">Stockholm · AI · Venture</p>
+          <h1>Building things worth paying attention to.</h1>
+          <p class="lead">Investor, builder, and occasional writer working at the intersection of AI, products, and venture.</p>
+        </div>
+
+        <div>
+          <div class="hero-actions">
+            <a class="button primary" href="/one/writing">Read the writing</a>
+            <a class="button secondary" href="https://www.linkedin.com/in/maximiliansamne/" target="_blank" rel="noreferrer">Find me on LinkedIn</a>
+          </div>
+        </div>
+      </article>
+
+      <aside class="panel hero-side" aria-label="Highlights">
+        <article class="microcard">
+          <p class="kicker">Latest essay</p>
+          <h2>Silicon Sociology</h2>
+          <p>On why AI systems increasingly borrow the shape of institutions: councils, critics, memory, and review loops.</p>
+          <div class="link-row">
+            <a href="/one/writing/silicon-sociology.html">Open article</a>
+          </div>
+        </article>
+
+        <article class="microcard">
+          <p class="kicker">How I work</p>
+          <h2>Small surface, strong signal</h2>
+          <p>I like products and ideas that feel clear on first read, but get more interesting the longer you sit with them.</p>
+        </article>
+
+        <article class="microcard">
+          <p class="kicker">Elsewhere</p>
+          <h2>Selected links</h2>
+          <div class="link-row">
+            <a href="/one/work">Work</a>
+            <a href="/one/writing">Writing</a>
+            <a href="https://www.linkedin.com/in/maximiliansamne/" target="_blank" rel="noreferrer">LinkedIn</a>
+          </div>
+        </article>
+      </aside>
+    </section>
+
+    <section class="section-grid" aria-label="Overview">
+      <article class="panel section">
+        <p class="kicker">Writing</p>
+        <h2>Essays with a point of view</h2>
+        <p>Mostly on AI, coordination, incentives, and the social texture around new technology.</p>
+      </article>
+
+      <article class="panel section">
+        <p class="kicker">Work</p>
+        <h2>Investing and building</h2>
+        <p>I spend most of my time around ambitious products, technical founders, and ideas that deserve a sharper frame.</p>
+      </article>
+
+      <article class="panel section">
+        <p class="kicker">Approach</p>
+        <h2>Clear, calm, and a little bold</h2>
+        <p>The site stays simple by design: one palette, a few reusable components, and light interaction that clarifies rather than distracts.</p>
+      </article>
+    </section>
+
+    <details class="panel">
+      <summary>Currently exploring</summary>
+      <div class="details-grid">
+        <div>
+          <h3>AI as infrastructure</h3>
+          <p class="note">What becomes defensible when AI moves from novelty to workflow, and from isolated prompts to systems with memory and delegation.</p>
+        </div>
+        <div>
+          <h3>Technology as sociology</h3>
+          <p class="note">How tools inherit the habits, institutions, and blind spots of the people who design and use them.</p>
+        </div>
+      </div>
+    </details>
   </main>
+
+  <footer>
+    <span>Maximilian Samne</span>
+    <span>Quietly bolder. Still simple.</span>
+  </footer>
 </body>
 </html>
