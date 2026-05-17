@@ -37,6 +37,7 @@ generated/
 Agents write to:
 - `knowledge/` — researched and synthesised content worth keeping
 - `generated/` — raw task output; date-stamped; may be pruned or promoted
+- `docs/` — GitHub Pages website; only when the task explicitly targets the site
 - `src/core/` — **only** when the task explicitly modifies engine infrastructure
 - `apps/` — **only** when the task explicitly targets an existing app
 
