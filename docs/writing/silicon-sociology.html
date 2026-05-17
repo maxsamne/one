@@ -6,7 +6,7 @@
 <title>Silicon Sociology — Maximilian Samne</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Cardo:wght@400;700&family=Alegreya+SC:wght@400;700&family=EB+Garamond:ital,wght@0,400;1,400&family=Cutive+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#efe2c6;
@@ -16,18 +16,38 @@
   --accent:#a46738;
   --border:#d3bc98;
   --tag-bg:#ead8b8;
-  --max-width:1120px;
+  --paper:#fff9ef;
+  --bg-rgb:239, 226, 198;
+  --surface-rgb:246, 236, 215;
+  --ink-rgb:93, 56, 35;
+  --ink-muted-rgb:143, 111, 86;
+  --accent-rgb:164, 103, 56;
+  --border-rgb:211, 188, 152;
+  --tag-bg-rgb:234, 216, 184;
+  --paper-rgb:255, 249, 239;
+  --surface-card:rgba(var(--surface-rgb), .86);
+  --surface-chip:rgba(var(--paper-rgb), .2);
+  --surface-note-top:rgba(var(--paper-rgb), .18);
+  --surface-callout:rgba(var(--accent-rgb), .07);
+  --line-soft:rgba(var(--ink-rgb), .14);
+  --line-faint:rgba(var(--ink-rgb), .12);
+  --rule-accent:rgba(var(--accent-rgb), .35);
+  --diagram-fill:rgba(var(--accent-rgb), .08);
+  --glow-strong:rgba(var(--paper-rgb), .42);
+  --glow-soft:rgba(var(--paper-rgb), .18);
+  --shadow:0 18px 45px rgba(var(--ink-rgb), .08);
+  --max-width:980px;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
   margin:0;
   background:
-    radial-gradient(circle at top left, rgba(255,255,255,.42), transparent 28%),
-    linear-gradient(180deg, rgba(255,255,255,.18), transparent 24%),
+    radial-gradient(circle at top left, var(--glow-strong), transparent 28%),
+    linear-gradient(180deg, var(--glow-soft), transparent 24%),
     var(--bg);
   color:var(--ink);
-  font:400 19px/1.78 Cardo,serif;
+  font:400 19px/1.78 "Lora",serif;
 }
 a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
@@ -41,7 +61,7 @@ nav{
   align-items:center;
   gap:24px;
   padding:22px 0;
-  border-bottom:1px solid rgba(93,56,35,.14);
+  border-bottom:1px solid var(--line-soft);
 }
 nav .wordmark{
   display:inline-flex;
@@ -51,9 +71,9 @@ nav .wordmark{
   height:42px;
   border:1px solid var(--border);
   border-radius:50%;
-  background:rgba(246,236,215,.84);
+  background:rgba(var(--surface-rgb), .84);
   color:var(--ink);
-  font:700 14px/1 "Cutive Mono",monospace;
+  font:700 13px/1 "JetBrains Mono",monospace;
   letter-spacing:.08em;
 }
 nav ul{
@@ -65,8 +85,8 @@ nav ul{
 }
 nav ul a{
   color:var(--ink-muted);
-  font:400 13px/1 "Cutive Mono",monospace;
-  letter-spacing:.08em;
+  font:500 13px/1 "Inter",sans-serif;
+  letter-spacing:.05em;
   text-transform:uppercase;
 }
 nav ul a:hover,nav ul a[aria-current="page"]{color:var(--ink)}
@@ -81,9 +101,10 @@ main{
 .article-header,
 .article-body,
 .article-note{
-  background:rgba(246,236,215,.86);
+  background:var(--surface-card);
   border:1px solid var(--border);
   border-radius:18px;
+  box-shadow:var(--shadow);
 }
 .article-header{
   padding:28px;
@@ -93,7 +114,7 @@ main{
 .eyebrow,
 .meta-chip,
 .spec-tag{
-  font-family:"Cutive Mono",monospace;
+  font-family:"JetBrains Mono",monospace;
   font-size:12px;
   letter-spacing:.08em;
   text-transform:uppercase;
@@ -105,7 +126,7 @@ main{
 h1{
   margin:0;
   max-width:12ch;
-  font:600 clamp(46px,8vw,72px)/.94 "Cormorant Garamond",serif;
+  font:600 clamp(44px,8vw,68px)/.98 "Lora",serif;
   letter-spacing:-.03em;
 }
 .dek{
@@ -113,7 +134,7 @@ h1{
   max-width:38rem;
   color:var(--ink-muted);
   font-size:22px;
-  line-height:1.6;
+  line-height:1.62;
 }
 .meta-row{
   display:flex;
@@ -127,17 +148,17 @@ h1{
   padding:0 12px;
   border:1px solid var(--border);
   border-radius:999px;
-  background:rgba(255,255,255,.2);
+  background:var(--surface-chip);
   color:var(--ink-muted);
 }
 .article-grid{
   display:grid;
-  grid-template-columns:minmax(0,1fr) 240px;
+  grid-template-columns:minmax(0,1fr) 236px;
   gap:22px;
   align-items:start;
 }
 .article-body{
-  max-width:720px;
+  max-width:680px;
   padding:34px clamp(20px,4vw,36px) 44px;
 }
 .article-body > :first-child{margin-top:0}
@@ -145,7 +166,7 @@ h1{
   position:sticky;
   top:18px;
   padding:20px;
-  background:linear-gradient(180deg, rgba(255,255,255,.18), transparent 48%), var(--surface);
+  background:linear-gradient(180deg, var(--surface-note-top), transparent 48%), var(--surface);
 }
 .article-note p{margin:0;color:var(--ink-muted);font-size:16px;line-height:1.65}
 .spec-tag{
@@ -159,13 +180,11 @@ p{margin:0 0 1em}
 h2{
   margin:2.5em 0 .75em;
   color:var(--ink);
-  font:700 20px/1.25 "Alegreya SC",serif;
-  letter-spacing:.03em;
+  font:600 30px/1.2 "Lora",serif;
 }
 h3{
   margin:1.5em 0 .5em;
-  font-size:16px;
-  font-weight:400;
+  font:500 18px/1.4 "Lora",serif;
 }
 .leadline{
   margin:1.6em 0 1.4em;
@@ -177,19 +196,19 @@ h3{
   margin:1.8em 0;
   padding:16px 18px;
   border-left:2px solid var(--accent);
-  background:rgba(164,103,56,.07);
+  background:var(--surface-callout);
   color:var(--ink);
   font-style:italic;
 }
 .caption{
   margin-top:10px;
   color:var(--ink-muted);
-  font:italic 16px/1.6 "EB Garamond",serif;
+  font:italic 16px/1.6 "Lora",serif;
   text-align:center;
 }
 code{
-  font-family:"Cutive Mono",monospace;
-  background:rgba(255,255,255,.24);
+  font-family:"JetBrains Mono",monospace;
+  background:rgba(var(--paper-rgb), .24);
   padding:.08em .32em;
   border-radius:4px;
   font-size:14px;
@@ -206,6 +225,24 @@ sup{
   vertical-align:super;
 }
 figure{margin:2.2em 0}
+.diagram{
+  display:block;
+  max-width:520px;
+  margin:0 auto;
+  overflow:visible;
+}
+.diagram .frame,
+.diagram .connector,
+.diagram .final-box{stroke:var(--ink);}
+.diagram .frame,
+.diagram .final-box{fill:none;stroke-width:1.2;}
+.diagram .connector{stroke-width:1;marker-end:url(#arrow)}
+.diagram .connector-muted{stroke:var(--ink-muted)}
+.diagram .accent-box{fill:var(--diagram-fill);stroke:var(--accent);stroke-width:1.2;}
+.diagram .mono{fill:var(--ink-muted);font:500 10px/1 "JetBrains Mono",monospace;letter-spacing:.08em;}
+.diagram .mono.center{font-size:11px;}
+.diagram .body{fill:var(--ink);font:400 14px/1.2 "Lora",serif;}
+.diagram .body.small{font-size:13px;}
 .footnotes{
   border-top:1px solid var(--border);
   margin-top:3.2em;
@@ -229,13 +266,13 @@ footer{
   gap:16px;
   padding:0 0 40px;
   color:var(--ink-muted);
-  font:400 13px/1.6 "Cutive Mono",monospace;
+  font:500 12px/1.6 "Inter",sans-serif;
   text-transform:uppercase;
   letter-spacing:.06em;
 }
 footer a{
   color:var(--ink);
-  border-bottom:1px solid rgba(164,103,56,.35);
+  border-bottom:1px solid var(--rule-accent);
   padding-bottom:2px;
 }
 @media (max-width: 980px){
@@ -289,41 +326,41 @@ footer a{
           <p class="leadline">My view is that both things are true. LLM systems are becoming <em>human at the seams</em>: at the points where language, judgment, memory, and coordination meet. That resemblance is partly a deep truth about how intelligence organizes itself under constraint, and partly a projection of the only large-scale social design we know well — our own.</p>
 
           <figure>
-            <svg viewBox="0 0 520 322" width="100%" style="display:block;max-width:520px;margin:0 auto;overflow:visible">
+            <svg viewBox="0 0 520 322" width="100%" class="diagram" aria-label="Diagram showing how human social patterns appear at the seams of AI systems">
               <defs>
                 <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
-                  <path d="M0,0 L0,6 L9,3 z" fill="#8f6f56"></path>
+                  <path d="M0,0 L0,6 L9,3 z" fill="var(--ink-muted)"></path>
                 </marker>
               </defs>
-              <rect x="24" y="28" width="140" height="58" rx="0" fill="none" stroke="#5d3823" stroke-width="1.2"></rect>
-              <rect x="190" y="28" width="140" height="58" rx="0" fill="none" stroke="#5d3823" stroke-width="1.2"></rect>
-              <rect x="356" y="28" width="140" height="58" rx="0" fill="none" stroke="#5d3823" stroke-width="1.2"></rect>
+              <rect class="frame" x="24" y="28" width="140" height="58" rx="0"></rect>
+              <rect class="frame" x="190" y="28" width="140" height="58" rx="0"></rect>
+              <rect class="frame" x="356" y="28" width="140" height="58" rx="0"></rect>
 
-              <text x="94" y="47" text-anchor="middle" font-family="'Cutive Mono', monospace" font-size="10" fill="#8f6f56">HUMAN EVOLUTION</text>
-              <text x="94" y="65" text-anchor="middle" font-family="'Cardo', serif" font-size="14" fill="#5d3823">division of labor</text>
+              <text class="mono" x="94" y="47" text-anchor="middle">HUMAN EVOLUTION</text>
+              <text class="body" x="94" y="65" text-anchor="middle">division of labor</text>
 
-              <text x="260" y="47" text-anchor="middle" font-family="'Cutive Mono', monospace" font-size="10" fill="#8f6f56">HUMAN ARCHIVE</text>
-              <text x="260" y="63" text-anchor="middle" font-family="'Cardo', serif" font-size="13" fill="#5d3823">language, norms,</text>
-              <text x="260" y="79" text-anchor="middle" font-family="'Cardo', serif" font-size="13" fill="#5d3823">records</text>
+              <text class="mono" x="260" y="47" text-anchor="middle">HUMAN ARCHIVE</text>
+              <text class="body small" x="260" y="63" text-anchor="middle">language, norms,</text>
+              <text class="body small" x="260" y="79" text-anchor="middle">records</text>
 
-              <text x="426" y="47" text-anchor="middle" font-family="'Cutive Mono', monospace" font-size="10" fill="#8f6f56">GENERAL CONSTRAINT</text>
-              <text x="426" y="63" text-anchor="middle" font-family="'Cardo', serif" font-size="13" fill="#5d3823">error under</text>
-              <text x="426" y="79" text-anchor="middle" font-family="'Cardo', serif" font-size="13" fill="#5d3823">uncertainty</text>
+              <text class="mono" x="426" y="47" text-anchor="middle">GENERAL CONSTRAINT</text>
+              <text class="body small" x="426" y="63" text-anchor="middle">error under</text>
+              <text class="body small" x="426" y="79" text-anchor="middle">uncertainty</text>
 
-              <line x1="94" y1="88" x2="94" y2="136" stroke="#8f6f56" stroke-width="1" marker-end="url(#arrow)"></line>
-              <line x1="260" y1="88" x2="260" y2="136" stroke="#8f6f56" stroke-width="1" marker-end="url(#arrow)"></line>
-              <line x1="426" y1="88" x2="426" y2="136" stroke="#8f6f56" stroke-width="1" marker-end="url(#arrow)"></line>
+              <line class="connector connector-muted" x1="94" y1="88" x2="94" y2="136"></line>
+              <line class="connector connector-muted" x1="260" y1="88" x2="260" y2="136"></line>
+              <line class="connector connector-muted" x1="426" y1="88" x2="426" y2="136"></line>
 
-              <rect x="103" y="154" width="314" height="76" fill="#a46738" fill-opacity="0.08" stroke="#a46738" stroke-width="1.2"></rect>
-              <text x="260" y="176" text-anchor="middle" font-family="'Cutive Mono', monospace" font-size="11" fill="#8f6f56">HUMAN AT THE SEAMS</text>
-              <text x="260" y="196" text-anchor="middle" font-family="'Cardo', serif" font-size="14" fill="#5d3823">prompting, role assignment,</text>
-              <text x="260" y="213" text-anchor="middle" font-family="'Cardo', serif" font-size="14" fill="#5d3823">debate, memory, councils, review</text>
+              <rect class="accent-box" x="103" y="154" width="314" height="76"></rect>
+              <text class="mono center" x="260" y="176" text-anchor="middle">HUMAN AT THE SEAMS</text>
+              <text class="body" x="260" y="196" text-anchor="middle">prompting, role assignment,</text>
+              <text class="body" x="260" y="213" text-anchor="middle">debate, memory, councils, review</text>
 
-              <line x1="260" y1="232" x2="260" y2="268" stroke="#8f6f56" stroke-width="1" marker-end="url(#arrow)"></line>
+              <line class="connector connector-muted" x1="260" y1="232" x2="260" y2="268"></line>
 
-              <rect x="110" y="270" width="300" height="40" fill="none" stroke="#5d3823" stroke-width="1.2"></rect>
-              <text x="260" y="286" text-anchor="middle" font-family="'Cardo', serif" font-size="13" fill="#5d3823">nonhuman substrate:</text>
-              <text x="260" y="302" text-anchor="middle" font-family="'Cardo', serif" font-size="13" fill="#5d3823">routing, sampling, matrices</text>
+              <rect class="final-box" x="110" y="270" width="300" height="40"></rect>
+              <text class="body small" x="260" y="286" text-anchor="middle">nonhuman substrate:</text>
+              <text class="body small" x="260" y="302" text-anchor="middle">routing, sampling, matrices</text>
             </svg>
             <p class="caption">The system looks most like us where people and models have to coordinate. Beneath that layer, the machinery is stranger.</p>
           </figure>

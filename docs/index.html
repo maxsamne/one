@@ -6,34 +6,51 @@
   <title>Maximilian Samne</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Cardo:wght@400;700&family=Alegreya+SC:wght@400;700&family=Cutive+Mono&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #efe2c6;
-      --surface: rgba(246, 236, 215, 0.78);
+      --surface: #f6ecd7;
       --surface-strong: #f6ecd7;
       --ink: #5d3823;
       --ink-muted: #8f6f56;
       --accent: #a46738;
-      --accent-soft: rgba(164, 103, 56, 0.13);
       --border: #d3bc98;
-      --shadow: 0 18px 45px rgba(93, 56, 35, 0.08);
-      --max-width: 1120px;
+      --paper: #fff9ef;
+      --bg-rgb: 239, 226, 198;
+      --surface-rgb: 246, 236, 215;
+      --ink-rgb: 93, 56, 35;
+      --ink-muted-rgb: 143, 111, 86;
+      --accent-rgb: 164, 103, 56;
+      --border-rgb: 211, 188, 152;
+      --paper-rgb: 255, 249, 239;
+      --surface-soft: rgba(var(--surface-rgb), 0.78);
+      --surface-raised: rgba(var(--surface-rgb), 0.88);
+      --surface-wash: rgba(var(--paper-rgb), 0.24);
+      --surface-wash-strong: rgba(var(--paper-rgb), 0.4);
+      --line-soft: rgba(var(--ink-rgb), 0.14);
+      --line-faint: rgba(var(--ink-rgb), 0.12);
+      --rule-accent: rgba(var(--accent-rgb), 0.4);
+      --glow-strong: rgba(var(--paper-rgb), 0.45);
+      --glow-soft: rgba(var(--paper-rgb), 0.18);
+      --overlay-light: rgba(var(--paper-rgb), 0.28);
+      --overlay-rule: rgba(var(--ink-rgb), 0.045);
+      --shadow: 0 18px 45px rgba(var(--ink-rgb), 0.08);
+      --max-width: 980px;
     }
 
     * { box-sizing: border-box; }
-
     html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
       min-height: 100vh;
       background:
-        radial-gradient(circle at top left, rgba(255,255,255,0.45), transparent 30%),
-        linear-gradient(180deg, rgba(255,255,255,0.18), transparent 24%),
+        radial-gradient(circle at top left, var(--glow-strong), transparent 30%),
+        linear-gradient(180deg, var(--glow-soft), transparent 24%),
         var(--bg);
       color: var(--ink);
-      font: 400 19px/1.7 Cardo, serif;
+      font: 400 19px/1.72 "Lora", serif;
     }
 
     a {
@@ -52,7 +69,7 @@
       align-items: center;
       gap: 24px;
       padding: 22px 0;
-      border-bottom: 1px solid rgba(93, 56, 35, 0.14);
+      border-bottom: 1px solid var(--line-soft);
     }
 
     nav .wordmark {
@@ -63,8 +80,8 @@
       height: 42px;
       border: 1px solid var(--border);
       border-radius: 50%;
-      background: rgba(246, 236, 215, 0.72);
-      font: 700 14px/1 "Cutive Mono", monospace;
+      background: rgba(var(--surface-rgb), 0.72);
+      font: 700 13px/1 "JetBrains Mono", monospace;
       letter-spacing: 0.08em;
       transition: transform 0.2s ease, border-color 0.2s ease;
     }
@@ -88,8 +105,8 @@
       position: relative;
       padding: 8px 0;
       color: var(--ink-muted);
-      font: 400 13px/1 "Cutive Mono", monospace;
-      letter-spacing: 0.08em;
+      font: 500 13px/1 "Inter", sans-serif;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
     }
 
@@ -125,7 +142,7 @@
 
     .hero {
       display: grid;
-      grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.82fr);
+      grid-template-columns: minmax(0, 1.12fr) minmax(300px, 0.88fr);
       gap: 24px;
       align-items: stretch;
     }
@@ -135,7 +152,7 @@
     .feature {
       border: 1px solid var(--border);
       border-radius: 22px;
-      background: var(--surface);
+      background: var(--surface-soft);
       backdrop-filter: blur(8px);
       box-shadow: var(--shadow);
     }
@@ -151,8 +168,8 @@
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(135deg, rgba(255,255,255,0.28), transparent 42%),
-        repeating-linear-gradient(180deg, transparent, transparent 34px, rgba(93,56,35,0.045) 34px, rgba(93,56,35,0.045) 35px);
+        linear-gradient(135deg, var(--overlay-light), transparent 42%),
+        repeating-linear-gradient(180deg, transparent, transparent 34px, var(--overlay-rule) 34px, var(--overlay-rule) 35px);
       pointer-events: none;
       opacity: 0.7;
     }
@@ -162,15 +179,15 @@
     .eyebrow {
       margin: 0 0 16px;
       color: var(--ink-muted);
-      font: 400 12px/1.4 "Cutive Mono", monospace;
-      letter-spacing: 0.1em;
+      font: 500 12px/1.4 "JetBrains Mono", monospace;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
     }
 
     h1 {
       margin: 0;
       max-width: 11ch;
-      font: 600 clamp(62px, 11vw, 110px)/0.9 "Cormorant Garamond", serif;
+      font: 600 clamp(58px, 10vw, 96px)/0.94 "Lora", serif;
       letter-spacing: -0.03em;
     }
 
@@ -179,7 +196,7 @@
       margin: 20px 0 0;
       color: var(--ink-muted);
       font-size: 21px;
-      line-height: 1.65;
+      line-height: 1.68;
     }
 
     .hero-meta {
@@ -198,12 +215,15 @@
       padding: 0 14px;
       border: 1px solid var(--border);
       border-radius: 999px;
-      background: rgba(246, 236, 215, 0.88);
+      background: var(--surface-raised);
       color: var(--ink-muted);
-      font: 400 12px/1 "Cutive Mono", monospace;
+      transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    }
+
+    .meta-chip {
+      font: 500 12px/1 "JetBrains Mono", monospace;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
     }
 
     .role-switcher {
@@ -215,7 +235,9 @@
 
     .role-button {
       cursor: pointer;
-      font-family: "Cutive Mono", monospace;
+      font: 600 12px/1 "Inter", sans-serif;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
 
     .role-button:hover,
@@ -223,7 +245,7 @@
     .role-button[aria-pressed="true"] {
       color: var(--ink);
       border-color: var(--accent);
-      background: rgba(255, 249, 239, 0.96);
+      background: rgba(var(--paper-rgb), 0.96);
       transform: translateY(-1px);
       outline: none;
     }
@@ -238,20 +260,21 @@
 
     .role-label {
       color: var(--ink-muted);
-      font: 700 18px/1 "Alegreya SC", serif;
-      letter-spacing: 0.04em;
+      font: 600 13px/1.2 "Inter", sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
     .role-title {
       margin: 0;
-      font: 600 clamp(34px, 4.5vw, 48px)/1 "Cormorant Garamond", serif;
+      font: 600 clamp(32px, 4.4vw, 44px)/1.08 "Lora", serif;
     }
 
     .role-copy {
       margin: 0;
       color: var(--ink-muted);
       font-size: 19px;
-      line-height: 1.7;
+      line-height: 1.72;
     }
 
     .role-links {
@@ -267,9 +290,9 @@
       justify-content: space-between;
       gap: 12px;
       padding: 14px 16px;
-      border: 1px solid rgba(93, 56, 35, 0.12);
+      border: 1px solid var(--line-faint);
       border-radius: 16px;
-      background: rgba(255,255,255,0.24);
+      background: var(--surface-wash);
       transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
     }
 
@@ -277,20 +300,20 @@
     .role-links a:focus-visible {
       transform: translateX(4px);
       border-color: var(--accent);
-      background: rgba(255,255,255,0.4);
+      background: var(--surface-wash-strong);
       outline: none;
     }
 
     .role-links strong {
       display: block;
-      font: 700 18px/1.2 "Cormorant Garamond", serif;
+      font: 600 19px/1.2 "Lora", serif;
     }
 
     .role-links span {
       color: var(--ink-muted);
-      font: 400 13px/1.4 "Cutive Mono", monospace;
+      font: 500 12px/1.4 "Inter", sans-serif;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
     }
 
     .section-grid {
@@ -306,8 +329,7 @@
 
     .section-title {
       margin: 0 0 12px;
-      font: 700 18px/1 "Alegreya SC", serif;
-      letter-spacing: 0.04em;
+      font: 600 28px/1.15 "Lora", serif;
     }
 
     .card p,
@@ -318,7 +340,7 @@
 
     .feature-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
       gap: 24px;
     }
 
@@ -342,10 +364,10 @@
       width: fit-content;
       margin-top: 4px;
       padding-bottom: 3px;
-      border-bottom: 1px solid rgba(164, 103, 56, 0.4);
+      border-bottom: 1px solid var(--rule-accent);
       color: var(--accent);
-      font: 400 13px/1.4 "Cutive Mono", monospace;
-      letter-spacing: 0.05em;
+      font: 600 12px/1.4 "Inter", sans-serif;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
     }
 
@@ -355,14 +377,14 @@
       gap: 16px;
       padding: 0 0 40px;
       color: var(--ink-muted);
-      font: 400 13px/1.6 "Cutive Mono", monospace;
+      font: 500 12px/1.6 "Inter", sans-serif;
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
 
     footer a {
       padding-bottom: 2px;
-      border-bottom: 1px solid rgba(164, 103, 56, 0.35);
+      border-bottom: 1px solid rgba(var(--accent-rgb), 0.35);
       color: var(--ink);
     }
 

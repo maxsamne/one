@@ -6,17 +6,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Redirecting…</title>
   <link rel="canonical" href="https://maxsamne.github.io/one/writing/silicon-sociology.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #efe2c6;
+      --ink: #5d3823;
+      --accent: #a46738;
+      --paper: #fff9ef;
+      --paper-rgb: 255, 249, 239;
+      --max-width: 980px;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
       display: grid;
       place-items: center;
-      background: #efe2c6;
-      color: #5d3823;
-      font: 400 18px/1.6 Georgia, serif;
+      background:
+        radial-gradient(circle at top left, rgba(var(--paper-rgb), 0.4), transparent 28%),
+        var(--bg);
+      color: var(--ink);
+      font: 400 18px/1.7 "Lora", serif;
     }
-    a { color: #a46738; }
+
+    p {
+      width: min(var(--max-width), calc(100% - 32px));
+      text-align: center;
+    }
+
+    a {
+      color: var(--accent);
+      font-family: "Inter", sans-serif;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
