@@ -47,9 +47,9 @@ def test_graders_and_presets_endpoints():
     # /graders/suggest matches the article-writer skill to the article-voice grader.
     sug = client.get("/graders/suggest?skills=general/article-writer/SKILL.md").json()
     assert any(x["path"] == "general/article-voice.md" for x in sug)
-    # /presets returns the article-writer preset with both skill + grader bundled.
+    # /presets returns the article-writing preset with both skill + grader bundled.
     p = client.get("/presets").json()
-    article = next((x for x in p if x["name"] == "article-writer"), None)
+    article = next((x for x in p if x["name"] == "article-writing"), None)
     assert article is not None
     assert "general/article-writer/SKILL.md" in article["skills"]
     assert "general/article-voice.md" in article["graders"]
