@@ -8,7 +8,7 @@
   <link rel="canonical" href="https://maxsamne.github.io/one/writing/silicon-sociology.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Cardo:wght@400;700&family=Alegreya+SC:wght@400;700&family=Cutive+Mono&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #efe2c6;
@@ -19,6 +19,9 @@
       --border: #d3bc98;
       --tag-bg: #ead8b8;
       --max-width: 980px;
+      --font-serif: "Lora", serif;
+      --font-ui: "Inter", sans-serif;
+      --font-mono: "JetBrains Mono", monospace;
     }
 
     * { box-sizing: border-box; }
@@ -28,7 +31,7 @@
       min-height: 100vh;
       background: var(--bg);
       color: var(--ink);
-      font: 400 19px/1.7 Cardo, serif;
+      font: 400 19px/1.72 var(--font-serif);
     }
 
     nav {
@@ -44,8 +47,9 @@
     .wordmark {
       color: var(--ink);
       text-decoration: none;
-      font: 700 17px/1 "Alegreya SC", serif;
-      letter-spacing: 0.08em;
+      font: 700 16px/1 var(--font-ui);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
 
     nav ul {
@@ -59,7 +63,7 @@
     nav li a {
       color: var(--ink-muted);
       text-decoration: none;
-      font: 400 12px/1 "Cutive Mono", monospace;
+      font: 500 12px/1 var(--font-ui);
       text-transform: uppercase;
       letter-spacing: 0.08em;
     }
@@ -79,7 +83,8 @@
 
     h1 {
       margin: 0 0 10px;
-      font: 600 clamp(44px, 8vw, 74px)/0.95 "Cormorant Garamond", serif;
+      font: 600 clamp(42px, 8vw, 66px)/1 var(--font-serif);
+      letter-spacing: -0.02em;
     }
 
     p {

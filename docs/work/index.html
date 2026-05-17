@@ -6,7 +6,7 @@
   <title>Work · Maximilian Samne</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Cardo:wght@400;700&family=Alegreya+SC:wght@400;700&family=Cutive+Mono&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #efe2c6;
@@ -20,6 +20,9 @@
       --shadow: 0 18px 45px rgba(93, 56, 35, 0.08);
       --max-width: 1080px;
       --radius: 24px;
+      --font-serif: "Lora", serif;
+      --font-ui: "Inter", sans-serif;
+      --font-mono: "JetBrains Mono", monospace;
     }
 
     * { box-sizing: border-box; }
@@ -29,7 +32,7 @@
       background:
         radial-gradient(circle at top right, rgba(164,103,56,0.12), transparent 24%),
         linear-gradient(180deg, #f2e6cb 0%, var(--bg) 100%);
-      font: 400 18px/1.72 "Cardo", serif;
+      font: 400 18px/1.74 var(--font-serif);
     }
 
     nav {
@@ -57,14 +60,15 @@
     }
 
     nav .wordmark {
-      font: 700 17px/1 "Alegreya SC", serif;
-      letter-spacing: 0.08em;
+      font: 700 16px/1 var(--font-ui);
+      letter-spacing: 0.12em;
       text-decoration: none;
       color: var(--ink);
       padding: 10px 14px;
       border-radius: 999px;
       background: rgba(234, 216, 184, 0.75);
       border: 1px solid var(--border);
+      text-transform: uppercase;
     }
 
     nav ul {
@@ -78,7 +82,7 @@
     nav li a {
       color: var(--ink-muted);
       text-decoration: none;
-      font: 400 12px/1 "Cutive Mono", monospace;
+      font: 500 12px/1 var(--font-ui);
       text-transform: uppercase;
       letter-spacing: 0.08em;
       padding: 11px 14px;
@@ -123,7 +127,7 @@
     .eyebrow,
     summary,
     footer {
-      font-family: "Cutive Mono", monospace;
+      font-family: var(--font-mono);
     }
 
     .eyebrow {
@@ -136,8 +140,8 @@
 
     h1 {
       margin: 0;
-      font: 600 clamp(54px, 8vw, 92px)/0.92 "Cormorant Garamond", serif;
-      letter-spacing: -0.03em;
+      font: 600 clamp(50px, 7vw, 84px)/0.98 var(--font-serif);
+      letter-spacing: -0.025em;
       max-width: 10ch;
     }
 
@@ -149,7 +153,7 @@
       color: var(--ink-muted);
     }
 
-    .hero p { max-width: 38ch; font-size: 21px; line-height: 1.6; }
+    .hero p { max-width: 38ch; font-size: 21px; line-height: 1.62; }
 
     .grid {
       display: grid;
@@ -173,8 +177,8 @@
     .card h2,
     details h2 {
       margin: 0;
-      font: 700 18px/1.15 "Alegreya SC", serif;
-      letter-spacing: 0.04em;
+      font: 600 20px/1.24 var(--font-serif);
+      letter-spacing: -0.01em;
     }
 
     details {
@@ -200,6 +204,7 @@
       font-size: 18px;
       line-height: 1;
       transition: transform 180ms ease;
+      font-family: var(--font-ui);
     }
 
     details[open] summary::after { transform: rotate(45deg); }

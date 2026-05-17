@@ -6,7 +6,7 @@
 <title>Silicon Sociology · Maximilian Samne</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Cardo:wght@400;700&family=Alegreya+SC:wght@400;700&family=EB+Garamond:ital,wght@0,400;1,400&family=Cutive+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#efe2c6;
@@ -21,6 +21,10 @@
   --border-soft:rgba(211,188,152,.55);
   --shadow:0 18px 45px rgba(93,56,35,.08);
   --max-width:1120px;
+  --prose-width:680px;
+  --font-serif:"Lora",serif;
+  --font-ui:"Inter",sans-serif;
+  --font-mono:"JetBrains Mono",monospace;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -31,7 +35,7 @@ body{
     radial-gradient(circle at top left, rgba(255,255,255,.34), transparent 24%),
     radial-gradient(circle at bottom right, rgba(164,103,56,.11), transparent 22%),
     linear-gradient(180deg,#f2e6cb 0%,var(--bg) 100%);
-  font:400 19px/1.78 Cardo,serif;
+  font:400 19px/1.8 var(--font-serif);
 }
 a{color:var(--accent)}
 a:hover{color:#8d5428}
@@ -58,14 +62,15 @@ nav::before{
   z-index:-1;
 }
 nav .wordmark{
-  font:700 17px/1 "Alegreya SC",serif;
-  letter-spacing:.08em;
+  font:700 16px/1 var(--font-ui);
+  letter-spacing:.12em;
   text-decoration:none;
   color:var(--ink);
   padding:10px 14px;
   border-radius:999px;
   background:rgba(234,216,184,.75);
   border:1px solid var(--border);
+  text-transform:uppercase;
 }
 nav ul{
   list-style:none;
@@ -77,7 +82,7 @@ nav ul{
 nav li a{
   color:var(--ink-muted);
   text-decoration:none;
-  font:400 12px/1 "Cutive Mono",monospace;
+  font:500 12px/1 var(--font-ui);
   text-transform:uppercase;
   letter-spacing:.08em;
   padding:11px 14px;
@@ -121,7 +126,7 @@ article,
 .small,
 summary,
 footer{
-  font-family:"Cutive Mono",monospace;
+  font-family:var(--font-mono);
 }
 .eyebrow,
 .meta{
@@ -134,8 +139,8 @@ footer{
 .rail h2,
 details h3{
   margin:0;
-  font:700 17px/1.18 "Alegreya SC",serif;
-  letter-spacing:.04em;
+  font:600 20px/1.24 var(--font-serif);
+  letter-spacing:-.01em;
 }
 .rail p,
 .rail li,
@@ -155,7 +160,7 @@ details p,
   display:inline-flex;
   align-items:center;
   gap:10px;
-  font:400 12px/1 "Cutive Mono",monospace;
+  font:500 12px/1 var(--font-ui);
   text-transform:uppercase;
   letter-spacing:.08em;
   color:var(--ink);
@@ -182,7 +187,7 @@ article{
 }
 h1{
   margin:10px 0 14px;
-  font:600 clamp(58px,8vw,104px)/.9 "Cormorant Garamond",serif;
+  font:600 clamp(52px,7vw,92px)/.95 var(--font-serif);
   letter-spacing:-.03em;
   max-width:11ch;
 }
@@ -190,43 +195,49 @@ h1{
   margin:0;
   max-width:34ch;
   font-size:22px;
-  line-height:1.55;
+  line-height:1.58;
   color:var(--ink-muted);
 }
 .article-body{
   padding:30px 34px 38px;
+  display:grid;
+  gap:0;
+}
+.article-body > *{
+  width:100%;
+  max-width:var(--prose-width);
+  margin-left:auto;
+  margin-right:auto;
 }
 .article-body > *:first-child{margin-top:0}
 h2{
-  margin:2.8em 0 .7em;
-  font:700 24px/1.18 "Alegreya SC",serif;
-  letter-spacing:.03em;
+  margin:2.8em auto .7em;
+  font:600 28px/1.24 var(--font-serif);
+  letter-spacing:-.015em;
 }
 h3{
-  font-size:18px;
-  line-height:1.45;
-  font-weight:700;
+  font:600 20px/1.4 var(--font-serif);
   margin:1.6em 0 .5em;
 }
 p{margin:0 0 1em}
 .leadline{
-  margin:1.7em 0 1.5em;
+  margin:1.7em auto 1.5em;
   padding:18px 20px;
   border-left:2px solid var(--accent);
   background:var(--accent-soft);
   font-size:21px;
-  line-height:1.62;
+  line-height:1.66;
   color:var(--ink);
 }
 .pull{
-  margin:1.8em 0;
+  margin:1.8em auto;
   padding:16px 18px;
   border-left:2px solid var(--accent);
   background:var(--accent-soft);
   font-style:italic;
 }
 .figure-card{
-  margin:2.3em 0;
+  margin:2.3em auto;
   padding:22px;
   border-radius:22px;
 }
@@ -237,7 +248,7 @@ p{margin:0 0 1em}
   margin-top:12px;
 }
 code{
-  font-family:"Cutive Mono",monospace;
+  font-family:var(--font-mono);
   background:rgba(255,255,255,.32);
   padding:.1em .35em;
   border-radius:6px;
@@ -250,12 +261,12 @@ li{margin:.35em 0}
 hr{
   border:none;
   border-top:1px solid var(--border);
-  margin:2.7em 0 2.1em;
+  margin:2.7em auto 2.1em;
 }
-figure{margin:2.2em 0}
+figure{margin:2.2em auto}
 sup{font-size:.72em;vertical-align:super}
 details{
-  margin:2.2em 0;
+  margin:2.2em auto;
   padding:18px 20px;
   border:1px solid var(--border);
   border-radius:18px;
@@ -311,7 +322,7 @@ footer{
   nav ul{flex-wrap:wrap}
   main,footer{width:min(calc(100% - 24px), var(--max-width))}
   .rail,.article-top,.article-body,.figure-card{padding:22px}
-  h1{font-size:clamp(52px,16vw,80px);max-width:none}
+  h1{font-size:clamp(48px,16vw,76px);max-width:none}
   .dek,.leadline{font-size:20px}
 }
 </style>
@@ -369,31 +380,31 @@ footer{
           <rect x="190" y="28" width="140" height="58" rx="0" fill="none" stroke="#1c1b18" stroke-width="1.2"></rect>
           <rect x="356" y="28" width="140" height="58" rx="0" fill="none" stroke="#1c1b18" stroke-width="1.2"></rect>
 
-          <text x="94" y="47" text-anchor="middle" font-family="'Cutive Mono', monospace" font-size="10" fill="#6b6860">HUMAN EVOLUTION</text>
-          <text x="94" y="65" text-anchor="middle" font-family="'Cardo', serif" font-size="14" fill="#1c1b18">division of labor</text>
+          <text x="94" y="47" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6860">HUMAN EVOLUTION</text>
+          <text x="94" y="65" text-anchor="middle" font-family="'Lora', serif" font-size="14" fill="#1c1b18">division of labor</text>
 
-          <text x="260" y="47" text-anchor="middle" font-family="'Cutive Mono', monospace" font-size="10" fill="#6b6860">HUMAN ARCHIVE</text>
-          <text x="260" y="63" text-anchor="middle" font-family="'Cardo', serif" font-size="13" fill="#1c1b18">language, norms,</text>
-          <text x="260" y="79" text-anchor="middle" font-family="'Cardo', serif" font-size="13" fill="#1c1b18">records</text>
+          <text x="260" y="47" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6860">HUMAN ARCHIVE</text>
+          <text x="260" y="63" text-anchor="middle" font-family="'Lora', serif" font-size="13" fill="#1c1b18">language, norms,</text>
+          <text x="260" y="79" text-anchor="middle" font-family="'Lora', serif" font-size="13" fill="#1c1b18">records</text>
 
-          <text x="426" y="47" text-anchor="middle" font-family="'Cutive Mono', monospace" font-size="10" fill="#6b6860">GENERAL CONSTRAINT</text>
-          <text x="426" y="63" text-anchor="middle" font-family="'Cardo', serif" font-size="13" fill="#1c1b18">error under</text>
-          <text x="426" y="79" text-anchor="middle" font-family="'Cardo', serif" font-size="13" fill="#1c1b18">uncertainty</text>
+          <text x="426" y="47" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6860">GENERAL CONSTRAINT</text>
+          <text x="426" y="63" text-anchor="middle" font-family="'Lora', serif" font-size="13" fill="#1c1b18">error under</text>
+          <text x="426" y="79" text-anchor="middle" font-family="'Lora', serif" font-size="13" fill="#1c1b18">uncertainty</text>
 
           <line x1="94" y1="88" x2="94" y2="136" stroke="#6b6860" stroke-width="1" marker-end="url(#arrow)"></line>
           <line x1="260" y1="88" x2="260" y2="136" stroke="#6b6860" stroke-width="1" marker-end="url(#arrow)"></line>
           <line x1="426" y1="88" x2="426" y2="136" stroke="#6b6860" stroke-width="1" marker-end="url(#arrow)"></line>
 
           <rect x="103" y="154" width="314" height="76" fill="#2e5e4e" fill-opacity="0.07" stroke="#2e5e4e" stroke-width="1.2"></rect>
-          <text x="260" y="176" text-anchor="middle" font-family="'Cutive Mono', monospace" font-size="11" fill="#6b6860">HUMAN AT THE SEAMS</text>
-          <text x="260" y="196" text-anchor="middle" font-family="'Cardo', serif" font-size="14" fill="#1c1b18">prompting, role assignment,</text>
-          <text x="260" y="213" text-anchor="middle" font-family="'Cardo', serif" font-size="14" fill="#1c1b18">debate, memory, councils, review</text>
+          <text x="260" y="176" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="#6b6860">HUMAN AT THE SEAMS</text>
+          <text x="260" y="196" text-anchor="middle" font-family="'Lora', serif" font-size="14" fill="#1c1b18">prompting, role assignment,</text>
+          <text x="260" y="213" text-anchor="middle" font-family="'Lora', serif" font-size="14" fill="#1c1b18">debate, memory, councils, review</text>
 
           <line x1="260" y1="232" x2="260" y2="268" stroke="#6b6860" stroke-width="1" marker-end="url(#arrow)"></line>
 
           <rect x="110" y="270" width="300" height="40" fill="none" stroke="#1c1b18" stroke-width="1.2"></rect>
-          <text x="260" y="286" text-anchor="middle" font-family="'Cardo', serif" font-size="13" fill="#1c1b18">nonhuman substrate:</text>
-          <text x="260" y="302" text-anchor="middle" font-family="'Cardo', serif" font-size="13" fill="#1c1b18">routing, sampling, matrices</text>
+          <text x="260" y="286" text-anchor="middle" font-family="'Lora', serif" font-size="13" fill="#1c1b18">nonhuman substrate:</text>
+          <text x="260" y="302" text-anchor="middle" font-family="'Lora', serif" font-size="13" fill="#1c1b18">routing, sampling, matrices</text>
         </svg>
         <p class="caption">The system looks most like us where people and models have to coordinate. Beneath that layer, the machinery is stranger.</p>
       </figure>
