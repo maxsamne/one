@@ -5,125 +5,703 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maximilian Samne</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f7f5f1;
-      --surface: #eeecea;
-      --ink: #1c1a18;
-      --ink-muted: #7a756e;
-      --accent: #2d4a3e;
-      --border: #dedad4;
+      --bg: #f6f3ee;
+      --bg-2: #fbfaf7;
+      --surface: rgba(255, 252, 247, 0.76);
+      --surface-strong: rgba(255, 253, 250, 0.92);
+      --ink: #2f2b27;
+      --ink-soft: #5d5954;
+      --muted: #8b847b;
+      --accent: #83b8d7;
+      --accent-2: #a9d7ee;
+      --border: rgba(72, 64, 56, 0.11);
+      --line: rgba(111, 102, 92, 0.06);
+      --shadow: 0 24px 80px rgba(63, 53, 43, 0.08);
+      --card-shadow: 0 18px 44px rgba(63, 53, 43, 0.06);
+      --glow-x: 50%;
+      --glow-y: 50%;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; }
+
+    html {
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top, rgba(169, 215, 238, 0.22), transparent 28%),
+        linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 100%);
+    }
 
     body {
-      background: var(--bg);
-      color: var(--ink);
-      font-family: 'Inter', sans-serif;
-      font-weight: 400;
-      font-size: 15px;
-      line-height: 1.6;
+      margin: 0;
       min-height: 100vh;
+      color: var(--ink);
+      font: 400 16px/1.6 "Source Sans 3", sans-serif;
+      background:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 44px 44px;
+      background-position: center top;
     }
 
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+
     nav {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px 28px 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 28px 48px;
-      border-bottom: 1px solid var(--border);
+      gap: 18px;
     }
 
     nav .wordmark {
-      font-family: 'Lora', serif;
-      font-size: 17px;
+      font: 600 18px/1 "Hanken Grotesk", sans-serif;
+      letter-spacing: -0.04em;
       color: var(--ink);
-      text-decoration: none;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      background: rgba(255, 253, 249, 0.72);
+      border-radius: 999px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 28px rgba(63, 53, 43, 0.04);
     }
 
     nav ul {
       list-style: none;
       display: flex;
-      gap: 32px;
+      gap: 8px;
+      margin: 0;
+      padding: 6px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 253, 249, 0.72);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 28px rgba(63, 53, 43, 0.04);
     }
 
-    nav a {
-      color: var(--ink-muted);
-      text-decoration: none;
-      font-size: 13px;
-      letter-spacing: 0.02em;
-      transition: color 0.15s;
+    nav ul a {
+      display: block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      color: var(--ink-soft);
+      font: 500 14px/1 "Hanken Grotesk", sans-serif;
+      transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
     }
 
-    nav a:hover { color: var(--ink); }
+    nav ul a:hover,
+    nav ul a:focus-visible {
+      color: var(--ink);
+      background: rgba(131, 184, 215, 0.14);
+      outline: 2px solid rgba(131, 184, 215, 0.42);
+      outline-offset: 2px;
+      transform: translateY(-1px);
+    }
 
-    main {
-      max-width: 720px;
+    .page {
+      max-width: 1180px;
       margin: 0 auto;
-      padding: 96px 48px 120px;
+      padding: 28px 28px 80px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 36px;
+      background: linear-gradient(180deg, rgba(255, 254, 251, 0.94), rgba(250, 246, 240, 0.88));
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 18%, rgba(169, 215, 238, 0.22), transparent 18%),
+        radial-gradient(circle at 84% 76%, rgba(255, 232, 208, 0.32), transparent 18%);
+      pointer-events: none;
+    }
+
+    .hero-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: 28px;
+      padding: 42px;
+      align-items: start;
+      min-width: 0;
     }
 
     .eyebrow {
-      font-size: 11px;
-      letter-spacing: 0.12em;
+      margin: 0 0 14px;
+      color: var(--muted);
+      font: 500 12px/1.2 "DM Mono", monospace;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--ink-muted);
-      margin-bottom: 20px;
     }
 
     h1 {
-      font-family: 'Lora', serif;
-      font-size: 36px;
-      font-weight: 500;
-      line-height: 1.25;
+      margin: 0;
+      max-width: 10ch;
+      font: 600 clamp(52px, 7vw, 88px)/0.94 "Hanken Grotesk", sans-serif;
+      letter-spacing: -0.07em;
       color: var(--ink);
-      margin-bottom: 24px;
+      text-wrap: balance;
     }
 
-    .lead {
-      font-size: 17px;
-      color: var(--ink-muted);
-      line-height: 1.7;
-      max-width: 560px;
-      margin-bottom: 48px;
+    .lede {
+      margin: 18px 0 0;
+      max-width: 31rem;
+      color: var(--ink-soft);
+      font-size: 22px;
+      line-height: 1.45;
+      text-wrap: balance;
     }
 
-    .links {
+    .hero-actions {
       display: flex;
-      gap: 24px;
       flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
     }
 
-    .links a {
-      font-size: 13px;
-      color: var(--accent);
-      text-decoration: none;
-      border-bottom: 1px solid var(--accent);
-      padding-bottom: 1px;
-      transition: opacity 0.15s;
+    .hero-actions a,
+    .hero-actions button {
+      appearance: none;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 253, 249, 0.88);
+      color: var(--ink);
+      min-height: 48px;
+      padding: 0 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+      box-shadow: 0 10px 28px rgba(63, 53, 43, 0.03);
     }
 
-    .links a:hover { opacity: 0.65; }
+    .hero-actions .primary {
+      background: linear-gradient(180deg, #eef8fd, #d7ebf6);
+      border-color: rgba(131, 184, 215, 0.4);
+    }
+
+    .hero-actions a:hover,
+    .hero-actions a:focus-visible,
+    .hero-actions button:hover,
+    .hero-actions button:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(131, 184, 215, 0.55);
+      box-shadow: 0 14px 30px rgba(63, 53, 43, 0.06);
+      outline: 2px solid rgba(131, 184, 215, 0.4);
+      outline-offset: 2px;
+    }
+
+    .hero-side {
+      display: grid;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .interactive-card,
+    .mini-card {
+      min-width: 0;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--card-shadow);
+    }
+
+    .interactive-card {
+      border-radius: 30px;
+      padding: 20px;
+      isolation: isolate;
+    }
+
+    .interactive-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at var(--glow-x) var(--glow-y), rgba(169, 215, 238, 0.28), transparent 26%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .interactive-card > * { position: relative; z-index: 1; }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font: 500 11px/1.2 "DM Mono", monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .section-label::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 5px rgba(131, 184, 215, 0.12);
+    }
+
+    .panel-quote {
+      margin: 16px 0 10px;
+      font: 600 clamp(24px, 2.9vw, 34px)/1.08 "Hanken Grotesk", sans-serif;
+      letter-spacing: -0.05em;
+      max-width: 14ch;
+      min-height: 3.3em;
+      text-wrap: balance;
+    }
+
+    .panel-meta {
+      color: var(--ink-soft);
+      font-size: 15px;
+      max-width: 32ch;
+    }
+
+    .chapter-grid {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .chapter {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      padding: 18px;
+      border-radius: 28px;
+      border: 1px solid rgba(72, 64, 56, 0.09);
+      background: rgba(255, 253, 250, 0.82);
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .chapter:hover,
+    .chapter:focus-visible,
+    .chapter.is-active {
+      transform: translateY(-3px);
+      border-color: rgba(131, 184, 215, 0.5);
+      box-shadow: 0 16px 32px rgba(63, 53, 43, 0.07);
+      outline: 2px solid rgba(131, 184, 215, 0.34);
+      outline-offset: 2px;
+    }
+
+    .chapter small {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font: 500 11px/1.2 "DM Mono", monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .chapter strong {
+      display: block;
+      max-width: 11ch;
+      color: var(--ink);
+      font: 600 24px/1.02 "Hanken Grotesk", sans-serif;
+      letter-spacing: -0.05em;
+      text-wrap: balance;
+    }
+
+    .chapter-preview {
+      margin-top: 18px;
+      height: 168px;
+      border-radius: 24px;
+      border: 1px solid rgba(72, 64, 56, 0.07);
+      background: linear-gradient(180deg, rgba(228, 241, 248, 0.9), rgba(248, 244, 238, 0.92));
+      overflow: hidden;
+      position: relative;
+    }
+
+    .chapter-preview::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.14), transparent 26%);
+      pointer-events: none;
+    }
+
+    .preview-inner {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      transition: transform 0.28s ease, opacity 0.28s ease;
+    }
+
+    .preview-inner svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .mini-card {
+      border-radius: 26px;
+      padding: 18px;
+    }
+
+    .mini-card strong {
+      display: block;
+      margin-top: 12px;
+      font: 600 20px/1.06 "Hanken Grotesk", sans-serif;
+      letter-spacing: -0.05em;
+      max-width: 14ch;
+      text-wrap: balance;
+    }
+
+    .mini-card p {
+      margin: 10px 0 0;
+      color: var(--ink-soft);
+      font-size: 14px;
+      max-width: 26ch;
+    }
+
+    .mini-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      color: var(--ink);
+      font: 500 14px/1.2 "Hanken Grotesk", sans-serif;
+    }
+
+    .floating-note {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 30;
+      max-width: min(270px, calc(100vw - 24px));
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(255, 253, 249, 0.94);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 16px 34px rgba(63, 53, 43, 0.12);
+      color: var(--ink);
+      font: 500 14px/1.4 "Hanken Grotesk", sans-serif;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-999px, -999px);
+      transition: opacity 0.14s ease;
+    }
+
+    .floating-note.visible { opacity: 1; }
+
+    .floating-note small {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font: 500 10px/1.2 "DM Mono", monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .mini-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 { max-width: none; }
+    }
+
+    @media (max-width: 720px) {
+      nav {
+        padding: 20px 16px 0;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      nav ul {
+        justify-content: space-between;
+      }
+
+      .page {
+        padding: 18px 16px 48px;
+      }
+
+      .hero-grid {
+        padding: 22px;
+        gap: 20px;
+      }
+
+      .chapter-grid,
+      .mini-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: clamp(42px, 14vw, 64px);
+      }
+
+      .lede {
+        font-size: 19px;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      .hero-actions a,
+      .hero-actions button {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
   <nav>
-    <a class="wordmark" href="/">MS</a>
+    <a class="wordmark" href="/one/">MS</a>
     <ul>
-      <li><a href="/one/silicon-sociology">Writing</a></li>
+      <li><a href="/one/writing">Writing</a></li>
       <li><a href="/one/work">Work</a></li>
     </ul>
   </nav>
-  <main>
-    <p class="eyebrow">Maximilian Samne</p>
-    <h1>Building things worth<br>paying attention to.</h1>
-    <p class="lead">Investor, builder, and occasional writer. Working at the intersection of AI and venture.</p>
-    <div class="links">
-      <a href="/one/silicon-sociology">Silicon Sociology</a>
-      <a href="https://www.linkedin.com/in/maximiliansamne/" target="_blank">LinkedIn</a>
-    </div>
-  </main>
+
+  <div class="page">
+    <main class="hero">
+      <section class="hero-grid">
+        <div>
+          <p class="eyebrow">Maximilian Samne</p>
+          <h1>Build things people want to lean into.</h1>
+          <p class="lede">Investor, builder, and writer working across AI, venture, and product taste. Lighter UI, clearer structure, and a few interactions that feel deliberate instead of noisy.</p>
+          <div class="hero-actions">
+            <a class="primary" href="/one/writing">Read writing</a>
+            <a href="/one/work">View work</a>
+            <button type="button" id="shuffle">Shuffle mood</button>
+          </div>
+        </div>
+
+        <div class="hero-side">
+          <section class="interactive-card" id="interactive-card" aria-live="polite">
+            <div class="section-label">Interactive field</div>
+            <div class="panel-quote" id="panel-quote">Good pages feel light before they feel impressive.</div>
+            <p class="panel-meta" id="panel-meta">Hover or tap the cards below. The panel updates like a tiny chapter browser.</p>
+
+            <div class="chapter-grid">
+              <button class="chapter is-active" type="button" data-quote="Start with clarity. If the first screen is legible, everything after it feels easier." data-meta="The page should explain itself in one breath." data-preview="launch">
+                <small>Chapter I</small>
+                <strong>How to start</strong>
+              </button>
+              <button class="chapter" type="button" data-quote="Structure earns the right to be playful. A little motion feels premium when the layout stays calm." data-meta="Interaction should guide attention, not compete for it." data-preview="build">
+                <small>Chapter II</small>
+                <strong>How to build</strong>
+              </button>
+            </div>
+
+            <div class="chapter-preview" aria-hidden="true">
+              <div class="preview-inner" id="preview-launch">
+                <svg viewBox="0 0 420 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Launch illustration">
+                  <rect width="420" height="220" fill="#dcedf7"/>
+                  <rect y="145" width="420" height="75" fill="#f6e3d3"/>
+                  <g opacity="0.32">
+                    <rect x="26" y="18" width="90" height="18" rx="9" fill="#ffffff"/>
+                    <rect x="300" y="24" width="72" height="16" rx="8" fill="#ffffff"/>
+                    <rect x="320" y="54" width="42" height="11" rx="6" fill="#ffffff"/>
+                  </g>
+                  <g>
+                    <rect x="202" y="87" width="16" height="68" rx="8" fill="#59463b"/>
+                    <rect x="188" y="60" width="42" height="89" rx="20" fill="#faf8f4" stroke="#52483e" stroke-width="2"/>
+                    <path d="M209 34 C196 46, 191 56, 191 70 H227 C227 56, 222 46, 209 34 Z" fill="#d28e67" stroke="#52483e" stroke-width="2"/>
+                    <path d="M202 149 L188 175 H230 L216 149" fill="#8db6d0" stroke="#52483e" stroke-width="2"/>
+                    <circle cx="209" cy="98" r="9" fill="#b8d8ea" stroke="#52483e" stroke-width="2"/>
+                  </g>
+                  <g opacity="0.92">
+                    <path d="M162 152 C138 170, 126 199, 116 220 H302 C292 198, 281 170, 256 152 Z" fill="#f4b089"/>
+                    <path d="M146 164 C118 181, 102 199, 91 220 H150 C168 198, 174 182, 182 166 Z" fill="#d28e67"/>
+                    <path d="M273 164 C299 180, 317 198, 329 220 H272 C256 196, 249 182, 240 166 Z" fill="#efc4a4"/>
+                  </g>
+                </svg>
+              </div>
+              <div class="preview-inner" id="preview-build" style="opacity:0; transform: translateY(12px) scale(0.98);">
+                <svg viewBox="0 0 420 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Build illustration">
+                  <rect width="420" height="220" fill="#e7f0f6"/>
+                  <rect x="42" y="26" width="336" height="168" rx="16" fill="#f7fafc" stroke="#95afbf"/>
+                  <rect x="72" y="52" width="276" height="84" rx="8" fill="#8bb6d2"/>
+                  <path d="M72 106 C118 80, 150 92, 188 66 C222 42, 272 52, 348 92 V136 H72 Z" fill="#4f92c5" opacity="0.95"/>
+                  <path d="M72 122 C118 98, 152 112, 204 86 C246 66, 292 74, 348 110 V136 H72 Z" fill="#2f6f9f" opacity="0.95"/>
+                  <g stroke="#586c77" stroke-width="3" stroke-linecap="round">
+                    <path d="M116 160 H160"/>
+                    <path d="M254 160 H298"/>
+                    <path d="M210 150 V177"/>
+                  </g>
+                  <g>
+                    <circle cx="145" cy="168" r="15" fill="#e8c55d" stroke="#735d22" stroke-width="2"/>
+                    <rect x="160" y="136" width="62" height="14" rx="7" fill="#e8c55d" stroke="#735d22" stroke-width="2"/>
+                    <rect x="216" y="142" width="14" height="44" rx="7" fill="#e8c55d" stroke="#735d22" stroke-width="2"/>
+                    <circle cx="284" cy="168" r="15" fill="#e8c55d" stroke="#735d22" stroke-width="2"/>
+                    <rect x="228" y="140" width="62" height="14" rx="7" fill="#e8c55d" stroke="#735d22" stroke-width="2"/>
+                  </g>
+                </svg>
+              </div>
+            </div>
+          </section>
+
+          <div class="mini-grid">
+            <section class="mini-card">
+              <div class="section-label">Direction</div>
+              <strong>Closer to the reference: bright, airy, chapter-like.</strong>
+              <p>More white space, softer chrome, visible structure, and less heavy editorial styling.</p>
+            </section>
+            <section class="mini-card">
+              <div class="section-label">Play</div>
+              <strong>Still interactive, just lighter.</strong>
+              <p>Hover cards, panel swapping, shuffle state, and a cursor glow instead of a bulky widget.</p>
+              <a class="mini-link" href="https://www.linkedin.com/in/maximiliansamne/" target="_blank" rel="noreferrer">LinkedIn ↗</a>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <p class="footer-note">A softer grid, lighter surfaces, and interactions that behave more like cues than features.</p>
+  </div>
+
+  <div class="floating-note" id="floating-note" aria-hidden="true">
+    <small>Observation</small>
+    <div id="floating-text">People read interfaces the way they read rooms.</div>
+  </div>
+
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const interactiveCard = document.getElementById('interactive-card');
+      const panelQuote = document.getElementById('panel-quote');
+      const panelMeta = document.getElementById('panel-meta');
+      const shuffleButton = document.getElementById('shuffle');
+      const chapters = Array.from(document.querySelectorAll('.chapter'));
+      const previewLaunch = document.getElementById('preview-launch');
+      const previewBuild = document.getElementById('preview-build');
+      const floatingNote = document.getElementById('floating-note');
+      const floatingText = document.getElementById('floating-text');
+
+      const moods = [
+        {
+          quote: 'Good pages feel light before they feel impressive.',
+          meta: 'The fastest aesthetic win here is not more decoration, it is more air.'
+        },
+        {
+          quote: 'A cleaner structure makes motion feel intentional instead of busy.',
+          meta: 'Interactions work best when they underline hierarchy.'
+        },
+        {
+          quote: 'The page should feel like a calm product surface, not a mood board.',
+          meta: 'Bright UI, restrained shadows, one accent, repeatable patterns.'
+        },
+        {
+          quote: 'If it looks easy to use, people will stay long enough to care.',
+          meta: 'Clarity is usually the strongest visual effect.'
+        }
+      ];
+
+      const hoverNotes = [
+        'People notice spacing before they describe it.',
+        'A light surface can still feel premium.',
+        'The best hover state is a nudge, not a jump scare.',
+        'Structure is what lets softness look intentional.'
+      ];
+
+      let moodIndex = 0;
+      let hoverIndex = 0;
+
+      function setPreview(name) {
+        const launchActive = name === 'launch';
+        previewLaunch.style.opacity = launchActive ? '1' : '0';
+        previewLaunch.style.transform = launchActive ? 'translateY(0) scale(1)' : 'translateY(12px) scale(0.98)';
+        previewBuild.style.opacity = launchActive ? '0' : '1';
+        previewBuild.style.transform = launchActive ? 'translateY(12px) scale(0.98)' : 'translateY(0) scale(1)';
+      }
+
+      function activateChapter(node) {
+        chapters.forEach((item) => item.classList.remove('is-active'));
+        node.classList.add('is-active');
+        panelQuote.textContent = node.dataset.quote;
+        panelMeta.textContent = node.dataset.meta;
+        setPreview(node.dataset.preview);
+      }
+
+      chapters.forEach((node) => {
+        const handle = () => activateChapter(node);
+        node.addEventListener('mouseenter', handle);
+        node.addEventListener('focus', handle);
+        node.addEventListener('click', handle);
+      });
+
+      shuffleButton.addEventListener('click', () => {
+        moodIndex = (moodIndex + 1) % moods.length;
+        panelQuote.textContent = moods[moodIndex].quote;
+        panelMeta.textContent = moods[moodIndex].meta;
+      });
+
+      interactiveCard.addEventListener('pointermove', (event) => {
+        const rect = interactiveCard.getBoundingClientRect();
+        const x = ((event.clientX - rect.left) / rect.width) * 100;
+        const y = ((event.clientY - rect.top) / rect.height) * 100;
+        root.style.setProperty('--glow-x', `${x}%`);
+        root.style.setProperty('--glow-y', `${y}%`);
+      });
+
+      if (window.matchMedia('(hover: hover)').matches) {
+        chapters.forEach((node) => {
+          node.addEventListener('mouseenter', (event) => {
+            floatingText.textContent = hoverNotes[hoverIndex % hoverNotes.length];
+            hoverIndex += 1;
+            floatingNote.classList.add('visible');
+            floatingNote.setAttribute('aria-hidden', 'false');
+            moveNote(event);
+          });
+
+          node.addEventListener('mousemove', moveNote);
+          node.addEventListener('mouseleave', () => {
+            floatingNote.classList.remove('visible');
+            floatingNote.setAttribute('aria-hidden', 'true');
+          });
+        });
+      } else {
+        floatingNote.remove();
+      }
+
+      function moveNote(event) {
+        if (!document.body.contains(floatingNote)) return;
+        const x = Math.min(event.clientX + 18, window.innerWidth - floatingNote.offsetWidth - 12);
+        const y = Math.max(12, event.clientY - 12);
+        floatingNote.style.transform = `translate(${x}px, ${y}px)`;
+      }
+    })();
+  </script>
 </body>
 </html>
