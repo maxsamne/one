@@ -146,6 +146,11 @@ class AiClient(ABC):
         elapsed = round(time.monotonic() - start, 3)
         self.total_input_tokens += input_tokens
         self.total_output_tokens += completion_tokens
+        try:
+            from core.agents.task_ctx import TASK_USAGE_LOG
+            TASK_USAGE_LOG.get().append((self.model_name or "", input_tokens, completion_tokens))
+        except LookupError:
+            pass
         _log(
             Category.AGENT, "llm call", ui=False,
             model=self.model_name, provider=self.provider,

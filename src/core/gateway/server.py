@@ -18,7 +18,7 @@ from sse_starlette.sse import EventSourceResponse
 
 from core.agents import graders as graders_mod
 from core.agents import manager, skills
-from core.agents.task_ctx import EXA_CALL_LOG, PR_URL_CTX, TASK_CTX, TASK_GRADERS_CTX, TASK_IMAGES_CTX, TASK_SKILLS_CTX, TIER_CTX, TaskContext, new_task_id
+from core.agents.task_ctx import EXA_CALL_LOG, PR_URL_CTX, TASK_CTX, TASK_GRADERS_CTX, TASK_IMAGES_CTX, TASK_SKILLS_CTX, TASK_USAGE_LOG, TIER_CTX, TaskContext, new_task_id
 from core import presets as presets_mod
 from core.ai_client import AiClient, EmbeddingModel, ImageContent, ModelProvider, create_client, create_embedding_client
 from core.ai_client.fallback_client import is_unavailable
@@ -133,6 +133,8 @@ async def _run(record: TaskRecord) -> None:
     lib_token = LIBRARIAN_CTX.set(_LIBRARIANS.get(record.tier, _LIBRARIANS["ultra_cheap"]))
     exa_log: list[str] = []
     exa_token = EXA_CALL_LOG.set(exa_log)
+    usage_log: list[tuple[str, int, int]] = []
+    usage_token = TASK_USAGE_LOG.set(usage_log)
     tier = _get_tier(record.tier)
     _log(Category.GATEWAY, "task started", task=record.prompt[:120], tier=record.tier)
     stat_inc("gateway.tasks")
@@ -175,16 +177,12 @@ async def _run(record: TaskRecord) -> None:
         TASK_IMAGES_CTX.reset(images_token)
         TASK_CTX.reset(task_token)
         EXA_CALL_LOG.reset(exa_token)
+        TASK_USAGE_LOG.reset(usage_token)
         elapsed = round(record.finished_at - (record.started_at or record.finished_at), 2)
         ts = text_stats(record.result or "")
-        # Sum tokens across all clients that ran (primary may have partial, fallback has the rest).
-        all_clients = tier.all_clients() + (active_tier.all_clients() if active_tier is not tier else [])
-        total_in = sum(c.total_input_tokens for c in all_clients)
-        total_out = sum(c.total_output_tokens for c in all_clients)
-        usd = sum(
-            cost_usd(c.model_name or "", c.total_input_tokens, c.total_output_tokens)
-            for c in all_clients
-        ) + len(exa_log) * 0.007
+        total_in = sum(inp for _, inp, _ in usage_log)
+        total_out = sum(out for _, _, out in usage_log)
+        usd = sum(cost_usd(model, inp, out) for model, inp, out in usage_log) + len(exa_log) * 0.007
         _log(Category.GATEWAY, "task complete", status=record.status, elapsed_s=elapsed,
              tokens_in=total_in, tokens_out=total_out, cost=format_cost(usd), **ts)
         tasks_update(

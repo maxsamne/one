@@ -99,8 +99,6 @@ class TierClients:
     coder: AiClient
     fallback: "TierClients | None" = None
 
-    def all_clients(self) -> list[AiClient]:
-        return [self.manager, self.coder]
 
 
 def _make_from_entry(entry: dict) -> AiClient:

@@ -59,5 +59,12 @@ TASK_IMAGES_CTX: ContextVar[list] = ContextVar("task_images_ctx", default=[])
 EXA_CALL_LOG: ContextVar[list[str]] = ContextVar("exa_call_log", default=[])
 
 
+# Per-task LLM usage log: (model_name, input_tokens, output_tokens) per call.
+# Set to a fresh list per task in server.py. Read at task completion to compute cost.
+# No default — calls outside a task context raise LookupError and are skipped by the appender,
+# so scratch/REPL/test uses of clients don't accumulate into a shared module-level list.
+TASK_USAGE_LOG: ContextVar[list[tuple[str, int, int]]] = ContextVar("task_usage_log")
+
+
 # Set once when a draft PR is opened for a task; read by server.py after manager.run().
 PR_URL_CTX: ContextVar[str | None] = ContextVar("pr_url_ctx", default=None)
