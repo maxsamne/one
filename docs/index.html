@@ -5,125 +5,573 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maximilian Samne</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Cardo:wght@400;700&family=Alegreya+SC:wght@400;700&family=Cutive+Mono&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f7f5f1;
-      --surface: #eeecea;
-      --ink: #1c1a18;
-      --ink-muted: #7a756e;
-      --accent: #2d4a3e;
-      --border: #dedad4;
+      --bg: #efe2c6;
+      --surface: rgba(246, 236, 215, 0.78);
+      --surface-strong: #f6ecd7;
+      --ink: #5d3823;
+      --ink-muted: #8f6f56;
+      --accent: #a46738;
+      --accent-soft: rgba(164, 103, 56, 0.13);
+      --border: #d3bc98;
+      --shadow: 0 18px 45px rgba(93, 56, 35, 0.08);
+      --max-width: 1120px;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
 
     body {
-      background: var(--bg);
-      color: var(--ink);
-      font-family: 'Inter', sans-serif;
-      font-weight: 400;
-      font-size: 15px;
-      line-height: 1.6;
+      margin: 0;
       min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.45), transparent 30%),
+        linear-gradient(180deg, rgba(255,255,255,0.18), transparent 24%),
+        var(--bg);
+      color: var(--ink);
+      font: 400 19px/1.7 Cardo, serif;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .site-shell {
+      width: min(var(--max-width), calc(100% - 32px));
+      margin: 0 auto;
     }
 
     nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 28px 48px;
-      border-bottom: 1px solid var(--border);
+      gap: 24px;
+      padding: 22px 0;
+      border-bottom: 1px solid rgba(93, 56, 35, 0.14);
     }
 
     nav .wordmark {
-      font-family: 'Lora', serif;
-      font-size: 17px;
-      color: var(--ink);
-      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: rgba(246, 236, 215, 0.72);
+      font: 700 14px/1 "Cutive Mono", monospace;
+      letter-spacing: 0.08em;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    nav .wordmark:hover,
+    nav .wordmark:focus-visible {
+      transform: translateY(-1px);
+      border-color: var(--accent);
+      outline: none;
     }
 
     nav ul {
-      list-style: none;
       display: flex;
-      gap: 32px;
+      gap: 20px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
     }
 
-    nav a {
+    nav ul a {
+      position: relative;
+      padding: 8px 0;
       color: var(--ink-muted);
-      text-decoration: none;
-      font-size: 13px;
-      letter-spacing: 0.02em;
-      transition: color 0.15s;
+      font: 400 13px/1 "Cutive Mono", monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
-    nav a:hover { color: var(--ink); }
+    nav ul a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 2px;
+      width: 100%;
+      height: 1px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.2s ease;
+    }
+
+    nav ul a:hover,
+    nav ul a:focus-visible {
+      color: var(--ink);
+      outline: none;
+    }
+
+    nav ul a:hover::after,
+    nav ul a:focus-visible::after {
+      transform: scaleX(1);
+    }
 
     main {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 96px 48px 120px;
+      padding: 32px 0 72px;
+      display: grid;
+      gap: 24px;
     }
 
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.82fr);
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .panel,
+    .card,
+    .feature {
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--surface);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      padding: 34px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.28), transparent 42%),
+        repeating-linear-gradient(180deg, transparent, transparent 34px, rgba(93,56,35,0.045) 34px, rgba(93,56,35,0.045) 35px);
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .panel > * { position: relative; z-index: 1; }
+
     .eyebrow {
-      font-size: 11px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
+      margin: 0 0 16px;
       color: var(--ink-muted);
-      margin-bottom: 20px;
+      font: 400 12px/1.4 "Cutive Mono", monospace;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
     }
 
     h1 {
-      font-family: 'Lora', serif;
-      font-size: 36px;
-      font-weight: 500;
-      line-height: 1.25;
-      color: var(--ink);
-      margin-bottom: 24px;
+      margin: 0;
+      max-width: 11ch;
+      font: 600 clamp(62px, 11vw, 110px)/0.9 "Cormorant Garamond", serif;
+      letter-spacing: -0.03em;
     }
 
     .lead {
-      font-size: 17px;
+      max-width: 34rem;
+      margin: 20px 0 0;
       color: var(--ink-muted);
-      line-height: 1.7;
-      max-width: 560px;
-      margin-bottom: 48px;
+      font-size: 21px;
+      line-height: 1.65;
     }
 
-    .links {
+    .hero-meta {
       display: flex;
-      gap: 24px;
       flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
     }
 
-    .links a {
-      font-size: 13px;
+    .meta-chip,
+    .role-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(246, 236, 215, 0.88);
+      color: var(--ink-muted);
+      font: 400 12px/1 "Cutive Mono", monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    }
+
+    .role-switcher {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .role-button {
+      cursor: pointer;
+      font-family: "Cutive Mono", monospace;
+    }
+
+    .role-button:hover,
+    .role-button:focus-visible,
+    .role-button[aria-pressed="true"] {
+      color: var(--ink);
+      border-color: var(--accent);
+      background: rgba(255, 249, 239, 0.96);
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .role-card {
+      display: grid;
+      gap: 20px;
+      align-content: start;
+      min-height: 100%;
+      padding: 30px;
+    }
+
+    .role-label {
+      color: var(--ink-muted);
+      font: 700 18px/1 "Alegreya SC", serif;
+      letter-spacing: 0.04em;
+    }
+
+    .role-title {
+      margin: 0;
+      font: 600 clamp(34px, 4.5vw, 48px)/1 "Cormorant Garamond", serif;
+    }
+
+    .role-copy {
+      margin: 0;
+      color: var(--ink-muted);
+      font-size: 19px;
+      line-height: 1.7;
+    }
+
+    .role-links {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .role-links a {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 1px solid rgba(93, 56, 35, 0.12);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.24);
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .role-links a:hover,
+    .role-links a:focus-visible {
+      transform: translateX(4px);
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.4);
+      outline: none;
+    }
+
+    .role-links strong {
+      display: block;
+      font: 700 18px/1.2 "Cormorant Garamond", serif;
+    }
+
+    .role-links span {
+      color: var(--ink-muted);
+      font: 400 13px/1.4 "Cutive Mono", monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .card,
+    .feature {
+      padding: 24px;
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      font: 700 18px/1 "Alegreya SC", serif;
+      letter-spacing: 0.04em;
+    }
+
+    .card p,
+    .feature p {
+      margin: 0;
+      color: var(--ink-muted);
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 24px;
+    }
+
+    .feature {
+      display: grid;
+      gap: 18px;
+    }
+
+    .feature ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--ink-muted);
+    }
+
+    .feature li + li { margin-top: 8px; }
+
+    .note-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      width: fit-content;
+      margin-top: 4px;
+      padding-bottom: 3px;
+      border-bottom: 1px solid rgba(164, 103, 56, 0.4);
       color: var(--accent);
-      text-decoration: none;
-      border-bottom: 1px solid var(--accent);
-      padding-bottom: 1px;
-      transition: opacity 0.15s;
+      font: 400 13px/1.4 "Cutive Mono", monospace;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
 
-    .links a:hover { opacity: 0.65; }
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 0 40px;
+      color: var(--ink-muted);
+      font: 400 13px/1.6 "Cutive Mono", monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    footer a {
+      padding-bottom: 2px;
+      border-bottom: 1px solid rgba(164, 103, 56, 0.35);
+      color: var(--ink);
+    }
+
+    @media (max-width: 920px) {
+      .hero,
+      .feature-grid,
+      .section-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .panel,
+      .role-card,
+      .card,
+      .feature {
+        padding: 24px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .site-shell { width: min(var(--max-width), calc(100% - 20px)); }
+
+      nav {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      nav ul {
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+
+      main { padding-top: 20px; }
+
+      h1 { max-width: none; }
+
+      .lead,
+      .role-copy {
+        font-size: 18px;
+      }
+
+      footer {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 <body>
-  <nav>
-    <a class="wordmark" href="/">MS</a>
-    <ul>
-      <li><a href="/one/silicon-sociology">Writing</a></li>
-      <li><a href="/one/work">Work</a></li>
-    </ul>
-  </nav>
-  <main>
-    <p class="eyebrow">Maximilian Samne</p>
-    <h1>Building things worth<br>paying attention to.</h1>
-    <p class="lead">Investor, builder, and occasional writer. Working at the intersection of AI and venture.</p>
-    <div class="links">
-      <a href="/one/silicon-sociology">Silicon Sociology</a>
-      <a href="https://www.linkedin.com/in/maximiliansamne/" target="_blank">LinkedIn</a>
-    </div>
-  </main>
+  <div class="site-shell">
+    <nav>
+      <a class="wordmark" href="/one/">MS</a>
+      <ul>
+        <li><a href="/one/writing">Writing</a></li>
+        <li><a href="/one/work">Work</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <section class="hero" aria-labelledby="home-title">
+        <div class="panel">
+          <p class="eyebrow">Stockholm · AI · Venture · Product</p>
+          <h1 id="home-title">I back and build ideas that can become institutions.</h1>
+          <p class="lead">A sparer personal site, rebuilt around a stronger visual system: more editorial, more confident, and still simple enough to scale as pages and projects grow.</p>
+          <div class="hero-meta" aria-label="Current focus areas">
+            <span class="meta-chip">Investing in AI</span>
+            <span class="meta-chip">Building with taste</span>
+            <span class="meta-chip">Writing to clarify</span>
+          </div>
+        </div>
+
+        <aside class="card role-card" aria-labelledby="focus-title">
+          <p class="eyebrow">Focus selector</p>
+          <div class="role-switcher" role="toolbar" aria-label="Choose a profile view">
+            <button class="role-button" type="button" data-role="investor" aria-pressed="true">Investor</button>
+            <button class="role-button" type="button" data-role="builder" aria-pressed="false">Builder</button>
+            <button class="role-button" type="button" data-role="writer" aria-pressed="false">Writer</button>
+          </div>
+          <div id="focus-panel" aria-live="polite">
+            <p class="role-label" id="focus-title">Current lens</p>
+            <h2 class="role-title" id="focus-heading">Looking for sharp founders and durable wedges.</h2>
+            <p class="role-copy" id="focus-copy">I spend most of my time around early-stage products where AI meaningfully changes workflow, product quality, or market structure — especially when the team has unusually good taste about how software should feel.</p>
+            <ul class="role-links" id="focus-links">
+              <li>
+                <a href="/one/work">
+                  <div>
+                    <strong>What I look for</strong>
+                    <span>Work</span>
+                  </div>
+                  <span>→</span>
+                </a>
+              </li>
+              <li>
+                <a href="/one/writing/silicon-sociology.html">
+                  <div>
+                    <strong>Silicon Sociology</strong>
+                    <span>Essay</span>
+                  </div>
+                  <span>→</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section-grid" aria-label="Three-column overview">
+        <article class="card">
+          <p class="eyebrow">Approach</p>
+          <h2 class="section-title">Conviction with restraint.</h2>
+          <p>I like products with a point of view, businesses with leverage, and websites that are calm enough to age well. The goal is to feel considered, not overdesigned.</p>
+        </article>
+        <article class="card">
+          <p class="eyebrow">Design principle</p>
+          <h2 class="section-title">Editorial over ornamental.</h2>
+          <p>The updated system leans on typography, paper-like surfaces, and small interaction cues instead of heavy motion or complicated front-end architecture.</p>
+        </article>
+        <article class="card">
+          <p class="eyebrow">Scalability</p>
+          <h2 class="section-title">Built for more pages.</h2>
+          <p>Writing, work, and article pages now share one language: the same nav, tokens, spacing rules, and a small set of reusable card patterns.</p>
+        </article>
+      </section>
+
+      <section class="feature-grid" aria-label="Featured sections">
+        <article class="feature">
+          <p class="eyebrow">Writing</p>
+          <h2 class="section-title">One strong essay is better than a cluttered archive.</h2>
+          <p>The writing section now behaves like a proper home for long-form work: a clear index, a cleaner route structure, and a more deliberate reading experience.</p>
+          <a class="note-link" href="/one/writing">Open writing index</a>
+        </article>
+        <article class="feature">
+          <p class="eyebrow">Work</p>
+          <h2 class="section-title">A simpler portfolio surface.</h2>
+          <ul>
+            <li>Focused themes instead of noisy project dumps.</li>
+            <li>Native disclosure panels for lightweight interactivity.</li>
+            <li>Enough structure to grow without requiring a framework.</li>
+          </ul>
+          <a class="note-link" href="/one/work">See work themes</a>
+        </article>
+      </section>
+    </main>
+
+    <footer>
+      <span>Maximilian Samne · Built in plain HTML and CSS</span>
+      <a href="https://www.linkedin.com/in/maximiliansamne/" target="_blank" rel="noreferrer">LinkedIn</a>
+    </footer>
+  </div>
+
+  <script>
+    (() => {
+      const profiles = {
+        investor: {
+          heading: 'Looking for sharp founders and durable wedges.',
+          copy: 'I spend most of my time around early-stage products where AI meaningfully changes workflow, product quality, or market structure — especially when the team has unusually good taste about how software should feel.',
+          links: [
+            { href: '/one/work', title: 'What I look for', label: 'Work' },
+            { href: '/one/writing/silicon-sociology.html', title: 'Silicon Sociology', label: 'Essay' }
+          ]
+        },
+        builder: {
+          heading: 'Shipping calm interfaces with a harder edge.',
+          copy: 'I like software that feels composed: strong hierarchy, restrained interaction, and enough product thinking in the details that the whole thing reads as intentional rather than busy.',
+          links: [
+            { href: '/one/', title: 'Homepage system', label: 'Design' },
+            { href: '/one/work', title: 'Current work themes', label: 'Notes' }
+          ]
+        },
+        writer: {
+          heading: 'Using essays to pressure-test ideas in public.',
+          copy: 'Writing helps me turn instincts into arguments. The pieces I care about usually sit where technology, institutions, and taste overlap — closer to field notes than content marketing.',
+          links: [
+            { href: '/one/writing', title: 'Browse writing', label: 'Index' },
+            { href: '/one/writing/silicon-sociology.html', title: 'Read the latest essay', label: 'Featured' }
+          ]
+        }
+      };
+
+      const buttons = Array.from(document.querySelectorAll('.role-button'));
+      const heading = document.getElementById('focus-heading');
+      const copy = document.getElementById('focus-copy');
+      const links = document.getElementById('focus-links');
+
+      function render(role) {
+        const profile = profiles[role];
+        if (!profile) return;
+
+        buttons.forEach((button) => {
+          button.setAttribute('aria-pressed', String(button.dataset.role === role));
+        });
+
+        heading.textContent = profile.heading;
+        copy.textContent = profile.copy;
+        links.innerHTML = profile.links.map((link) => `
+          <li>
+            <a href="${link.href}">
+              <div>
+                <strong>${link.title}</strong>
+                <span>${link.label}</span>
+              </div>
+              <span>→</span>
+            </a>
+          </li>
+        `).join('');
+      }
+
+      buttons.forEach((button) => {
+        button.addEventListener('click', () => render(button.dataset.role));
+      });
+    })();
+  </script>
 </body>
 </html>

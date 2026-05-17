@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Work — Maximilian Samne</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Cardo:wght@400;700&family=Alegreya+SC:wght@400;700&family=Cutive+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #efe2c6;
+      --surface: #f6ecd7;
+      --ink: #5d3823;
+      --ink-muted: #8f6f56;
+      --accent: #a46738;
+      --border: #d3bc98;
+      --shadow: 0 18px 45px rgba(93, 56, 35, 0.08);
+      --max-width: 1080px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,0.42), transparent 28%),
+        var(--bg);
+      color: var(--ink);
+      font: 400 19px/1.7 Cardo, serif;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .site-shell {
+      width: min(var(--max-width), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+      padding: 22px 0;
+      border-bottom: 1px solid rgba(93, 56, 35, 0.14);
+    }
+
+    nav .wordmark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: rgba(246, 236, 215, 0.84);
+      font: 700 14px/1 "Cutive Mono", monospace;
+      letter-spacing: 0.08em;
+    }
+
+    nav ul {
+      display: flex;
+      gap: 20px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    nav ul a {
+      color: var(--ink-muted);
+      font: 400 13px/1 "Cutive Mono", monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    nav ul a:hover,
+    nav ul a[aria-current="page"] {
+      color: var(--ink);
+    }
+
+    main {
+      padding: 34px 0 72px;
+      display: grid;
+      gap: 24px;
+    }
+
+    .hero,
+    details {
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: rgba(246, 236, 215, 0.86);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 34px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: var(--ink-muted);
+      font: 400 12px/1.4 "Cutive Mono", monospace;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 10ch;
+      font: 600 clamp(56px, 10vw, 90px)/0.94 "Cormorant Garamond", serif;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p:last-child {
+      max-width: 44rem;
+      margin: 0;
+      color: var(--ink-muted);
+      font-size: 20px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    details {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 22px 24px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    .summary-copy h2 {
+      margin: 8px 0 6px;
+      font: 600 clamp(28px, 4vw, 40px)/1.02 "Cormorant Garamond", serif;
+    }
+
+    .summary-copy p {
+      margin: 0;
+      color: var(--ink-muted);
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      color: var(--ink-muted);
+      font: 400 24px/1 Cardo, serif;
+      transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    details[open] .toggle {
+      transform: rotate(45deg);
+      color: var(--ink);
+      border-color: var(--accent);
+    }
+
+    .details-body {
+      padding: 0 24px 24px;
+      border-top: 1px solid rgba(93, 56, 35, 0.12);
+    }
+
+    .details-body p {
+      margin: 18px 0 0;
+      color: var(--ink-muted);
+    }
+
+    .details-body ul {
+      margin: 16px 0 0 18px;
+      color: var(--ink-muted);
+    }
+
+    .details-body li + li { margin-top: 8px; }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 0 40px;
+      color: var(--ink-muted);
+      font: 400 13px/1.6 "Cutive Mono", monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    footer a {
+      color: var(--ink);
+      border-bottom: 1px solid rgba(164, 103, 56, 0.35);
+      padding-bottom: 2px;
+    }
+
+    @media (max-width: 640px) {
+      .site-shell { width: min(var(--max-width), calc(100% - 20px)); }
+
+      nav {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      nav ul {
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      .hero,
+      summary,
+      .details-body {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      footer {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="site-shell">
+    <nav>
+      <a class="wordmark" href="/one/">MS</a>
+      <ul>
+        <li><a href="/one/writing">Writing</a></li>
+        <li><a href="/one/work" aria-current="page">Work</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">Work</p>
+        <h1>Three lanes I keep coming back to.</h1>
+        <p>A deliberately simple portfolio page: fewer claims, more signal. The expandable sections below add a little interaction without introducing front-end complexity or visual noise.</p>
+      </section>
+
+      <section class="stack" aria-label="Work themes">
+        <details open>
+          <summary>
+            <div class="summary-copy">
+              <p class="eyebrow">Lane 01</p>
+              <h2>Backing product-native AI companies.</h2>
+              <p>I am most interested when the technology is obvious in the product outcome, but not shouted about in the interface.</p>
+            </div>
+            <span class="toggle" aria-hidden="true">+</span>
+          </summary>
+          <div class="details-body">
+            <p>I like teams that combine technical depth with strong taste: products that change the shape of work, but still feel legible and human on first contact.</p>
+            <ul>
+              <li>Software with a durable behavioral wedge.</li>
+              <li>Founders who understand both interface and infrastructure.</li>
+              <li>Businesses where design quality compounds rather than decorates.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <div class="summary-copy">
+              <p class="eyebrow">Lane 02</p>
+              <h2>Designing sharper digital surfaces.</h2>
+              <p>Most websites and product pages could be calmer, bolder, and more internally consistent with less code than they use today.</p>
+            </div>
+            <span class="toggle" aria-hidden="true">+</span>
+          </summary>
+          <div class="details-body">
+            <p>My bias is toward strong typographic systems, shallow component sets, and tiny moments of interactivity that help orientation instead of begging for attention.</p>
+            <ul>
+              <li>Plain HTML and CSS where possible.</li>
+              <li>One visual language across pages.</li>
+              <li>Just enough interaction to make the site feel alive.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <div class="summary-copy">
+              <p class="eyebrow">Lane 03</p>
+              <h2>Writing about technology as institutional change.</h2>
+              <p>The recurring subjects are AI, coordination, market structure, and the social machinery around technical systems.</p>
+            </div>
+            <span class="toggle" aria-hidden="true">+</span>
+          </summary>
+          <div class="details-body">
+            <p>The best essays are usually the ones that take a seemingly technical topic and show the human structure hidden underneath it.</p>
+            <ul>
+              <li><a href="/one/writing/silicon-sociology.html">Silicon Sociology</a> is the clearest current example.</li>
+              <li>The writing section is designed to hold more essays without changing the system.</li>
+              <li>The ambition is a body of work, not a content calendar.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+    </main>
+
+    <footer>
+      <span>Maximilian Samne · Work themes</span>
+      <a href="/one/">Back home</a>
+    </footer>
+  </div>
+</body>
+</html>
