@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Maximilian Samne</title>
+  <title>Writing · Maximilian Samne</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,38 +14,25 @@
       --ink: #5d3823;
       --ink-muted: #8f6f56;
       --accent: #a46738;
-      --accent-strong: #8d5428;
       --border: #d3bc98;
+      --tag-bg: #ead8b8;
+      --surface-soft: rgba(246, 236, 215, 0.8);
       --shadow: 0 18px 45px rgba(93, 56, 35, 0.08);
-      --max-width: 1120px;
+      --max-width: 1080px;
+      --radius: 24px;
       --font-serif: "Lora", serif;
       --font-ui: "Inter", sans-serif;
       --font-mono: "JetBrains Mono", monospace;
     }
 
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-
     body {
       margin: 0;
-      min-height: 100vh;
       color: var(--ink);
       background:
-        radial-gradient(circle at top left, rgba(255,255,255,0.35), transparent 28%),
-        radial-gradient(circle at bottom right, rgba(164,103,56,0.10), transparent 24%),
+        radial-gradient(circle at top left, rgba(255,255,255,0.34), transparent 24%),
         linear-gradient(180deg, #f2e6cb 0%, var(--bg) 100%);
-      font: 400 18px/1.72 var(--font-serif);
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background-image: linear-gradient(rgba(93,56,35,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(93,56,35,0.03) 1px, transparent 1px);
-      background-size: 32px 32px;
-      mask-image: radial-gradient(circle at center, black 30%, transparent 82%);
-      opacity: 0.4;
+      font: 400 18px/1.74 var(--font-serif);
     }
 
     a { color: inherit; }
@@ -55,8 +42,8 @@
       margin: 0 auto;
       padding: 26px 0 18px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       gap: 24px;
       position: sticky;
       top: 0;
@@ -68,9 +55,9 @@
       content: "";
       position: absolute;
       inset: 8px -12px;
-      border: 1px solid rgba(163, 126, 85, 0.18);
       border-radius: 999px;
-      background: rgba(246, 236, 215, 0.52);
+      border: 1px solid rgba(163, 126, 85, 0.18);
+      background: rgba(246, 236, 215, 0.55);
       z-index: -1;
     }
 
@@ -97,38 +84,48 @@
       text-decoration: none;
       color: var(--ink-muted);
       font: 500 12px/1 var(--font-ui);
-      text-transform: uppercase;
       letter-spacing: 0.08em;
+      text-transform: uppercase;
       padding: 11px 14px;
       border-radius: 999px;
-      transition: color 180ms ease, background 180ms ease, transform 180ms ease;
+      transition: background 180ms ease, color 180ms ease, transform 180ms ease;
     }
 
     nav li a:hover,
     nav li a:focus-visible {
       color: var(--ink);
       background: rgba(234, 216, 184, 0.8);
-      outline: none;
       transform: translateY(-1px);
+      outline: none;
     }
 
     main {
-      width: min(calc(100% - 32px), 760px);
+      width: min(calc(100% - 32px), var(--max-width));
       margin: 0 auto;
-      min-height: calc(100vh - 120px);
-      padding: 72px 0 96px;
+      padding: 54px 0 72px;
       display: grid;
-      align-items: center;
+      gap: 24px;
     }
 
-    .home {
-      padding: 40px 0;
+    .hero,
+    .essay {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 32px;
       display: grid;
-      gap: 22px;
+      gap: 14px;
+      background:
+        radial-gradient(circle at right top, rgba(164,103,56,0.12), transparent 28%),
+        var(--surface);
     }
 
     .eyebrow,
-    .links a,
+    .meta,
     footer {
       font-family: var(--font-mono);
     }
@@ -143,82 +140,92 @@
 
     h1 {
       margin: 0;
-      font: 600 clamp(54px, 12vw, 92px)/0.96 var(--font-serif);
-      letter-spacing: -0.03em;
+      font: 600 clamp(50px, 7vw, 84px)/0.98 var(--font-serif);
+      letter-spacing: -0.025em;
+      max-width: 10ch;
     }
 
-    .positioning {
+    .hero p {
       margin: 0;
-      max-width: 34ch;
-      font-size: 22px;
-      line-height: 1.6;
+      max-width: 38ch;
       color: var(--ink-muted);
+      font-size: 21px;
+      line-height: 1.62;
     }
 
-    .links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      padding-top: 6px;
-    }
-
-    .links a {
+    .essay {
+      padding: 26px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: end;
       text-decoration: none;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+
+    .essay:hover,
+    .essay:focus-visible {
+      transform: translateY(-3px);
+      border-color: rgba(163, 126, 85, 0.45);
+      background: rgba(255,255,255,0.32);
+      outline: none;
+    }
+
+    .essay h2 {
+      margin: 8px 0 10px;
+      font: 600 30px/1.14 var(--font-serif);
+      letter-spacing: -0.01em;
+    }
+
+    .essay p {
+      margin: 0;
+      color: var(--ink-muted);
+      max-width: 50ch;
+    }
+
+    .meta {
+      color: var(--ink-muted);
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--accent);
-      padding-bottom: 4px;
-      border-bottom: 1px solid rgba(164,103,56,0.45);
-      transition: border-color 180ms ease, color 180ms ease, transform 180ms ease;
     }
 
-    .links a:hover,
-    .links a:focus-visible {
-      color: var(--accent-strong);
-      border-bottom-color: var(--accent-strong);
-      transform: translateY(-1px);
-      outline: none;
+    .arrow {
+      align-self: center;
+      justify-self: end;
+      font: 500 24px/1 var(--font-ui);
+      color: var(--accent);
+      padding: 14px 0 14px 20px;
     }
 
     footer {
       width: min(calc(100% - 32px), var(--max-width));
       margin: 0 auto 36px;
-      color: var(--ink-muted);
       font-size: 12px;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
+      color: var(--ink-muted);
     }
 
     @media (max-width: 720px) {
-      body { font-size: 17px; }
-
       nav {
         width: min(calc(100% - 24px), var(--max-width));
-        padding-top: 18px;
-        align-items: flex-start;
         flex-direction: column;
+        align-items: flex-start;
+        padding-top: 18px;
       }
-
       nav::before { inset: 0; border-radius: 28px; }
       nav ul { flex-wrap: wrap; }
-
       main,
-      footer {
-        width: min(calc(100% - 24px), 760px);
+      footer { width: min(calc(100% - 24px), var(--max-width)); }
+      .hero,
+      .essay { padding: 22px; }
+      .essay {
+        grid-template-columns: 1fr;
       }
-
-      main {
-        padding-top: 36px;
-        min-height: auto;
-      }
-
-      h1 {
-        font-size: clamp(44px, 16vw, 72px);
-      }
-
-      .positioning {
-        font-size: 20px;
+      .arrow {
+        justify-self: start;
+        padding: 4px 0 0;
       }
     }
   </style>
@@ -233,20 +240,24 @@
   </nav>
 
   <main>
-    <section class="home" aria-label="Homepage">
-      <p class="eyebrow">Maximilian Samne</p>
-      <h1>Maximilian Samne</h1>
-      <p class="positioning">Investor, builder, and writer working at the intersection of AI, products, and venture.</p>
-      <div class="links" aria-label="Primary links">
-        <a href="/one/writing">Writing</a>
-        <a href="/one/work">Work</a>
-        <a href="/one/design.html">Design</a>
-      </div>
+    <section class="hero">
+      <p class="eyebrow">Writing</p>
+      <h1>Essays with a little heat in them.</h1>
+      <p>Mostly notes and essays on AI, coordination, venture, and the social structures that sit underneath technical change.</p>
     </section>
+
+    <a class="essay" href="/one/writing/silicon-sociology.html">
+      <div>
+        <p class="meta">Technology · Society · Apr 2026</p>
+        <h2>Silicon Sociology</h2>
+        <p>Why AI is evolving to look like us — and why the resemblance may be deepest at the seams.</p>
+      </div>
+      <span class="arrow" aria-hidden="true">→</span>
+    </a>
   </main>
 
   <footer>
-    <span>Atelier Ledger warmth, kept sparse.</span>
+    <span>One essay for now. A clearer structure for the next ones.</span>
   </footer>
 </body>
 </html>
