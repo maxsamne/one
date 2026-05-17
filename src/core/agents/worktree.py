@@ -1,0 +1,226 @@
+"""Git worktree setup, merge, and cleanup for parallel coder dispatch."""
+
+import asyncio
+from dataclasses import dataclass
+from pathlib import Path
+
+from core.agents.ledger import get_ledger
+from core.log import Category
+from core.log import log as _log
+from core.tools.ctx import REPO_ROOT
+
+WORKTREE_DIR = REPO_ROOT / ".worktrees"
+_GIT_RESOURCE = "git:repo"
+
+# Open a draft PR on origin after a successful merge+push.
+AUTO_OPEN_PR = True
+
+
+@dataclass(frozen=True)
+class Worktree:
+    provider: str
+    branch: str
+    path: Path
+
+
+async def _git(*args: str, cwd: Path = REPO_ROOT) -> tuple[int, str]:
+    proc = await asyncio.create_subprocess_exec(
+        "git", *args,
+        cwd=str(cwd),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT,
+    )
+    out, _ = await proc.communicate()
+    return proc.returncode or 0, out.decode(errors="replace").strip()
+
+
+async def _current_branch() -> str:
+    _, name = await _git("rev-parse", "--abbrev-ref", "HEAD")
+    return name
+
+
+async def setup(task_id: str, providers: list[str], base_ref: str | None = None) -> tuple[str, str, list[Worktree]]:
+    """Create the task's base branch + one worktree per provider.
+
+    Returns (starting_ref, base_branch, worktrees). starting_ref is the branch
+    the task forked off — the natural PR target. Holds the repo lock for the
+    whole setup so concurrent tasks don't fight over branch creation."""
+
+    base_branch = f"task/{task_id}"
+    starting_ref = base_ref or await _current_branch()
+
+    async with get_ledger().lock(_GIT_RESOURCE, agent_id=f"{task_id}:setup"):
+        rc, _ = await _git("rev-parse", "--verify", base_branch)
+        if rc != 0:
+            await _git("branch", base_branch, starting_ref)
+
+        WORKTREE_DIR.mkdir(exist_ok=True)
+        worktrees: list[Worktree] = []
+        for provider in providers:
+            branch = f"task/{task_id}-{provider}"
+            path = WORKTREE_DIR / f"{task_id}-{provider}"
+            rc, out = await _git("worktree", "add", "-b", branch, str(path), base_branch)
+            if rc != 0:
+                _log(Category.AGENT, "worktree create failed", provider=provider, error=out)
+                raise RuntimeError(f"worktree add failed for {provider}: {out}")
+            worktrees.append(Worktree(provider=provider, branch=branch, path=path))
+
+    _log(Category.AGENT, "worktrees ready", base=base_branch, starting_ref=starting_ref, providers=providers)
+    return starting_ref, base_branch, worktrees
+
+
+async def merge(
+    task_id: str,
+    base_branch: str,
+    worktrees: list[Worktree],
+    push: bool = True,
+    pr_base: str | None = None,
+    pr_title: str | None = None,
+) -> dict[str, str]:
+    """Sequentially merge each provider branch into base_branch.
+
+    Uses a temporary worktree so the main working tree's HEAD is never touched.
+    Returns {provider: status} where status is 'merged', 'no-op', or 'conflict: <msg>'.
+    If `push` and at least one provider merged, push base_branch to origin.
+    If `pr_base` is set and AUTO_OPEN_PR is True, open a draft PR against that branch."""
+
+    merge_path = WORKTREE_DIR / f"{task_id}-merge"
+    results: dict[str, str] = {}
+
+    async with get_ledger().lock(_GIT_RESOURCE, agent_id=f"{task_id}:merge"):
+        await _git("worktree", "add", str(merge_path), base_branch)
+        try:
+            for wt in worktrees:
+                rc, ahead = await _git("rev-list", "--count", f"{base_branch}..{wt.branch}")
+                if rc == 0 and ahead.strip() == "0":
+                    results[wt.provider] = "no-op"
+                    continue
+                rc, out = await _git("merge", "--no-ff", "-m", f"Merge {wt.provider} into {base_branch}", wt.branch, cwd=merge_path)
+                if rc != 0:
+                    await _git("merge", "--abort", cwd=merge_path)
+                    results[wt.provider] = f"conflict: {out.splitlines()[0] if out else 'unknown'}"
+                    _log(Category.AGENT, "merge conflict", provider=wt.provider)
+                else:
+                    results[wt.provider] = "merged"
+        finally:
+            await _git("worktree", "remove", "--force", str(merge_path))
+
+        if push and any(s == "merged" for s in results.values()):
+            rc, out = await _git("push", "-u", "origin", base_branch)
+            if rc == 0:
+                _log(Category.AGENT, "branch pushed", branch=base_branch)
+                if AUTO_OPEN_PR and pr_base:
+                    await _open_pr(task_id, base_branch, pr_base, pr_title)
+            else:
+                _log(Category.AGENT, "push failed", branch=base_branch, error=out.splitlines()[0] if out else "unknown")
+
+    _log(Category.AGENT, "merge complete", base=base_branch, results=results)
+    return results
+
+
+async def _open_pr(task_id: str, head: str, base: str, title: str | None) -> None:
+    from core.agents.task_ctx import PR_URL_CTX
+    title = title or f"task {task_id}"
+    body = f"Auto-generated by task `{task_id}`.\n\nTitle: {title}"
+    proc = await asyncio.create_subprocess_exec(
+        "gh", "pr", "create", "--draft",
+        "--base", base, "--head", head,
+        "--title", title, "--body", body,
+        cwd=str(REPO_ROOT),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT,
+    )
+    out, _ = await proc.communicate()
+    text = out.decode(errors="replace").strip()
+    if proc.returncode == 0:
+        url = text.splitlines()[-1] if text else ""
+        _log(Category.AGENT, "pr opened", url=url, base=base, head=head)
+        if url:
+            PR_URL_CTX.set(url)
+    else:
+        _log(Category.AGENT, "pr open failed", base=base, head=head, error=text.splitlines()[-1] if text else "unknown")
+
+
+async def cleanup(worktrees: list[Worktree]) -> None:
+    for wt in worktrees:
+        rc, out = await _git("worktree", "remove", "--force", str(wt.path))
+        if rc != 0:
+            _log(Category.AGENT, "worktree cleanup failed", provider=wt.provider, error=out)
+
+
+# --- Sub-agent worktree helpers ---
+
+
+@dataclass(frozen=True)
+class SubWorktree:
+    sub_id: str
+    branch: str
+    path: Path
+    parent_branch: str
+
+
+async def setup_subagent_worktree(task_id: str, sub_id: str, parent_workdir: Path) -> SubWorktree:
+    """Create a worktree branched from the parent coder's current HEAD.
+
+    Holds the repo lock for the create. Parent must already be in a worktree
+    (e.g. created by setup() above) — we read its current branch to fork from."""
+    rc, parent_branch = await _git("rev-parse", "--abbrev-ref", "HEAD", cwd=parent_workdir)
+    if rc != 0 or not parent_branch or parent_branch == "HEAD":
+        raise RuntimeError(f"could not determine parent branch from {parent_workdir}: {parent_branch}")
+
+    sub_branch = f"{parent_branch}-sub-{sub_id}"
+    sub_path = WORKTREE_DIR / f"{task_id}-sub-{sub_id}"
+
+    async with get_ledger().lock(_GIT_RESOURCE, agent_id=f"{task_id}:sub-{sub_id}:setup"):
+        WORKTREE_DIR.mkdir(exist_ok=True)
+        rc, out = await _git("worktree", "add", "-b", sub_branch, str(sub_path), parent_branch)
+        if rc != 0:
+            _log(Category.AGENT, "subagent worktree create failed", sub_id=sub_id, error=out)
+            raise RuntimeError(f"subagent worktree add failed: {out}")
+
+    _log(Category.AGENT, "subagent worktree ready", sub_id=sub_id, branch=sub_branch, parent_branch=parent_branch)
+    return SubWorktree(sub_id=sub_id, branch=sub_branch, path=sub_path, parent_branch=parent_branch)
+
+
+async def merge_subagent_worktree(task_id: str, sub: SubWorktree, parent_workdir: Path) -> str:
+    """Merge sub-agent's branch back into parent's branch.
+
+    Runs `git merge` inside the parent's workdir under the git:repo lock.
+    The parent coder is awaiting the spawn_subagent call so its workdir is
+    idle during the merge — safe to mutate. Aborts cleanly on uncommitted
+    changes in the parent or on merge conflicts.
+
+    Returns 'merged' | 'no-op' | 'conflict: <line>' | 'dirty: <line>'.
+    """
+    async with get_ledger().lock(_GIT_RESOURCE, agent_id=f"{task_id}:sub-{sub.sub_id}:merge"):
+        rc, ahead = await _git("rev-list", "--count", f"{sub.parent_branch}..{sub.branch}")
+        if rc == 0 and ahead.strip() == "0":
+            _log(Category.AGENT, "subagent merge no-op", sub_id=sub.sub_id)
+            return "no-op"
+
+        rc, dirty = await _git("status", "--porcelain", cwd=parent_workdir)
+        if rc == 0 and dirty.strip():
+            line = dirty.splitlines()[0]
+            _log(Category.AGENT, "subagent merge skipped — parent dirty", sub_id=sub.sub_id, dirty=line)
+            return f"dirty: parent has uncommitted changes ({line}). Sub-agent's commits remain on branch {sub.branch}."
+
+        rc, out = await _git(
+            "merge", "--no-ff",
+            "-m", f"Merge sub-{sub.sub_id} into {sub.parent_branch}",
+            sub.branch,
+            cwd=parent_workdir,
+        )
+        if rc != 0:
+            await _git("merge", "--abort", cwd=parent_workdir)
+            line = out.splitlines()[0] if out else "unknown"
+            _log(Category.AGENT, "subagent merge conflict", sub_id=sub.sub_id, error=line)
+            return f"conflict: {line}"
+
+    _log(Category.AGENT, "subagent merged", sub_id=sub.sub_id, branch=sub.branch)
+    return "merged"
+
+
+async def cleanup_subagent_worktree(sub: SubWorktree) -> None:
+    rc, out = await _git("worktree", "remove", "--force", str(sub.path))
+    if rc != 0:
+        _log(Category.AGENT, "subagent worktree cleanup failed", sub_id=sub.sub_id, error=out)

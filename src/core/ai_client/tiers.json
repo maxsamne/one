@@ -1,0 +1,82 @@
+{
+  "_comment": "Tier → role → {provider, model}. `manager` and `coder` are static fallbacks (used if router fails). `options` is the band-restricted menu the DispatchRouter picks from. Each option may carry an optional `fallback: {provider, model}` which the runtime quietly swaps in if the chosen model returns 503/UNAVAILABLE — the router never sees it. `_router` (top-level) configures the picker model itself. Edit option descriptions freely — router sees them verbatim.",
+
+  "_router": {
+    "provider": "openai",
+    "model":    "gpt-5.4-nano",
+    "_note":    "Cheap, fast picker. Override per-call via ROUTER_FORCE env var (format: provider:model[:thinking])."
+  },
+
+  "_grader_judge": {
+    "provider": "gemini",
+    "model":    "gemini-3-flash-preview",
+    "fallback": {"provider": "openai", "model": "gpt-5.4"},
+    "_note":    "Default LLM-as-judge for every GraderHook. Update here once when the flagship flash model bumps (e.g. gemini-3.2-flash) and every grader inherits. Per-grader override still allowed via the `judge:` frontmatter field. Fallback fires on 503/UNAVAILABLE."
+  },
+
+  "ultra_cheap": {
+    "manager": {"provider": "openai", "model": "gpt-5.4-nano"},
+    "coder":   {"provider": "ollama", "model": "qwen3.5:9b"},
+    "image_gen": {"provider": "ollama", "model": "x/flux2-klein:4b"},
+    "options": [
+      {"provider": "ollama", "model": "qwen3.5:9b", "desc": "Local. Strongly preferred default — use for all code, research, artifacts, multi-step tasks, anything persistent, and anything requiring structured output or tool use."},
+      {"provider": "ollama", "model": "gemma4:e4b", "desc": "Local. Use ONLY for trivial single-step conversational queries (e.g. a single lookup, a one-sentence answer). Never for code, artifacts, research, or persistent tasks."}
+    ]
+  },
+
+  "cheap": {
+    "manager": {"provider": "openai", "model": "gpt-5.4-mini"},
+    "coder":   {"provider": "openai", "model": "gpt-5.4-nano"},
+    "image_gen": {"provider": "openai", "model": "gpt-image-2"},
+    "options": [
+      {"provider": "openai", "model": "gpt-5.4-nano",     "desc": "Fastest, cheapest.",
+       "fallback": {"provider": "ollama", "model": "qwen3.5:9b"}},
+      {"provider": "openai", "model": "gpt-5.4-mini",     "desc": "Stronger reasoning.",
+       "fallback": {"provider": "claude", "model": "claude-haiku-4-5"}},
+      {"provider": "claude", "model": "claude-haiku-4-5", "desc": "Best code editing.",
+       "fallback": {"provider": "openai", "model": "gpt-5.4-mini"}}
+    ],
+    "fallback": {
+      "manager": {"provider": "openai", "model": "gpt-5.4-mini"},
+      "coder":   {"provider": "openai", "model": "gpt-5.4-nano"}
+    }
+  },
+
+  "default": {
+    "manager": {"provider": "gemini", "model": "gemini-3.1-pro-preview"},
+    "coder":   {"provider": "gemini", "model": "gemini-3-flash-preview"},
+    "image_gen": {"provider": "openai", "model": "gpt-image-2"},
+    "options": [
+      {"provider": "openai", "model": "gpt-5.4-mini",           "desc": "Fast, cheap.",
+       "fallback": {"provider": "claude", "model": "claude-haiku-4-5"}},
+      {"provider": "openai", "model": "gpt-5.4",                "desc": "Strong general-purpose.",
+       "fallback": {"provider": "claude", "model": "claude-sonnet-4-6"}},
+      {"provider": "gemini", "model": "gemini-3-flash-preview", "desc": "Fast, long context.",
+       "fallback": {"provider": "openai", "model": "gpt-5.4-mini"}},
+      {"provider": "claude", "model": "claude-sonnet-4-6",      "desc": "Best code editing.",
+       "fallback": {"provider": "openai", "model": "gpt-5.4"}}
+    ],
+    "fallback": {
+      "manager": {"provider": "openai", "model": "gpt-5.4"},
+      "coder":   {"provider": "openai", "model": "gpt-5.4-mini"}
+    }
+  },
+
+  "pro": {
+    "manager": {"provider": "gemini", "model": "gemini-3.1-pro-preview"},
+    "coder":   {"provider": "gemini", "model": "gemini-3.1-pro-preview"},
+    "image_gen": {"provider": "openai", "model": "gpt-image-2"},
+    "options": [
+      {"provider": "claude", "model": "claude-opus-4-7",        "desc": "Frontier coder.",
+       "fallback": {"provider": "openai", "model": "gpt-5.4"}},
+      {"provider": "gemini", "model": "gemini-3.1-pro-preview", "desc": "Long context, math.",
+       "fallback": {"provider": "claude", "model": "claude-sonnet-4-6"}},
+      {"provider": "openai", "model": "gpt-5.4",                "desc": "General-purpose.",
+       "fallback": {"provider": "claude", "model": "claude-sonnet-4-6"}}
+    ],
+    "fallback": {
+      "manager": {"provider": "openai", "model": "gpt-5.4"},
+      "coder":   {"provider": "claude", "model": "claude-sonnet-4-6"}
+    }
+  }
+}

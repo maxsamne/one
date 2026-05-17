@@ -1,0 +1,79 @@
+version: '3'
+
+tasks:
+  serve:
+    desc: Start the gateway server (web UI at http://127.0.0.1:5500/)
+    env:
+      OLLAMA_NUM_PARALLEL: "1"
+      DEBUG: "true"
+    cmd: uv run uvicorn core.gateway.server:app --host 127.0.0.1 --port 5500 --reload --reload-dir src
+
+  serve:prod:
+    desc: Start the gateway server (no reload)
+    env:
+      OLLAMA_NUM_PARALLEL: "1"
+    cmd: uv run uvicorn core.gateway.server:app --host 127.0.0.1 --port 5500
+
+  sync:
+    desc: Sync dependencies
+    cmd: uv sync
+
+  add:
+    desc: Add a package (task add -- <package>)
+    cmd: uv add {{.CLI_ARGS}}
+
+  test:
+    desc: Run tests
+    cmd: uv run pytest
+
+  health:
+    desc: Check if the gateway is running
+    cmd: curl -s http://localhost:5500/health | python3 -m json.tool
+
+  task:
+    desc: Submit a task to the gateway (task task -- "your prompt here")
+    cmd: |
+      curl -s -X POST http://localhost:5500/task \
+        -H "Content-Type: application/json" \
+        -d "{\"task\": \"{{.CLI_ARGS}}\"}" | python3 -m json.tool
+
+  tasks:
+    desc: List all tasks and their status
+    cmd: curl -s http://localhost:5500/tasks | python3 -m json.tool
+
+  task:status:
+    desc: Get status of a task (task task:status -- <task_id>)
+    cmd: curl -s http://localhost:5500/tasks/{{.CLI_ARGS}} | python3 -m json.tool
+
+  task:events:
+    desc: Stream live events for a task (task task:events -- <task_id>)
+    cmd: curl -sN http://localhost:5500/tasks/{{.CLI_ARGS}}/events
+
+  task:cancel:
+    desc: Cancel a running task (task task:cancel -- <task_id>)
+    cmd: curl -s -X DELETE http://localhost:5500/tasks/{{.CLI_ARGS}}
+
+  chat:
+    desc: Terminal chat — submit tasks, stream events live, track cost
+    cmd: uv run python src/core/gateway/chat.py
+    interactive: true
+
+  migrate:
+    desc: Apply pending database migrations
+    cmd: uv run python scripts/migrate.py
+
+  clean:tmp:
+    desc: Remove all conversational task scratch dirs under generated/tmp/
+    cmd: rm -rf generated/tmp && echo "cleaned generated/tmp"
+
+  logs:
+    desc: Print all events for a task (task logs -- <task_id>  or  task logs -- latest)
+    cmd: uv run python scripts/logs.py {{.CLI_ARGS}}
+
+  bench:embeddings:
+    desc: Benchmark all three local embedding models for retrieval quality and latency
+    cmd: uv run python scripts/benchmark_embeddings.py
+
+  summarize:
+    desc: Add/update one-line summary in a skill file (task summarize -- path/to/skill.md)
+    cmd: uv run python src/core/agents/summarize.py {{.CLI_ARGS}}

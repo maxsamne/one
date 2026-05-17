@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>one</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <span class="topbar-mark">one</span>
+      <div class="topbar-stats" id="session-stats"></div>
+      <div class="topbar-right">
+        <button type="button" class="topbar-btn" id="open-schedules">schedules</button>
+        <span class="topbar-hint">ctrl+enter = run</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="feed" id="feed" aria-live="polite"></main>
+
+  <footer class="composer">
+    <div class="preset-row" id="preset-row" hidden role="group" aria-label="Project preset"></div>
+    <div class="tier-row" id="tier-row" role="group" aria-label="Spend tier"></div>
+    <div class="suggest-bar" id="suggest-bar" hidden></div>
+    <div class="input-panel" id="input-panel">
+      <div class="thumbs-row" id="thumbs-row" hidden></div>
+      <div class="chips-row" id="chips-row" hidden></div>
+      <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden />
+      <div class="prompt-row">
+        <div class="prompt-shell" id="prompt-shell">
+          <div class="prompt-backdrop" id="prompt-backdrop" aria-hidden="true"></div>
+          <textarea
+            id="prompt"
+            rows="1"
+            spellcheck="false"
+            placeholder="Ask anything…  (drag images, type /skill, @task to follow up)"
+          ></textarea>
+        </div>
+        <select id="mode-select" class="mode-select" title="Force conversational (tmp scratch) or persistent (worktree). Default = auto.">
+          <option value="">auto</option>
+          <option value="conversational">conversational</option>
+          <option value="persistent">persistent</option>
+        </select>
+        <button type="button" class="chip-add" id="parent-add" title="Continue from previous task (@task)" aria-label="Continue from previous task">@</button>
+        <button type="button" class="chip-add" id="chip-add" title="Attach skill (or type /skill)" aria-label="Attach skill">＋</button>
+        <button type="button" class="chip-add chip-add-grader" id="chip-add-grader" title="Attach grader (or type /grader)" aria-label="Attach grader">⚖</button>
+        <button type="button" class="send-btn" id="send"><span class="send-btn__label">Run</span></button>
+      </div>
+      <div class="dropdown" id="dropdown" hidden role="listbox"></div>
+    </div>
+  </footer>
+
+  <div class="modal" id="schedules-modal" hidden aria-hidden="true">
+    <div class="modal-backdrop" data-close></div>
+    <section class="modal-panel" role="dialog" aria-label="Scheduled tasks">
+      <header class="modal-head">
+        <h2>Scheduled tasks</h2>
+        <button type="button" class="modal-close" data-close aria-label="Close">×</button>
+      </header>
+      <div class="modal-body">
+        <div class="sched-grid">
+          <div class="sched-main">
+            <form id="sched-form" class="sched-form">
+              <div class="sched-row sched-nl-row">
+                <input type="text" id="sched-nl" placeholder="say it in english… (e.g. every weekday at 9am)" />
+                <button type="button" id="sched-nl-go" title="translate to cron">→ cron</button>
+              </div>
+              <div class="sched-row">
+                <input type="text" id="sched-cron" placeholder="cron (e.g. 0 8 * * *)" required />
+                <select id="sched-tier" aria-label="tier"></select>
+                <select id="sched-mode" aria-label="mode">
+                  <option value="">auto</option>
+                  <option value="conversational">conversational</option>
+                  <option value="persistent">persistent</option>
+                </select>
+              </div>
+              <textarea id="sched-prompt" placeholder="prompt (what should fire)" required rows="2"></textarea>
+              <div class="sched-row sched-row-end">
+                <span class="sched-skills-summary" id="sched-skills-summary">no skills selected</span>
+                <span class="sched-skills-summary" id="sched-graders-summary">no graders selected</span>
+                <button type="button" id="sched-cancel-edit" class="sched-cancel-edit" hidden>cancel</button>
+                <button type="submit" class="send-btn"><span class="send-btn__label">Save</span></button>
+              </div>
+            </form>
+            <ul class="sched-list" id="sched-list"></ul>
+          </div>
+          <aside class="sched-skills-col" aria-label="Available skills and graders">
+            <div class="sched-skills-head">
+              <div class="sched-tabs" role="tablist">
+                <button type="button" class="sched-tab active" id="sched-tab-skills"  data-kind="skill"  role="tab" aria-selected="true">skills</button>
+                <button type="button" class="sched-tab"        id="sched-tab-graders" data-kind="grader" role="tab" aria-selected="false">graders</button>
+              </div>
+              <input type="search" id="sched-skills-search" placeholder="filter…" autocomplete="off" />
+            </div>
+            <ul class="sched-skills-list" id="sched-skills-list"></ul>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@14/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked-highlight@2/lib/index.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
