@@ -1,5 +1,5 @@
 {
-  "name": "article-writer",
+  "name": "article-writing",
   "description": "Long-form article writing in your voice, graded for tone and depth.",
   "tier": "cheap",
   "skills": ["general/article-writer/SKILL.md", "general/article-design/SKILL.md"],

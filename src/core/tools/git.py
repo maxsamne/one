@@ -94,6 +94,23 @@ async def git_push(remote: str = "origin", branch: str | None = None) -> str:
     return await _write("git_push", {"remote": remote, "branch": branch}, *args)
 
 
+async def git_create_pr(title: str, body: str = "", base: str = "main") -> str:
+    if err := _check("git_push", "git_create_pr"):
+        return err
+    proc = await asyncio.create_subprocess_exec(
+        "gh", "pr", "create", "--title", title, "--base", base, "--body", body or "",
+        cwd=str(WORKDIR.get()),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT,
+    )
+    stdout, _ = await proc.communicate()
+    output = stdout.decode(errors="replace").strip()
+    prefix = "FATAL" if proc.returncode != 0 else "OK"
+    result = f"{prefix}: [exit {proc.returncode}]\n{output}" if output else f"{prefix}: [exit {proc.returncode}]"
+    log_call("git_create_pr", {"title": title, "base": base}, result)
+    return result
+
+
 # --- Tool definitions ---
 
 GIT_STATUS = Tool(
@@ -197,4 +214,19 @@ GIT_PUSH = Tool(
     fn=git_push,
 )
 
-GIT_TOOLS = [GIT_STATUS, GIT_DIFF, GIT_CREATE_BRANCH, GIT_CHECKOUT, GIT_ADD, GIT_COMMIT, GIT_PUSH, GIT_LOG]
+GIT_CREATE_PR = Tool(
+    name="git_create_pr",
+    description="Open a GitHub pull request from the current branch into base (default 'main'). Requires git_push to have been called first.",
+    parameters={
+        "type": "object",
+        "properties": {
+            "title": {"type": "string", "description": "PR title"},
+            "body": {"type": "string", "description": "PR description (markdown). Leave empty for a minimal PR."},
+            "base": {"type": "string", "description": "Base branch to merge into (default 'main')"},
+        },
+        "required": ["title"],
+    },
+    fn=git_create_pr,
+)
+
+GIT_TOOLS = [GIT_STATUS, GIT_DIFF, GIT_CREATE_BRANCH, GIT_CHECKOUT, GIT_ADD, GIT_COMMIT, GIT_PUSH, GIT_LOG, GIT_CREATE_PR]
