@@ -73,18 +73,20 @@ async def read_file(
     if start_line is not None or end_line is not None:
         lo = max(0, (start_line or 1) - 1)
         hi = min(total, end_line or total)
-        content = "".join(lines[lo:hi])
+        body = "".join(lines[lo:hi])
+        header = f"[{path} · lines {lo+1}-{hi} of {total}]\n"
         suffix = f" (lines {lo+1}–{hi} of {total})"
     else:
-        content = "".join(lines)
+        body = "".join(lines)
+        header = f"[{path} · {total} lines]\n"
         suffix = ""
 
     reads = READ_CTX.get(None)
     if reads is not None:
         reads.add(str(p))
-    s = text_stats(content)
+    s = text_stats(body)
     log_call("read_file", {"path": path, "start_line": start_line, "end_line": end_line}, f"OK: {s['words']} words / {s['tokens']} tokens{suffix}")
-    return content
+    return header + body
 
 
 async def write_file(path: str, content: str) -> str:

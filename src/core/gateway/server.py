@@ -12,7 +12,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+
+from core.agents import workdir_registry
 from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 
@@ -753,12 +756,34 @@ async def save_artifact(req: ArtifactRequest) -> ArtifactResponse:
 
 
 _IMAGES_DIR = _REPO_ROOT / "generated" / "images"
+
+
+@app.get("/images/{task_id}/{filename}")
+async def _serve_image(task_id: str, filename: str):
+    # Per-task generated images live in the running coder's worktree (registered
+    # by the manager at dispatch). Fall back to REPO_ROOT for completed/cleaned-up
+    # tasks. Path traversal blocked by validating against the resolved parent.
+    candidates: list[Path] = []
+    live = workdir_registry.get(task_id)
+    if live:
+        candidates.append(live / "generated" / "images" / task_id / filename)
+    candidates.append(_IMAGES_DIR / task_id / filename)
+    for p in candidates:
+        try:
+            resolved = p.resolve(strict=True)
+        except FileNotFoundError:
+            continue
+        parent = p.parent.resolve()
+        if parent in resolved.parents or resolved.parent == parent:
+            return FileResponse(resolved)
+    raise HTTPException(status_code=404, detail="image not found")
+
+
 _STATIC = Path(__file__).resolve().parent / "static"
 if _STATIC.is_dir():
     _ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
     _IMAGES_DIR.mkdir(parents=True, exist_ok=True)
     app.mount("/artifacts", StaticFiles(directory=str(_ARTIFACTS_DIR), html=True), name="artifacts")
-    app.mount("/images", StaticFiles(directory=str(_IMAGES_DIR)), name="images")
     app.mount("/", StaticFiles(directory=str(_STATIC), html=True), name="ui")
 
     # Disable browser caching of UI files so JS/CSS edits show up on next reload

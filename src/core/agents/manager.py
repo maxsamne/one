@@ -17,7 +17,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
-from core.agents import coder, graders, router, skills, worktree
+from core.agents import coder, graders, router, skills, workdir_registry, worktree
 from core.agents.coder import _INSTRUCTIONS_BASE, _INSTRUCTIONS_PERSISTENT
 from core.agents.grader import GRADER_HOOK_RETRIES
 from core.agents.hooks import DEFAULT_HOOK_RETRIES, Hook
@@ -215,7 +215,17 @@ async def run(
             extra_tools=extra_tools or [],
         )
 
-    return await _dispatch(task, mode, plan, extra_tools, prior_history)
+    return await _dispatch(task, mode, plan, extra_tools, prior_history, parent_task_id)
+
+
+async def _resolve_parent_base(parent_task_id: str | None) -> str | None:
+    """If the parent's base branch still exists locally, return it as a base_ref
+    so the follow-up worktree forks from it (carrying pre-merge file state).
+    Otherwise None — the parent merged + the branch was reaped, fork from default."""
+    if not parent_task_id:
+        return None
+    rc, _ = await worktree._git("rev-parse", "--verify", f"task/{parent_task_id}")
+    return f"task/{parent_task_id}" if rc == 0 else None
 
 
 async def _dispatch(
@@ -224,6 +234,7 @@ async def _dispatch(
     plan: _Plan,
     extra_tools: list[Tool] | None,
     prior_history: dict | None = None,
+    parent_task_id: str | None = None,
 ) -> str:
     """One coder dispatch. Mode chooses workspace (tmp vs worktree), tools, and base instructions."""
     task_id = current_task_id() or "task"
@@ -244,7 +255,12 @@ async def _dispatch(
              provider=provider, model=ai.model_name, thinking=str(thinking),
              tmp=str(workdir.relative_to(REPO_ROOT)))
     else:
-        starting_ref, base_branch, worktrees = await worktree.setup(task_id, [provider])
+        parent_base = await _resolve_parent_base(parent_task_id)
+        if parent_task_id:
+            _log(Category.AGENT, "follow-up base",
+                 parent=parent_task_id,
+                 base_ref=parent_base or "default (parent branch reaped)")
+        starting_ref, base_branch, worktrees = await worktree.setup(task_id, [provider], base_ref=parent_base)
         workdir = worktrees[0].path
         tools = list(_PERSISTENT_TOOLS) + list(extra_tools or [])
         git_skill = skills.join_bodies(["general/git.md"])
@@ -256,6 +272,7 @@ async def _dispatch(
 
     workdir_token = WORKDIR.set(workdir)
     scope_token = WRITE_SCOPE.set(write_scope) if write_scope else None
+    workdir_registry.register(task_id, workdir)
     success = False
     merge_results: dict[str, str] = {}
     extra_hooks, hook_retries = _build_extra_hooks()
@@ -280,6 +297,7 @@ async def _dispatch(
         WORKDIR.reset(workdir_token)
         if scope_token is not None:
             WRITE_SCOPE.reset(scope_token)
+        workdir_registry.unregister(task_id)
         if worktrees:
             await worktree.cleanup(worktrees)
         if mode == TaskMode.CONVERSATIONAL and success and CONVERSATIONAL_TMP_CLEANUP_ON_SUCCESS:

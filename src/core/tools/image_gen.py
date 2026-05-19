@@ -15,9 +15,7 @@ from core.ai_client.models import Tool
 from core.ai_client.tiers import image_client_for_tier
 from core.log import Category
 from core.log import log as _log
-from core.tools.ctx import REPO_ROOT
-
-_OUT_ROOT = REPO_ROOT / "generated" / "images"
+from core.tools.ctx import WORKDIR
 _SLUG_RE = re.compile(r"[^a-z0-9-]+")
 _VALID_SIZES = {"1024x1024", "1024x1536", "1536x1024", "auto"}
 
@@ -46,7 +44,7 @@ async def generate_image(prompt: str, size: str = "1024x1024") -> str:
         return f"RETRYABLE: image generation failed: {e}"
 
     task_id = current_task_id() or "task"
-    out_dir = _OUT_ROOT / task_id
+    out_dir = WORKDIR.get() / "generated" / "images" / task_id
     out_dir.mkdir(parents=True, exist_ok=True)
 
     n = sum(1 for _ in out_dir.glob("*.png")) + 1
