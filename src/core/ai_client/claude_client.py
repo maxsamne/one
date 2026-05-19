@@ -7,6 +7,7 @@ from pydantic import ValidationError
 
 from core.ai_client.interface import AiClient, _execute_tools
 from core.ai_client.models import THINKING_BUDGETS, ImageContent, ThinkingLevel, Tool
+from core import transcripts
 
 
 def _user_content(prompt: str, images: list[ImageContent]) -> Any:
@@ -73,16 +74,32 @@ class ClaudeClient(AiClient):
 
         if not tools:
             resp = await self._client.messages.create(**kwargs)
+            cache_read = getattr(resp.usage, "cache_read_input_tokens", 0) or 0
+            transcripts.dump(model=self.model_name, iteration=0, instructions=instructions,
+                             input_payload=messages, output=resp.content,
+                             usage={"input": resp.usage.input_tokens, "output": resp.usage.output_tokens,
+                                    "cache_read": cache_read,
+                                    "cache_create": getattr(resp.usage, "cache_creation_input_tokens", 0) or 0})
             text_blocks = [b for b in resp.content if b.type == "text"]
-            return text_blocks[0].text if text_blocks else "", resp.usage.input_tokens, resp.usage.output_tokens
+            return text_blocks[0].text if text_blocks else "", resp.usage.input_tokens, resp.usage.output_tokens, cache_read
 
         tool_map = {t.name: t for t in tools}
         input_tokens = 0
         completion_tokens = 0
+        cached_tokens = 0
+        iteration = 0
         while True:
             resp = await self._client.messages.create(**kwargs)
             input_tokens += resp.usage.input_tokens
             completion_tokens += resp.usage.output_tokens
+            iter_cached = getattr(resp.usage, "cache_read_input_tokens", 0) or 0
+            cached_tokens += iter_cached
+            transcripts.dump(model=self.model_name, iteration=iteration, instructions=instructions,
+                             input_payload=messages, output=resp.content,
+                             usage={"input": resp.usage.input_tokens, "output": resp.usage.output_tokens,
+                                    "cache_read": iter_cached,
+                                    "cache_create": getattr(resp.usage, "cache_creation_input_tokens", 0) or 0})
+            iteration += 1
 
             if resp.stop_reason == "tool_use":
                 use_blocks = [b for b in resp.content if b.type == "tool_use"]
@@ -94,7 +111,7 @@ class ClaudeClient(AiClient):
                 ]})
             else:
                 text_blocks = [b for b in resp.content if b.type == "text"]
-                return text_blocks[0].text if text_blocks else "", input_tokens, completion_tokens
+                return text_blocks[0].text if text_blocks else "", input_tokens, completion_tokens, cached_tokens
 
     async def _structured_complete(
         self,

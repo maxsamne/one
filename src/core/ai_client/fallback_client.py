@@ -17,7 +17,14 @@ from core.log import log as _log
 
 def is_unavailable(exc: BaseException) -> bool:
     s = str(exc)
-    return "503" in s or "UNAVAILABLE" in s or "unavailable" in s.lower() or "overloaded" in s.lower()
+    sl = s.lower()
+    if "503" in s or "UNAVAILABLE" in s or "unavailable" in sl or "overloaded" in sl:
+        return True
+    # 403 from Anthropic on restricted networks ("permission_error" / "Access restricted by network policy")
+    # is intentional refusal, not transient — but the user wants the fallback to take over so the task can finish.
+    if "403" in s and ("permission_error" in s or "network policy" in sl or "access restricted" in sl):
+        return True
+    return False
 
 
 class FallbackClient(AiClient):
@@ -48,7 +55,7 @@ class FallbackClient(AiClient):
             return await self.fallback.complete(*args, **kwargs)
 
     # Abstract-method stubs — never called because we override complete() above.
-    async def _text_complete(self, *args: Any, **kwargs: Any) -> tuple[str, int, int]:  # type: ignore[override]
+    async def _text_complete(self, *args: Any, **kwargs: Any) -> tuple[str, int, int, int]:  # type: ignore[override]
         raise NotImplementedError("FallbackClient delegates via complete()")
 
     async def _structured_complete(self, *args: Any, **kwargs: Any) -> Any:  # type: ignore[override]

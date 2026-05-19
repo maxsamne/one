@@ -1,9 +1,17 @@
 """Filesystem tools — view, create, str_replace, grep, list_dir, delete."""
 
+import difflib
 import re
 import unicodedata
 from pathlib import Path
 from urllib.parse import unquote
+
+
+def _diff_stats(old: str, new: str) -> str:
+    lines = list(difflib.unified_diff(old.splitlines(), new.splitlines(), n=0))
+    added = sum(1 for l in lines if l.startswith("+") and not l.startswith("+++"))
+    removed = sum(1 for l in lines if l.startswith("-") and not l.startswith("---"))
+    return f"+{added}/-{removed} lines"
 
 from core.ai_client.models import Tool
 from core.text import text_stats
@@ -65,18 +73,20 @@ async def read_file(
     if start_line is not None or end_line is not None:
         lo = max(0, (start_line or 1) - 1)
         hi = min(total, end_line or total)
-        content = "".join(lines[lo:hi])
+        body = "".join(lines[lo:hi])
+        header = f"[{path} · lines {lo+1}-{hi} of {total}]\n"
         suffix = f" (lines {lo+1}–{hi} of {total})"
     else:
-        content = "".join(lines)
+        body = "".join(lines)
+        header = f"[{path} · {total} lines]\n"
         suffix = ""
 
     reads = READ_CTX.get(None)
     if reads is not None:
         reads.add(str(p))
-    s = text_stats(content)
+    s = text_stats(body)
     log_call("read_file", {"path": path, "start_line": start_line, "end_line": end_line}, f"OK: {s['words']} words / {s['tokens']} tokens{suffix}")
-    return content
+    return header + body
 
 
 async def write_file(path: str, content: str) -> str:
@@ -91,9 +101,12 @@ async def write_file(path: str, content: str) -> str:
         result = "FATAL: content exceeds 10 MB limit"
         log_call("write_file", {"path": path}, result)
         return result
+    existed = p.exists()
+    old = p.read_text(encoding="utf-8") if existed else ""
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(content, encoding="utf-8")
-    result = f"Created: {path}"
+    verb = "Updated" if existed else "Created"
+    result = f"{verb}: {path} ({_diff_stats(old, content)})"
     log_call("write_file", {"path": path}, result)
     return result
 
@@ -129,7 +142,7 @@ async def edit_file(path: str, old_string: str, new_string: str, replace_all: bo
     p.write_text(updated, encoding="utf-8")
     count = content.count(old_string)
     replaced = count if replace_all else 1
-    result = f"Edited: {path} ({replaced} replacement{'s' if replaced > 1 else ''})"
+    result = f"Edited: {path} ({replaced} replacement{'s' if replaced > 1 else ''}, {_diff_stats(content, updated)})"
     log_call("edit_file", args, result)
     return result
 

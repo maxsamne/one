@@ -90,8 +90,9 @@ async def git_commit(message: str) -> str:
 async def git_push(remote: str = "origin", branch: str | None = None) -> str:
     if err := _check("git_commit", "git_push"):
         return err
-    args = ("push", remote, *((branch,) if branch else ()))
-    return await _write("git_push", {"remote": remote, "branch": branch}, *args)
+    target = branch or (await _git("rev-parse", "--abbrev-ref", "HEAD")).strip()
+    args = ("push", "--set-upstream", remote, target)
+    return await _write("git_push", {"remote": remote, "branch": target}, *args)
 
 
 async def git_create_pr(title: str, body: str = "", base: str = "main") -> str:

@@ -52,7 +52,7 @@ from core.ai_client import create_client, ModelProvider, ThinkingLevel
 
 client = create_client(ModelProvider.CLAUDE, model_name="claude-sonnet-4-6")   # ANTHROPIC_API_KEY
 client = create_client(ModelProvider.OPENAI, model_name="gpt-5.4-mini")        # OPENAI_API_KEY
-client = create_client(ModelProvider.GEMINI, model_name="gemini-3-flash-preview")  # GOOGLE_API_KEY
+client = create_client(ModelProvider.GEMINI, model_name="gemini-3.5-flash")  # GOOGLE_API_KEY
 client = create_client(ModelProvider.OLLAMA)                                    # local, no key
 
 text   = await client.complete("task")
@@ -168,6 +168,14 @@ Manager merges them as `user_images + skill_images` (user-uploads first — more
 ## Image generation
 
 `src/core/tools/image_gen.py` exposes the `generate_image(prompt, size?)` tool to every coder and sub-agent. It returns the relative repo path of the saved PNG. Files land at `generated/images/<task_id>/<n>-<slug>.png` (gitignored).
+
+Files are written under the *running coder's WORKDIR* (i.e. into the task's worktree),
+so the model can find/move them with the same file tools (e.g. copy a hero into
+`docs/images/` for a website task). The gateway resolves `/images/<task_id>/<file>`
+URLs by consulting `core.agents.workdir_registry` (set by the manager at dispatch,
+cleared in `finally`), falling back to `REPO_ROOT/generated/images` for completed
+tasks. `generated/images/` is gitignored — long-term assets must be copied into a
+tracked location.
 
 Tier-routed via `image_gen` block in `tiers.json`:
 - `ultra_cheap` → ollama `x/flux2-klein:4b` (local, free, requires `ollama pull x/flux2-klein:4b`)
@@ -406,6 +414,12 @@ After every coder turn, the conversation history snapshot is persisted to `.agen
 `parent_task_id`, `manager.run` loads that snapshot and passes it as `prior_history` to
 `coder.run`, which calls `ConversationHistory.load(snapshot)` to seed the loop. The
 existing 75 % auto-compaction in `compact.py` keeps token cost bounded as threads grow.
+
+**Same-worktree follow-ups.** `manager._dispatch` checks for the parent's base branch
+(`task/<parent_task_id>`). If it still exists locally, the follow-up's worktree forks
+from it — so the model can reference the parent's pre-merge file state even before
+that work has been merged. If the parent branch was reaped, the follow-up forks from
+the current default branch.
 
 UI: composer's `@` button picks from completed tasks; selection becomes a `↩ <id>` chip.
 Submission packs `parent_task_id` alongside `task / tier / skills / images`. Unknown

@@ -29,6 +29,17 @@ Penalise any deviation from the above, even if the result looks "fine" — consi
 Does the page feel intentional and visually confident, or does it look like a template?
 A high score means: at least one moment of considered craft (a typographic choice, a restrained use of the accent colour, a layout decision that wouldn't appear by default). A low score means: generic, interchangeable, could be any bland personal site. Do not penalise restraint — sparse and deliberate is better than decorated and generic.
 
+### functional_integrity (weight: 2)
+Does every interactive element on the page actually do something?
+The site is static HTML on GitHub Pages — there is no backend. So any element that *implies* server interaction must either be wired to a real frontend behaviour (anchor link, page navigation, JS toggle of visible state) or it must not exist at all. Specifically check for:
+- Chat inputs or "ask me anything" boxes with no JS handler and no submission target.
+- Search bars that don't filter or navigate.
+- Login / signup / subscribe forms with no `action` or no JS.
+- Comment boxes, like buttons, upvote controls, or any reaction UI.
+- "Send" / "submit" buttons whose only behaviour is hover styling.
+- Inputs that visually resemble live fields but have no handler.
+Cosmetic-only UI is fine: tabs that navigate between real pages, image carousels, theme toggles, animated decorations, badges, status pills used as labels. The test is: *would a reasonable visitor type or click this and expect a response?* If yes and nothing happens, score 1 or lower and cite the offending element. A single non-functional interactive element is enough to fail this criterion.
+
 ### security_hygiene (weight: 2)
 Does the committed HTML contain anything that should not be public?
 Check for:

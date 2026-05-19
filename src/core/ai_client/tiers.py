@@ -194,7 +194,7 @@ def load_grader_judge_config() -> GraderJudgeConfig:
     """Default judge model for every GraderHook. Single source of truth — bump the
     flash model name here once and every grader without an explicit override inherits."""
     raw = _read_tiers()
-    cfg = raw.get("_grader_judge") or {"provider": "gemini", "model": "gemini-3-flash-preview"}
+    cfg = raw.get("_grader_judge") or {"provider": "gemini", "model": "gemini-3.5-flash"}
     return GraderJudgeConfig(
         ModelProvider(cfg["provider"]),
         cfg["model"],

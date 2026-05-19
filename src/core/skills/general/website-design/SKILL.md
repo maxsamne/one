@@ -56,9 +56,11 @@ These extend the DESIGN_SPEC — they don't override it:
 
 - **Reference-driven preset selection.** When a reference is attached, the reference picks the preset, not a hardcoded default. Match its visual density, hero style, and use of imagery.
 - **No-reference default: Atelier Ledger.** Warm parchment tones, humanist serif for headings, generous whitespace.
+- **Inspiration ≠ imitation.** Reference images are examples of a *design language*, not templates to copy. Take cues from: colour palette, fonts/typography, kinds of imagery, image style, object/element vocabulary, corner-radius character, density. Do **not** copy specific images, headlines, hero compositions, or section layouts 1:1 — the site must keep its own brand identity. Add your own creative twist on top of the borrowed language.
 - **Writing pages:** prose-first. Lora body, generous line-height (1.75+), max-width ~680px.
 - **No JavaScript by default.** Add it only when interactivity is genuinely needed.
 - **No framework, no build.** Plain HTML + inlined CSS. GitHub Pages serves it directly.
+- **No non-functional interactive elements.** Never build UI that *implies* a working backend it doesn't have — chat inputs, search bars, login forms, "subscribe" inputs, send buttons, comment boxes, like/upvote controls, or anything else a visitor would reasonably expect to *do something* when used. If the backend doesn't exist, the element doesn't exist. Cosmetic-only things are fine (tabs that navigate between static pages, image carousels, animated decorations, theme toggles, badges, status pills that just label state) — the test is: *would a reasonable visitor type/click this and expect a response?* If yes and there's no handler, cut it.
 
 ---
 

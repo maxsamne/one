@@ -21,7 +21,6 @@ Example texts for the article-writer skill live in:
 
 import argparse
 import asyncio
-import io
 import sys
 from pathlib import Path
 
@@ -33,20 +32,10 @@ load_dotenv()
 from core.ai_client import ModelProvider, ThinkingLevel, create_client
 from core.ai_client.models import ImageContent
 
-MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
-        ".webp": "image/webp", ".gif": "image/gif"}
-MAX_PX = 1280
-
-
 def _load_image(path: Path) -> ImageContent:
-    from PIL import Image as PILImage
-    mime = MIME.get(path.suffix.lower(), "image/png")
-    img = PILImage.open(path).convert("RGB")
-    if max(img.size) > MAX_PX:
-        img.thumbnail((MAX_PX, MAX_PX), PILImage.LANCZOS)
-    buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=88)
-    return ImageContent(mime="image/jpeg", data=buf.getvalue())
+    from core.images import shrink
+    r = shrink(path.read_bytes())
+    return ImageContent(mime=r.mime, data=r.data)
 
 
 _IMITATE_PROMPT = """\
