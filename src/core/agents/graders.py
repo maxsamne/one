@@ -50,8 +50,6 @@ class GraderEntry:
     suggested_for_skills: frozenset[str]      # skill paths this grader fits
     criteria: tuple[Criterion, ...]
     domain: str
-    auto_attach: bool = False                 # true → attach whenever any other grader is present
-    needs_images: bool = False                # true → judge receives user images + original task prompt
 
 
 # --- Parsing ---------------------------------------------------------------
@@ -157,17 +155,7 @@ def _file_to_entry(domain: str, path: Path) -> GraderEntry | None:
         suggested_for_skills=frozenset(suggested),
         criteria=criteria,
         domain=domain,
-        auto_attach=_truthy(fm.get("auto_attach_with_any_grader")),
-        needs_images=_truthy(fm.get("needs_images")),
     )
-
-
-def _truthy(v) -> bool:
-    if isinstance(v, bool):
-        return v
-    if isinstance(v, str):
-        return v.strip().lower() in {"true", "yes", "1"}
-    return False
 
 
 # --- Public API ------------------------------------------------------------
@@ -205,11 +193,6 @@ def suggest_for_skills(skill_paths: list[str]) -> list[GraderEntry]:
     return [g for g in discover() if g.suggested_for_skills & wanted]
 
 
-def auto_attach_paths() -> list[str]:
-    """Paths of graders that opt into auto-attach when any other grader is present."""
-    return [g.path for g in discover() if g.auto_attach]
-
-
 def instantiate(grader_path: str) -> GraderHook:
     """Build a wired `GraderHook` for the given grader path. FATAL on unknown path."""
     entry = get(grader_path)
@@ -221,4 +204,4 @@ def instantiate(grader_path: str) -> GraderHook:
         from core.ai_client.fallback_client import FallbackClient
         fallback_client = get_or_create_client(cfg.fallback.provider, cfg.fallback.model)
         judge = FallbackClient(judge, fallback_client)
-    return GraderHook(criteria=list(entry.criteria), judge=judge, needs_images=entry.needs_images)
+    return GraderHook(criteria=list(entry.criteria), judge=judge)

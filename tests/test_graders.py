@@ -1,4 +1,4 @@
-"""Graders: discovery + frontmatter parsing + judge inheritance + suggestion + auto-attach."""
+"""Graders: discovery + frontmatter parsing + judge inheritance + suggestion + universal user_satisfaction baseline."""
 
 from pathlib import Path
 
@@ -40,62 +40,22 @@ def test_instantiate_unknown_grader_raises():
         graders.instantiate("does/not/exist.md")
 
 
-def test_manager_appends_auto_attach_when_user_attached_a_grader(monkeypatch):
-    """User attaches one grader → manager auto-adds prompt-fidelity alongside it.
-    No user graders → no auto-attach (trivial tasks like 'weather' stay cheap)."""
-    from core.agents import manager
-    from core.agents.task_ctx import TASK_GRADERS_CTX
-
-    instantiated: list[str] = []
-    def _fake_instantiate(p):
-        instantiated.append(p)
-        class _Hook: pass
-        return _Hook()
-    monkeypatch.setattr(graders, "instantiate", _fake_instantiate)
-
-    # Case 1: user attached a grader → prompt-fidelity rides along.
-    tok = TASK_GRADERS_CTX.set(["general/website-quality.md"])
-    try:
-        manager._build_extra_hooks()
-    finally:
-        TASK_GRADERS_CTX.reset(tok)
-    assert "general/website-quality.md" in instantiated
-    assert "general/prompt-fidelity.md" in instantiated
-
-    # Case 2: no user graders → nothing instantiated.
-    instantiated.clear()
-    tok = TASK_GRADERS_CTX.set([])
-    try:
-        manager._build_extra_hooks()
-    finally:
-        TASK_GRADERS_CTX.reset(tok)
-    assert instantiated == []
-
-
-def test_prompt_fidelity_is_auto_attach_and_needs_images():
-    """The shipped prompt-fidelity grader must opt into both flags or auto-attach won't fire."""
-    entries = {g.path: g for g in graders.discover()}
-    assert "general/prompt-fidelity.md" in entries
-    g = entries["general/prompt-fidelity.md"]
-    assert g.auto_attach is True
-    assert g.needs_images is True
-    assert "general/prompt-fidelity.md" in graders.auto_attach_paths()
-    # Other graders must NOT auto-attach — that's the universal-vs-opt-in trade-off.
-    assert "general/article-voice.md" not in graders.auto_attach_paths()
-
-
-async def test_grader_hook_with_needs_images_injects_user_prompt_and_passes_images():
-    """needs_images=True → judge sees the original user prompt in the prompt + receives images."""
+async def test_grader_hook_injects_user_prompt_and_images_on_every_call():
+    """Every grader call sees the user prompt + attached images, plus the baked-in
+    user_satisfaction criterion. No flag, no opt-in — this is the universal baseline
+    that catches 'output follows skill perfectly but ignores what the user asked'."""
     captured: dict = {}
 
     class _StubJudge:
         async def complete(self, prompt, images=None, response_model=None, **kw):
             captured["prompt"] = prompt
             captured["images"] = images
-            # Return a dummy 5/5 response so the hook returns None
             from core.agents.grader import _CriterionScore, _GradeResponse
             return _GradeResponse(
-                scores=[_CriterionScore(name="c", score=5, justification="ok")],
+                scores=[
+                    _CriterionScore(name="user_satisfaction", score=5, justification="ok"),
+                    _CriterionScore(name="c", score=5, justification="ok"),
+                ],
                 strengths=[], outstanding=[], key_excerpts=[], feedback="",
             )
 
@@ -103,41 +63,29 @@ async def test_grader_hook_with_needs_images_injects_user_prompt_and_passes_imag
     task_token = TASK_CTX.set(TaskContext(task_id="t1", prompt="MAKE A WEBSITE LIKE THIS"))
     img_token = TASK_IMAGES_CTX.set(sentinel_imgs)
     try:
-        hook = GraderHook([Criterion(name="c", description="d")], _StubJudge(), needs_images=True)
+        hook = GraderHook([Criterion(name="c", description="d")], _StubJudge())
+        # user_satisfaction is prepended to the criteria list automatically.
+        assert [c.name for c in hook._criteria] == ["user_satisfaction", "c"]
         await hook.check(HookContext(response="output", turn=1, agent_id="t1:gpt", role="coder"))
     finally:
         TASK_CTX.reset(task_token)
         TASK_IMAGES_CTX.reset(img_token)
 
     assert "MAKE A WEBSITE LIKE THIS" in captured["prompt"]
+    assert "user_satisfaction" in captured["prompt"]
     assert captured["images"] == sentinel_imgs
 
 
-async def test_grader_hook_without_needs_images_omits_prompt_and_images():
-    """needs_images=False (default) → no user prompt injection, no images sent."""
-    captured: dict = {}
-
-    class _StubJudge:
-        async def complete(self, prompt, images=None, response_model=None, **kw):
-            captured["prompt"] = prompt
-            captured["images"] = images
-            from core.agents.grader import _CriterionScore, _GradeResponse
-            return _GradeResponse(
-                scores=[_CriterionScore(name="c", score=5, justification="ok")],
-                strengths=[], outstanding=[], key_excerpts=[], feedback="",
-            )
-
-    task_token = TASK_CTX.set(TaskContext(task_id="t1", prompt="SECRET USER PROMPT"))
-    img_token = TASK_IMAGES_CTX.set([{"fake": "image"}])
-    try:
-        hook = GraderHook([Criterion(name="c", description="d")], _StubJudge())  # needs_images=False
-        await hook.check(HookContext(response="output", turn=1, agent_id="t1:gpt", role="coder"))
-    finally:
-        TASK_CTX.reset(task_token)
-        TASK_IMAGES_CTX.reset(img_token)
-
-    assert "SECRET USER PROMPT" not in captured["prompt"]
-    assert captured["images"] is None
+def test_grader_with_own_user_satisfaction_criterion_is_not_double_added():
+    """If a grader file ships its own user_satisfaction criterion, the baseline is skipped —
+    no duplicate criteria in the rubric."""
+    class _Stub: pass
+    hook = GraderHook(
+        [Criterion(name="user_satisfaction", description="custom"), Criterion(name="c", description="d")],
+        _Stub(),
+    )
+    names = [c.name for c in hook._criteria]
+    assert names == ["user_satisfaction", "c"]  # not ["user_satisfaction", "user_satisfaction", "c"]
 
 
 def test_frontmatter_parser_handles_list_and_scalar(tmp_path: Path, monkeypatch):
