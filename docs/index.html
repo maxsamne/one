@@ -5,125 +5,899 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maximilian Samne</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f7f5f1;
-      --surface: #eeecea;
-      --ink: #1c1a18;
-      --ink-muted: #7a756e;
-      --accent: #2d4a3e;
-      --border: #dedad4;
+      --bg: #f7f5ef;
+      --surface: #fffdf8;
+      --ink: #262521;
+      --ink-muted: #7d786f;
+      --accent: #7fb89d;
+      --border: #e7e1d6;
+      --tag-bg: #f2eee5;
+      --blue-accent: #3a86c8;
+      --shadow-soft: 0 12px 32px rgba(38, 37, 33, 0.04), 0 2px 8px rgba(38, 37, 33, 0.02);
+      --shadow-card: 0 20px 48px rgba(38, 37, 33, 0.06), 0 4px 12px rgba(38, 37, 33, 0.03);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: var(--bg);
+      background-color: var(--bg);
+      background-image: 
+        linear-gradient(rgba(231, 225, 214, 0.45) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(231, 225, 214, 0.45) 1px, transparent 1px);
+      background-size: 24px 24px;
+      background-position: center top;
       color: var(--ink);
-      font-family: 'Inter', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 400;
       font-size: 15px;
       line-height: 1.6;
       min-height: 100vh;
+      overflow-x: hidden;
+      padding-bottom: 120px;
     }
 
+    /* NAV BAR STYLE */
     nav {
+      max-width: 1200px;
+      margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 28px 48px;
-      border-bottom: 1px solid var(--border);
+      padding: 24px 40px;
     }
 
     nav .wordmark {
       font-family: 'Lora', serif;
-      font-size: 17px;
+      font-size: 19px;
+      font-weight: 500;
       color: var(--ink);
       text-decoration: none;
+      letter-spacing: -0.01em;
+      transition: opacity 0.2s;
     }
 
-    nav ul {
-      list-style: none;
+    nav .wordmark:hover {
+      opacity: 0.8;
+    }
+
+    nav .nav-menu {
       display: flex;
-      gap: 32px;
+      align-items: center;
+      list-style: none;
+      gap: 16px;
+      background: rgba(255, 253, 248, 0.6);
+      padding: 6px 18px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
 
-    nav a {
+    nav .nav-menu li {
+      display: flex;
+      align-items: center;
+    }
+
+    nav .nav-menu a {
       color: var(--ink-muted);
       text-decoration: none;
       font-size: 13px;
-      letter-spacing: 0.02em;
+      font-weight: 500;
+      letter-spacing: 0.01em;
       transition: color 0.15s;
+      padding: 4px 8px;
     }
 
-    nav a:hover { color: var(--ink); }
+    nav .nav-menu a:hover, nav .nav-menu a.active {
+      color: var(--ink);
+    }
 
+    nav .nav-sep {
+      color: var(--border);
+      font-size: 12px;
+      user-select: none;
+    }
+
+    nav .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-secondary {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink);
+      text-decoration: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 10px 18px;
+      border-radius: 999px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: var(--tag-bg);
+      border-color: #d7d1c6;
+    }
+
+    .btn-primary {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--surface);
+      text-decoration: none;
+      background: var(--ink);
+      border: 1px solid var(--ink);
+      padding: 10px 18px;
+      border-radius: 999px;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    /* MAIN CONTAINER */
     main {
-      max-width: 720px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 96px 48px 120px;
+      padding: 40px 40px 0;
     }
 
-    .eyebrow {
-      font-size: 11px;
+    /* HERO SECTION */
+    .hero-section {
+      text-align: center;
+      max-width: 800px;
+      margin: 40px auto 60px;
+    }
+
+    .hero-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--ink-muted);
       margin-bottom: 20px;
+      display: inline-block;
+      background: var(--tag-bg);
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(231, 225, 214, 0.5);
     }
 
     h1 {
-      font-family: 'Lora', serif;
-      font-size: 36px;
-      font-weight: 500;
-      line-height: 1.25;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(36px, 5.5vw, 54px);
+      font-weight: 600;
+      line-height: 1.15;
       color: var(--ink);
+      letter-spacing: -0.02em;
       margin-bottom: 24px;
     }
 
-    .lead {
-      font-size: 17px;
+    h1 span.light-text {
+      font-weight: 300;
       color: var(--ink-muted);
-      line-height: 1.7;
-      max-width: 560px;
-      margin-bottom: 48px;
     }
 
-    .links {
+    .hero-lead {
+      font-size: clamp(16px, 2.2vw, 19px);
+      color: var(--ink-muted);
+      line-height: 1.6;
+      max-width: 600px;
+      margin: 0 auto 32px;
+    }
+
+    /* CENTERPIECE WORKSPACE CARD */
+    .workspace-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 24px;
+      padding: 12px;
+      box-shadow: var(--shadow-card);
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 12px;
+      margin-bottom: 80px;
+      position: relative;
+    }
+
+    @media (max-width: 900px) {
+      .workspace-card {
+        grid-template-columns: 1fr;
+        padding: 12px;
+      }
+    }
+
+    /* LEFT PANE - NODE GRAPH */
+    .pane-left {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 18px;
       display: flex;
-      gap: 24px;
-      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      min-height: 420px;
+      overflow: hidden;
     }
 
-    .links a {
+    .node-graph-container {
+      position: relative;
+      width: 380px;
+      height: 380px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .graph-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .node-center {
+      position: relative;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      padding: 14px 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-soft);
+      z-index: 10;
+      transition: transform 0.2s ease;
+    }
+
+    .node-center:hover {
+      transform: scale(1.05);
+    }
+
+    .node-center .sunflower {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .node-center .center-label {
       font-size: 13px;
-      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+    }
+
+    .node-item {
+      position: absolute;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink-muted);
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(38, 37, 33, 0.02);
+      transition: all 0.2s ease;
+      z-index: 5;
+    }
+
+    .node-item:hover {
+      color: var(--ink);
+      border-color: #c9bfaf;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(38, 37, 33, 0.05);
+    }
+
+    .graph-meta {
+      position: absolute;
+      bottom: 12px;
+      left: 16px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--ink-muted);
+      opacity: 0.7;
+    }
+
+    /* RIGHT PANE - CHAT UI */
+    .pane-right {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 420px;
+      padding: 18px;
+    }
+
+    .mock-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+
+    .mock-tabs {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+    }
+
+    .mock-tab {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink-muted);
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .mock-tab:hover {
+      color: var(--ink);
+      background: var(--tag-bg);
+    }
+
+    .mock-tab.active {
+      color: var(--ink);
+      background: var(--tag-bg);
+      font-weight: 600;
+    }
+
+    .chat-history {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 14px;
+      overflow-y: auto;
+      justify-content: flex-end;
+    }
+
+    .chat-bubble {
+      max-width: 90%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .chat-bubble.user {
+      align-self: flex-end;
+      background: var(--tag-bg);
+      color: var(--ink);
+      border-bottom-right-radius: 4px;
+      font-weight: 500;
+    }
+
+    .chat-bubble.system {
+      align-self: flex-start;
+      background: #faf9f6;
+      color: var(--ink);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-bubble.system strong {
+      font-weight: 600;
+    }
+
+    .chat-bubble .bullet-list {
+      margin-top: 6px;
+      padding-left: 14px;
+    }
+
+    .chat-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      background: rgba(127, 184, 157, 0.1);
+      border: 1px solid rgba(127, 184, 157, 0.3);
+      border-radius: 999px;
+      color: #558770;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      margin-top: 10px;
+    }
+
+    .chat-status-pill .dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--accent);
+      border-radius: 999px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    .chat-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 10px;
+      color: #3b6b55;
       text-decoration: none;
-      border-bottom: 1px solid var(--accent);
+      font-size: 12px;
+      font-weight: 600;
+      border-bottom: 1.5px solid rgba(127, 184, 157, 0.5);
       padding-bottom: 1px;
+      transition: border-color 0.15s;
+    }
+
+    .chat-cta-btn:hover {
+      border-color: #3b6b55;
+    }
+
+    .chat-input-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .chat-input {
+      width: 100%;
+      padding: 12px 42px 12px 16px;
+      background: #faf9f6;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .chat-input:focus {
+      border-color: #c0b7a8;
+    }
+
+    .chat-send-btn {
+      position: absolute;
+      right: 6px;
+      width: 32px;
+      height: 32px;
+      background: var(--ink);
+      border: none;
+      border-radius: 999px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      color: var(--surface);
       transition: opacity 0.15s;
     }
 
-    .links a:hover { opacity: 0.65; }
+    .chat-send-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* SHELF & WRITING SECTION */
+    .section-title {
+      text-align: center;
+      margin: 80px auto 16px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .section-subtitle {
+      text-align: center;
+      font-family: 'Lora', serif;
+      font-style: italic;
+      font-size: 16px;
+      color: var(--ink-muted);
+      margin-bottom: 40px;
+    }
+
+    .shelf-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 80px;
+    }
+
+    .shelf-wrapper {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 30px 40px 10px;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    /* 3D Leaning Book Card */
+    .book-card {
+      width: 270px;
+      height: 390px;
+      background: #ffffff;
+      border: 1px solid #eae5db;
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 
+        0 10px 30px rgba(38, 37, 33, 0.04), 
+        0 1px 3px rgba(38, 37, 33, 0.02);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      z-index: 2;
+    }
+
+    .book-card:hover {
+      transform: translateY(-12px) scale(1.02);
+      box-shadow: 
+        0 30px 60px rgba(38, 37, 33, 0.08), 
+        0 4px 15px rgba(38, 37, 33, 0.03);
+    }
+
+    .book-header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    .book-chapter {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--ink-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .book-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.25;
+      margin-top: 4px;
+    }
+
+    .book-cover-container {
+      flex: 1;
+      margin: 16px 0;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+
+    .book-cover {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .book-card:hover .book-cover {
+      transform: scale(1.05);
+    }
+
+    .book-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--ink-muted);
+      font-weight: 500;
+    }
+
+    /* Glass Shelf Pocket */
+    .book-glass-pocket {
+      position: absolute;
+      bottom: 0;
+      left: 10px;
+      right: 10px;
+      height: 110px;
+      background: rgba(255, 253, 248, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-top: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 14px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 
+        0 12px 32px rgba(38, 37, 33, 0.03), 
+        inset 0 1px 1px rgba(255, 255, 255, 0.6);
+      z-index: 5;
+      pointer-events: none;
+      transform: perspective(800px) rotateX(4deg);
+    }
+
+    .shelf-caption-link {
+      margin-top: 24px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .shelf-caption-link:hover {
+      color: var(--ink);
+    }
+
+    /* THREE COLUMN FOOTER FEATURES */
+    .footer-columns {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 80px;
+      border-top: 1px solid var(--border);
+      padding-top: 48px;
+    }
+
+    @media (max-width: 800px) {
+      .footer-columns {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+    }
+
+    .feature-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .feature-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .feature-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--ink-muted);
+    }
+
+    .feature-text a {
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 600;
+      border-bottom: 1.5px solid rgba(38, 37, 33, 0.15);
+      padding-bottom: 1px;
+      transition: border-color 0.15s;
+    }
+
+    .feature-text a:hover {
+      border-color: var(--ink);
+    }
+
+    /* FLOATING PILL BUTTON */
+    .floating-pill-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100;
+    }
+
+    .floating-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 16px;
+      box-shadow: 0 10px 30px rgba(38, 37, 33, 0.08);
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .floating-pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 35px rgba(38, 37, 33, 0.12);
+    }
+
+    .floating-pill .pill-icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 20px;
+      height: 20px;
+      background: rgba(127, 184, 157, 0.15);
+      border-radius: 999px;
+      color: #3b6b55;
+    }
   </style>
 </head>
 <body>
+  <!-- NAV BAR -->
   <nav>
-    <a class="wordmark" href="/">MS</a>
-    <ul>
-      <li><a href="/one/silicon-sociology">Writing</a></li>
-      <li><a href="/one/work">Work</a></li>
+    <a class="wordmark" href="/one/">MS</a>
+    <ul class="nav-menu">
+      <li><a href="/one/silicon-sociology" class="active">Writing</a></li>
+      <span class="nav-sep">|</span>
+      <li><a href="https://www.linkedin.com/in/maximiliansamne/" target="_blank">LinkedIn</a></li>
     </ul>
-  </nav>
-  <main>
-    <p class="eyebrow">Maximilian Samne</p>
-    <h1>Building things worth<br>paying attention to.</h1>
-    <p class="lead">Investor, builder, and occasional writer. Working at the intersection of AI and venture.</p>
-    <div class="links">
-      <a href="/one/silicon-sociology">Silicon Sociology</a>
-      <a href="https://www.linkedin.com/in/maximiliansamne/" target="_blank">LinkedIn</a>
+    <div class="nav-actions">
+      <a class="btn-secondary" href="https://www.linkedin.com/in/maximiliansamne/" target="_blank">About</a>
+      <a class="btn-primary" href="/one/silicon-sociology">Read essay</a>
     </div>
+  </nav>
+
+  <!-- MAIN CONTAINER -->
+  <main>
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+      <div class="hero-eyebrow">Maximilian Samne</div>
+      <h1>
+        Building things worth<br>
+        <span class="light-text">paying attention to.</span>
+      </h1>
+      <p class="hero-lead">Investor, builder, and occasional writer. Working at the intersection of AI and venture.</p>
+    </section>
+
+    <!-- CENTERPIECE WORKSPACE MOCKUP -->
+    <section class="workspace-card">
+      <!-- Left side: Node graph -->
+      <div class="pane-left">
+        <div class="node-graph-container">
+          <!-- Background SVG connection lines -->
+          <svg class="graph-svg" viewBox="0 0 380 380">
+            <!-- Concentric Orbits -->
+            <circle cx="190" cy="190" r="130" fill="none" stroke="rgba(231, 225, 214, 0.7)" stroke-width="1.2" stroke-dasharray="4 4" />
+            <circle cx="190" cy="190" r="70" fill="none" stroke="rgba(231, 225, 214, 0.3)" stroke-width="1.2" stroke-dasharray="4 4" />
+            
+            <!-- Radiating Dotted Connectors -->
+            <line x1="190" y1="190" x2="190" y2="60" stroke="rgba(231, 225, 214, 0.8)" stroke-width="1" stroke-dasharray="2 2" />
+            <line x1="190" y1="190" x2="190" y2="320" stroke="rgba(231, 225, 214, 0.8)" stroke-width="1" stroke-dasharray="2 2" />
+            <line x1="190" y1="190" x2="60" y2="190" stroke="rgba(231, 225, 214, 0.8)" stroke-width="1" stroke-dasharray="2 2" />
+            <line x1="190" y1="190" x2="320" y2="190" stroke="rgba(231, 225, 214, 0.8)" stroke-width="1" stroke-dasharray="2 2" />
+            <line x1="190" y1="190" x2="98" y2="98" stroke="rgba(231, 225, 214, 0.8)" stroke-width="1" stroke-dasharray="2 2" />
+            <line x1="190" y1="190" x2="282" y2="98" stroke="rgba(231, 225, 214, 0.8)" stroke-width="1" stroke-dasharray="2 2" />
+            <line x1="190" y1="190" x2="98" y2="282" stroke="rgba(231, 225, 214, 0.8)" stroke-width="1" stroke-dasharray="2 2" />
+            <line x1="190" y1="190" x2="282" y2="282" stroke="rgba(231, 225, 214, 0.8)" stroke-width="1" stroke-dasharray="2 2" />
+          </svg>
+
+          <!-- Center Node -->
+          <div class="node-center">
+            <span class="sunflower">🌻</span>
+            <span class="center-label">AI & VENTURE</span>
+          </div>
+
+          <!-- Surrounding Node Labels -->
+          <div class="node-item" style="top: 25px; left: 130px;">AI Infrastructure</div>
+          <div class="node-item" style="top: 80px; right: 25px;">Venture Capital</div>
+          <div class="node-item" style="top: 172px; right: 5px;">Agentic Systems</div>
+          <div class="node-item" style="bottom: 80px; right: 25px;">Founders</div>
+          <div class="node-item" style="bottom: 25px; left: 145px;">Research</div>
+          <div class="node-item" style="bottom: 80px; left: 25px;">Sociology</div>
+          <div class="node-item" style="top: 172px; left: 5px;">Writing</div>
+          <div class="node-item" style="top: 80px; left: 25px;">Philosophy</div>
+        </div>
+        <div class="graph-meta">INTERSECTION / M.SAMNE</div>
+      </div>
+
+      <!-- Right side: Chat Panel -->
+      <div class="pane-right">
+        <div class="mock-header">
+          <div class="mock-tabs">
+            <span class="mock-tab">Home</span>
+            <span class="mock-tab">Thesis</span>
+            <span class="mock-tab active">Writing</span>
+            <span class="mock-tab">Work</span>
+            <span class="mock-tab">Library</span>
+          </div>
+        </div>
+
+        <div class="chat-history">
+          <!-- User message -->
+          <div class="chat-bubble user">
+            Let's review the research thesis at the intersection of AI and venture capital.
+          </div>
+
+          <!-- System reply -->
+          <div class="chat-bubble system">
+            Understood. The primary essay is <strong>Silicon Sociology</strong>, which analyzes why AI systems are being organized into societies of models (using councils, debate, and division of labor).
+            
+            <div class="bullet-list">
+              • Interface Mirror: Language control<br>
+              • Archive Mirror: Institutional records<br>
+              • Constraint Mirror: Specialization benefits
+            </div>
+
+            <div class="chat-status-pill">
+              <span class="dot"></span>
+              <span>READING COMPLETED / LIVE</span>
+            </div>
+            <br>
+            <a class="chat-cta-btn" href="/one/silicon-sociology">Read essay: Silicon Sociology →</a>
+          </div>
+        </div>
+
+        <div class="chat-input-container">
+          <input class="chat-input" type="text" placeholder="Ask Max anything..." readonly>
+          <button class="chat-send-btn">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="6" y1="10" x2="6" y2="2"></line>
+              <polyline points="2 6 6 2 10 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- WRITING INDEX SECTION -->
+    <h2 class="section-title">Featured Writing</h2>
+    <p class="section-subtitle">Notes on technology, society, and the organization of synthetic mind</p>
+
+    <!-- SHELF VIEW OF WRITING -->
+    <section class="shelf-section">
+      <div class="shelf-wrapper">
+        <!-- 3D Leaning Book -->
+        <div class="book-card" onclick="window.location.href='/one/silicon-sociology';" style="cursor: pointer;">
+          <div class="book-header">
+            <span class="book-chapter">Essay / I</span>
+            <h3 class="book-title">Silicon Sociology</h3>
+          </div>
+          <div class="book-cover-container">
+            <img class="book-cover" src="/one/images/silicon-sociology-cover.png" alt="Silicon Sociology Cover">
+          </div>
+          <div class="book-footer">
+            <span>by M. Samne</span>
+            <span>APRIL 2026</span>
+          </div>
+        </div>
+        <!-- Overlapping Glass Shelf Pocket -->
+        <div class="book-glass-pocket"></div>
+      </div>
+      <a href="/one/silicon-sociology" class="shelf-caption-link">Read this essay (I)</a>
+    </section>
+
+    <!-- FOOTER FEATURE CARD COLUMNS -->
+    <section class="footer-columns">
+      <div class="feature-card">
+        <h4 class="feature-title">Venture & AI</h4>
+        <p class="feature-text">Working at the intersection of AI and venture capital. Investing in high-conviction founders building the cognitive layers of tomorrow's platforms.</p>
+      </div>
+      <div class="feature-card">
+        <h4 class="feature-title">Silicon Sociology</h4>
+        <p class="feature-text">My latest essay analyzing why AI is evolving to look like us, and why the resemblance runs deepest at the seams. <a href="/one/silicon-sociology">Read the full piece</a>.</p>
+      </div>
+      <div class="feature-card">
+        <h4 class="feature-title">Venture Network</h4>
+        <p class="feature-text">Translating rapid technological shifts into concepts worth paying attention to. Follow my work and connect on <a href="https://www.linkedin.com/in/maximiliansamne/" target="_blank">LinkedIn</a>.</p>
+      </div>
+    </section>
   </main>
+
+  <!-- FLOATING ACTION DOWNLOAD PILL -->
+  <div class="floating-pill-container">
+    <a href="/one/silicon-sociology" class="floating-pill">
+      <span class="pill-icon">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M19 12l-7 7-7-7"/>
+        </svg>
+      </span>
+      <span>Read latest essay</span>
+    </a>
+  </div>
 </body>
 </html>
