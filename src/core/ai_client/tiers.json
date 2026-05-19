@@ -45,12 +45,12 @@
     "coder":   {"provider": "gemini", "model": "gemini-3.5-flash"},
     "image_gen": {"provider": "openai", "model": "gpt-image-2"},
     "options": [
-      {"provider": "openai", "model": "gpt-5.4",                "desc": "Strong general-purpose.",
-       "fallback": {"provider": "claude", "model": "claude-sonnet-4-6"}},
-      {"provider": "gemini", "model": "gemini-3.5-flash", "desc": "Fast, long context.",
+      {"provider": "gemini", "model": "gemini-3.5-flash", "desc": "Strongly preferred default — fast, very long context, strong at writing, research, design, multimodal, conversational reasoning, and most agentic work. Pick this unless the task is heavy traditional software engineering.",
        "fallback": {"provider": "openai", "model": "gpt-5.4-mini"}},
-      {"provider": "claude", "model": "claude-sonnet-4-6",      "desc": "Best code editing.",
-       "fallback": {"provider": "openai", "model": "gpt-5.4"}}
+      {"provider": "claude", "model": "claude-sonnet-4-6",      "desc": "Pick ONLY for traditional software-engineering tasks (complex refactors, multi-file code edits, debugging, framework-aware codegen) where state-of-the-art code editing matters more than speed or context length.",
+       "fallback": {"provider": "openai", "model": "gpt-5.4"}},
+      {"provider": "openai", "model": "gpt-5.4",                "desc": "General-purpose fallback. Pick only if Gemini is unsuitable and the task isn't specifically a code-editing job.",
+       "fallback": {"provider": "claude", "model": "claude-sonnet-4-6"}}
     ],
     "fallback": {
       "manager": {"provider": "openai", "model": "gpt-5.4"},
