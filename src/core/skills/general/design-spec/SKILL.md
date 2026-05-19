@@ -235,8 +235,38 @@ Editorial CTA: severe dark button on pale field.
 - Keep visible hierarchy obvious within 3 seconds: eyebrow → headline → support → action.
 - Use color accents sparingly; one accent should carry the page.
 - Borders stay hairline and purposeful; shadows stay soft and rare.
-- Images/illustrations should match the preset's emotional temperature.
 - Focus rings must be obvious and high-contrast.
 - Maintain accessible contrast for all text and controls.
 - Motion, if any, should clarify state, never decorate.
 - Default to restraint: fewer components, stronger composition.
+
+---
+
+## Imagery — when to generate, and what style per preset
+
+**When to generate an image**
+- Hero diagram, product visual, or conceptual centerpiece that anchors the page.
+- Chapter / section cards that need a recurring visual rhythm (4–6 cards, one image each).
+- Portraits, ambient illustrations, or texture backgrounds that the preset's mood calls for.
+- The user attached a reference whose layout includes imagery — match it. Don't sparse-out a layout the reference shows full.
+
+**When to omit**
+- Pure prose pages (essays, writing index) where text is the artifact.
+- Layouts where the imagery would be decorative filler, not load-bearing.
+- The user's brief or attached references show text-only restraint.
+
+**Per-preset style guidance**
+
+| Preset | Image style | Palette | Mood |
+|---|---|---|---|
+| **Neon Foundry** | Isometric compute renders, dark terminal screenshots, prism / iridescent gradients, sharp wireframes. | `#070808` base, `#66f08b` neon accents, low-saturation greys. | Midnight infra, terminal precision. |
+| **Porcelain Ops** | Clean product UI screenshots, light pastel diagrams, lots of negative space, subtle drop shadows. | Off-white `#f7f5ef` base, sage accent `#7fb89d`, muted earth. | Airy SaaS, quiet confidence. |
+| **Atelier Ledger** | Sketched / etched illustrations, archival diagrams, pen-and-ink line work, parchment-tinted figures. | Parchment `#f7f2e8`, sepia / burnt-umber accents, warm browns. | Renaissance notebook, scholarly. |
+| **Signal Glyph** | Device renders, dot-matrix overlays, consumer-tech product shots, blunt geometric icons. | Light grey `#ece9e5`, red accent `#db3a34`, near-monochrome. | Hardware UI, consumer-tech clarity. |
+| **Monument Press** | Editorial photography, blueprint-style overlays, bold mono-tone compositions, large-scale typography over image. | Bone `#fcfbf8`, indigo `#5867ff` accent, deep ink. | Manifesto-scale, fund / careers gravity. |
+
+**Cross-preset rules**
+- Match the preset's emotional temperature — don't drop a neon render into Atelier Ledger.
+- Keep imagery palette inside the preset's tokens; one image shouldn't introduce a new colour the page doesn't already use.
+- Crop / aspect ratio should serve the layout. A reference with square chapter cards calls for square images, not 16:9.
+- For chapter-card sets, generate all images in one batch with shared style language so they read as a series.

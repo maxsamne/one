@@ -125,7 +125,7 @@ async def _run(record: TaskRecord) -> None:
     from core.ai_client.costs import cost_usd, format_cost
     record.status = "running"
     record.started_at = time.time()
-    task_token = TASK_CTX.set(TaskContext(task_id=record.task_id))
+    task_token = TASK_CTX.set(TaskContext(task_id=record.task_id, prompt=record.prompt))
     tier_token = TIER_CTX.set(record.tier)
     skills_token = TASK_SKILLS_CTX.set(record.skills)
     graders_token = TASK_GRADERS_CTX.set(record.graders)

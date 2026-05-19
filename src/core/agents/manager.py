@@ -146,6 +146,11 @@ def _build_extra_hooks() -> tuple[list[Hook], int]:
     grader_paths = list(TASK_GRADERS_CTX.get() or [])
     if not grader_paths:
         return [], DEFAULT_HOOK_RETRIES
+    # Append auto-attach graders (e.g. prompt-fidelity) — they ride along whenever the user
+    # signals "I care about quality on this task" by attaching any grader at all.
+    for auto in graders.auto_attach_paths():
+        if auto not in grader_paths:
+            grader_paths.append(auto)
     grader_hooks: list[Hook] = []
     for p in grader_paths:
         try:
