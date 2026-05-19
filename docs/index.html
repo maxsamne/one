@@ -5,125 +5,941 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maximilian Samne</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f7f5f1;
-      --surface: #eeecea;
-      --ink: #1c1a18;
-      --ink-muted: #7a756e;
-      --accent: #2d4a3e;
-      --border: #dedad4;
+      --bg: #f7f5ef;
+      --surface: #fffdf8;
+      --ink: #262521;
+      --ink-muted: #7d786f;
+      --accent: #7fb89d;
+      --border: #e7e1d6;
+      --tag-bg: #f2eee5;
+      --blue-accent: #3a86c8;
+      --shadow-soft: 0 4px 16px rgba(38, 37, 33, 0.03), 0 1px 4px rgba(38, 37, 33, 0.01);
+      --shadow-card: 0 12px 36px rgba(38, 37, 33, 0.05), 0 2px 8px rgba(38, 37, 33, 0.02);
+      
+      /* Crisp, tight corners instead of large bubbly rounded ones */
+      --radius-lg: 6px;
+      --radius-md: 4px;
+      --radius-sm: 3px;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: var(--bg);
+      background-color: var(--bg);
+      background-image: 
+        linear-gradient(rgba(231, 225, 214, 0.45) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(231, 225, 214, 0.45) 1px, transparent 1px);
+      background-size: 24px 24px;
+      background-position: center top;
       color: var(--ink);
-      font-family: 'Inter', sans-serif;
+      font-family: 'Lora', Georgia, serif;
       font-weight: 400;
       font-size: 15px;
       line-height: 1.6;
       min-height: 100vh;
+      overflow-x: hidden;
+      padding-bottom: 120px;
     }
 
+    /* NAV BAR STYLE */
     nav {
+      max-width: 1200px;
+      margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 28px 48px;
-      border-bottom: 1px solid var(--border);
+      padding: 24px 40px;
+      font-family: 'Inter', sans-serif;
     }
 
     nav .wordmark {
       font-family: 'Lora', serif;
-      font-size: 17px;
+      font-size: 19px;
+      font-weight: 500;
       color: var(--ink);
       text-decoration: none;
+      letter-spacing: -0.01em;
+      transition: opacity 0.2s;
+    }
+
+    nav .wordmark:hover {
+      opacity: 0.8;
     }
 
     nav ul {
-      list-style: none;
       display: flex;
-      gap: 32px;
+      align-items: center;
+      list-style: none;
+      gap: 16px;
+      background: rgba(255, 253, 248, 0.65);
+      padding: 4px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
 
-    nav a {
+    nav ul li {
+      display: flex;
+      align-items: center;
+    }
+
+    nav ul li a {
       color: var(--ink-muted);
       text-decoration: none;
       font-size: 13px;
-      letter-spacing: 0.02em;
+      font-weight: 500;
+      letter-spacing: 0.01em;
       transition: color 0.15s;
+      padding: 4px 8px;
     }
 
-    nav a:hover { color: var(--ink); }
+    nav ul li a:hover, nav ul li a.active {
+      color: var(--ink);
+    }
 
+    /* MAIN CONTAINER */
     main {
-      max-width: 720px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 96px 48px 120px;
+      padding: 40px 40px 0;
     }
 
-    .eyebrow {
+    /* HERO SECTION */
+    .hero-section {
+      text-align: center;
+      max-width: 800px;
+      margin: 40px auto 60px;
+    }
+
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
+      font-weight: 500;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--ink-muted);
       margin-bottom: 20px;
+      display: inline-block;
+      background: var(--tag-bg);
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(231, 225, 214, 0.5);
     }
 
     h1 {
-      font-family: 'Lora', serif;
-      font-size: 36px;
+      font-family: 'Lora', Georgia, serif;
+      font-size: clamp(36px, 5.5vw, 54px);
       font-weight: 500;
-      line-height: 1.25;
+      line-height: 1.15;
       color: var(--ink);
+      letter-spacing: -0.02em;
       margin-bottom: 24px;
     }
 
-    .lead {
-      font-size: 17px;
+    h1 span.light-text {
+      font-weight: 300;
       color: var(--ink-muted);
-      line-height: 1.7;
-      max-width: 560px;
-      margin-bottom: 48px;
     }
 
-    .links {
+    .hero-lead {
+      font-size: clamp(16px, 2.2vw, 19px);
+      color: var(--ink-muted);
+      line-height: 1.6;
+      max-width: 600px;
+      margin: 0 auto 32px;
+    }
+
+    /* CENTERPIECE WORKSPACE CARD */
+    .workspace-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      box-shadow: var(--shadow-card);
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 12px;
+      margin-bottom: 80px;
+      position: relative;
+    }
+
+    @media (max-width: 900px) {
+      .workspace-card {
+        grid-template-columns: 1fr;
+        padding: 12px;
+      }
+    }
+
+    /* LEFT PANE - TECHNICAL BLUEPRINT SYSTEMS TOPOLOGY */
+    .pane-left {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
       display: flex;
-      gap: 24px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      min-height: 420px;
+      overflow: hidden;
+      padding: 24px;
     }
 
-    .links a {
+    .node-graph-container {
+      position: relative;
+      width: 100%;
+      max-width: 360px;
+      height: 360px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .graph-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* Interactive coordinate axis labels */
+    .graph-axis-label {
+      position: absolute;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--ink-muted);
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .axis-y { top: 8px; left: 50%; transform: translateX(-50%); }
+    .axis-x { right: 8px; top: 50%; transform: translateY(-50%); }
+
+    /* Centerpoint / Focal center of thesis grid */
+    .node-center {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-soft);
+      z-index: 10;
+      text-align: center;
+      transition: transform 0.2s ease, border-color 0.2s;
+    }
+
+    .node-center .center-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+    }
+    
+    .node-center .center-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--ink-muted);
+      margin-top: 2px;
+    }
+
+    /* Technical Rectangular Node Items (Not sunflower/literal copy) */
+    .node-item {
+      position: absolute;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink-muted);
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(38, 37, 33, 0.02);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 5;
+    }
+
+    .node-item:hover, .node-item.active-node {
+      color: var(--ink);
+      border-color: var(--ink-muted);
+      background: var(--tag-bg);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(38, 37, 33, 0.04);
+    }
+
+    .graph-meta {
+      position: absolute;
+      bottom: 12px;
+      left: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--ink-muted);
+      opacity: 0.7;
+    }
+
+    /* RIGHT PANE - INTERACTIVE THESIS PREVIEWER (NO DEAD CHAT INPUT!) */
+    .pane-right {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 420px;
+      padding: 20px;
+    }
+
+    .panel-header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+
+    .panel-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--ink-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .thesis-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+    }
+
+    .thesis-tab {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink-muted);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      border: 1px solid transparent;
+    }
+
+    .thesis-tab:hover {
+      color: var(--ink);
+      background: var(--tag-bg);
+    }
+
+    .thesis-tab.active {
+      color: var(--ink);
+      background: var(--surface);
+      border-color: var(--border);
+      font-weight: 600;
+      box-shadow: 0 2px 4px rgba(38, 37, 33, 0.01);
+    }
+
+    /* Content Area */
+    .thesis-content-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding: 8px 0;
+    }
+
+    .thesis-pane {
+      display: none;
+      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .thesis-pane.active-pane {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .thesis-title {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+
+    .thesis-body {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--ink-muted);
+    }
+
+    .thesis-list {
+      margin-top: 4px;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .thesis-list li {
+      font-family: 'Inter', sans-serif;
       font-size: 13px;
-      color: var(--accent);
-      text-decoration: none;
-      border-bottom: 1px solid var(--accent);
-      padding-bottom: 1px;
-      transition: opacity 0.15s;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .links a:hover { opacity: 0.65; }
+    .thesis-list li::before {
+      content: "→";
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    /* Pristine Live Status Footnotes (Completely interactive/dynamic, NO dead buttons/inputs) */
+    .panel-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+      margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .system-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--ink-muted);
+    }
+
+    .system-status .indicator-dot {
+      width: 5px;
+      height: 5px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--ink);
+      text-decoration: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .action-btn:hover {
+      border-color: var(--ink);
+      color: var(--ink);
+    }
+
+    /* SHELF & WRITING SECTION */
+    .section-title {
+      text-align: center;
+      margin: 80px auto 12px;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 26px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .section-subtitle {
+      text-align: center;
+      font-family: 'Lora', serif;
+      font-style: italic;
+      font-size: 16px;
+      color: var(--ink-muted);
+      margin-bottom: 40px;
+    }
+
+    .shelf-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 80px;
+    }
+
+    .shelf-wrapper {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 30px 40px 10px;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    /* 3D Leaning Book Card */
+    .book-card {
+      width: 270px;
+      height: 390px;
+      background: #ffffff;
+      border: 1px solid #eae5db;
+      border-radius: var(--radius-md);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 
+        0 6px 18px rgba(38, 37, 33, 0.03), 
+        0 1px 3px rgba(38, 37, 33, 0.01);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      z-index: 2;
+    }
+
+    .book-card:hover {
+      transform: translateY(-8px) scale(1.01);
+      box-shadow: 
+        0 20px 40px rgba(38, 37, 33, 0.06), 
+        0 2px 10px rgba(38, 37, 33, 0.02);
+    }
+
+    .book-header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    .book-chapter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--ink-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .book-title {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.25;
+      margin-top: 4px;
+    }
+
+    .book-cover-container {
+      flex: 1;
+      margin: 16px 0;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      position: relative;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+
+    .book-cover {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .book-card:hover .book-cover {
+      transform: scale(1.03);
+    }
+
+    .book-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      color: var(--ink-muted);
+      font-weight: 500;
+    }
+
+    /* Glass Shelf Pocket - Less rounded, sharper structure */
+    .book-glass-pocket {
+      position: absolute;
+      bottom: 0;
+      left: 10px;
+      right: 10px;
+      height: 110px;
+      background: rgba(255, 253, 248, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-top: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: var(--radius-md);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 
+        0 8px 24px rgba(38, 37, 33, 0.02), 
+        inset 0 1px 1px rgba(255, 255, 255, 0.5);
+      z-index: 5;
+      pointer-events: none;
+      transform: perspective(800px) rotateX(3deg);
+    }
+
+    .shelf-caption-link {
+      margin-top: 24px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .shelf-caption-link:hover {
+      color: var(--ink);
+    }
+
+    /* THREE COLUMN FOOTER FEATURES */
+    .footer-columns {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 80px;
+      border-top: 1px solid var(--border);
+      padding-top: 48px;
+    }
+
+    @media (max-width: 800px) {
+      .footer-columns {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+    }
+
+    .feature-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .feature-title {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .feature-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--ink-muted);
+    }
+
+    .feature-text a {
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(38, 37, 33, 0.15);
+      padding-bottom: 1px;
+      transition: border-color 0.15s;
+    }
+
+    .feature-text a:hover {
+      border-color: var(--ink);
+    }
+
+    /* FLOATING PILL BUTTON - Crisp hardware-like action button */
+    .floating-pill-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100;
+    }
+
+    .floating-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 16px;
+      box-shadow: 0 4px 12px rgba(38, 37, 33, 0.06);
+      color: var(--ink);
+      text-decoration: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .floating-pill:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(38, 37, 33, 0.1);
+    }
+
+    .floating-pill .pill-icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 18px;
+      height: 18px;
+      background: rgba(127, 184, 157, 0.15);
+      border-radius: var(--radius-sm);
+      color: var(--accent-dark, #3b6b55);
+    }
   </style>
 </head>
 <body>
+  <!-- NAV BAR -->
   <nav>
-    <a class="wordmark" href="/">MS</a>
+    <a class="wordmark" href="/one/">MS</a>
     <ul>
-      <li><a href="/one/silicon-sociology">Writing</a></li>
+      <li><a href="/one/writing" class="active">Writing</a></li>
       <li><a href="/one/work">Work</a></li>
     </ul>
   </nav>
+
+  <!-- MAIN CONTAINER -->
   <main>
-    <p class="eyebrow">Maximilian Samne</p>
-    <h1>Building things worth<br>paying attention to.</h1>
-    <p class="lead">Investor, builder, and occasional writer. Working at the intersection of AI and venture.</p>
-    <div class="links">
-      <a href="/one/silicon-sociology">Silicon Sociology</a>
-      <a href="https://www.linkedin.com/in/maximiliansamne/" target="_blank">LinkedIn</a>
-    </div>
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+      <div class="hero-eyebrow">Maximilian Samne</div>
+      <h1>
+        Building things worth<br>
+        <span class="light-text">paying attention to.</span>
+      </h1>
+      <p class="hero-lead">Investor, builder, and occasional writer. Working at the intersection of AI and venture.</p>
+    </section>
+
+    <!-- CENTERPIECE WORKSPACE ARCHITECTURAL CARD (CREATIVE, NO DEAD INPUTS) -->
+    <section class="workspace-card">
+      <!-- Left side: Systems Topology (Subtle blueprint matrix of ideas) -->
+      <div class="pane-left">
+        <div class="node-graph-container">
+          <!-- Coordinates Axis Ticks -->
+          <div class="graph-axis-label axis-y">TOPOLOGY OF MIND</div>
+          <div class="graph-axis-label axis-x" style="bottom: 8px; left: 16px; top: auto; right: auto;">DB_VER / 2026.05</div>
+
+          <!-- Background SVG drafting schematic -->
+          <svg class="graph-svg" viewBox="0 0 360 360">
+            <!-- Blueprint Coordinate Grid Lines -->
+            <line x1="20" y1="180" x2="340" y2="180" stroke="rgba(231, 225, 214, 0.6)" stroke-width="1" />
+            <line x1="180" y1="20" x2="180" y2="340" stroke="rgba(231, 225, 214, 0.6)" stroke-width="1" />
+            
+            <!-- Concentric Orbits / Intellectual Horizons -->
+            <circle cx="180" cy="180" r="120" fill="none" stroke="rgba(231, 225, 214, 0.7)" stroke-width="1" stroke-dasharray="3 3" />
+            <circle cx="180" cy="180" r="75" fill="none" stroke="rgba(231, 225, 214, 0.4)" stroke-width="1" stroke-dasharray="3 3" />
+            
+            <!-- Radiating Dotted Alignments -->
+            <line x1="180" y1="180" x2="90" y2="90" stroke="rgba(231, 225, 214, 0.5)" stroke-width="0.8" stroke-dasharray="2 2" />
+            <line x1="180" y1="180" x2="270" y2="90" stroke="rgba(231, 225, 214, 0.5)" stroke-width="0.8" stroke-dasharray="2 2" />
+            <line x1="180" y1="180" x2="90" y2="270" stroke="rgba(231, 225, 214, 0.5)" stroke-width="0.8" stroke-dasharray="2 2" />
+            <line x1="180" y1="180" x2="270" y2="270" stroke="rgba(231, 225, 214, 0.5)" stroke-width="0.8" stroke-dasharray="2 2" />
+          </svg>
+
+          <!-- Focal Centerpiece of Matrix -->
+          <div class="node-center">
+            <span class="center-label">M. SAMNE</span>
+            <span class="center-meta">CORE / THESIS</span>
+          </div>
+
+          <!-- Clickable node coordinates (Each triggers tab swap in right pane!) -->
+          <div class="node-item active-node" id="node-soc" style="top: 50px; left: 105px;" onclick="switchThesis('soc')">Sociology of Models</div>
+          <div class="node-item" id="node-cap" style="top: 110px; right: 20px;" onclick="switchThesis('cap')">Venture Architectures</div>
+          <div class="node-item" id="node-inf" style="bottom: 110px; left: 15px;" onclick="switchThesis('inf')">Compute Infrastructure</div>
+          <div class="node-item" id="node-epi" style="bottom: 50px; right: 90px;" onclick="switchThesis('epi')">Machine Epistemology</div>
+        </div>
+        <div class="graph-meta">GEOMETRIC RESEARCH GRID</div>
+      </div>
+
+      <!-- Right side: Real research preview card (Fully active, NO dead form inputs) -->
+      <div class="pane-right">
+        <div class="panel-header">
+          <div class="panel-eyebrow">ACTIVE DOSSIER EXPLORER</div>
+          <div class="thesis-tabs">
+            <span class="thesis-tab active" id="tab-soc" onclick="switchThesis('soc')">Sociology</span>
+            <span class="thesis-tab" id="tab-cap" onclick="switchThesis('cap')">Capital</span>
+            <span class="thesis-tab" id="tab-inf" onclick="switchThesis('inf')">Infrastructure</span>
+            <span class="thesis-tab" id="tab-epi" onclick="switchThesis('epi')">Epistemology</span>
+          </div>
+        </div>
+
+        <div class="thesis-content-container">
+          <!-- Sociology pane -->
+          <div class="thesis-pane active-pane" id="pane-soc">
+            <h3 class="thesis-title">Silicon Sociology</h3>
+            <p class="thesis-body">Analyzing why artificial intelligence is increasingly structured into cooperative groups, model councils, and administrative networks rather than monolithic agents.</p>
+            <ul class="thesis-list">
+              <li>Interface Mirror — System-wide linguistic handshakes</li>
+              <li>Archive Mirror — Institutional audit records</li>
+              <li>Constraint Mirror — Specialization outperforming raw scale</li>
+            </ul>
+          </div>
+
+          <!-- Capital pane -->
+          <div class="thesis-pane" id="pane-cap">
+            <h3 class="thesis-title">Capital Architectures</h3>
+            <p class="thesis-body">Investing in early projects where intelligence and infrastructure meet. Our focus sits at the structural shift from static software licenses to active, decentralized compute networks.</p>
+            <ul class="thesis-list">
+              <li>Marginal cost of reasoning collapsing to zero</li>
+              <li>Orchestration platforms emerging as the central gatekeepers</li>
+              <li>Capital deployment aligned directly to raw token execution speed</li>
+            </ul>
+          </div>
+
+          <!-- Infrastructure pane -->
+          <div class="thesis-pane" id="pane-inf">
+            <h3 class="thesis-title">Compute Infrastructure</h3>
+            <p class="thesis-body">Mapping foundational middleware, model pruning engines, and inference-time hyper-optimization stacks that allow small clusters to out-perform larger rigs.</p>
+            <ul class="thesis-list">
+              <li>Model coordination over high-speed networks</li>
+              <li>Context cache virtualization across distributed agents</li>
+              <li>Hardware-native task dispatch optimization</li>
+            </ul>
+          </div>
+
+          <!-- Epistemology pane -->
+          <div class="thesis-pane" id="pane-epi">
+            <h3 class="thesis-title">Machine Epistemology</h3>
+            <p class="thesis-body">How intelligence is organized, structured, and indexed under modern LLM architectures. Exploring the limits of representation and semantic data vaults.</p>
+            <ul class="thesis-list">
+              <li>Non-linear knowledge graphs as persistent model memory</li>
+              <li>Symbolic verification layers overriding raw probability</li>
+              <li>Structured dialogue frameworks for multi-model consensus</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="panel-footer">
+          <div class="system-status">
+            <span class="indicator-dot"></span>
+            <span id="system-status-text">THESIS_SOC // SYNCHRONIZED</span>
+          </div>
+          <!-- Real link targeting appropriate files -->
+          <a class="action-btn" id="thesis-cta-btn" href="/one/silicon-sociology">Read essay: Silicon Sociology →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- WRITING INDEX SECTION -->
+    <h2 class="section-title">Featured Writing</h2>
+    <p class="section-subtitle">Notes on technology, society, and the organization of synthetic mind</p>
+
+    <!-- SHELF VIEW OF WRITING -->
+    <section class="shelf-section">
+      <div class="shelf-wrapper">
+        <!-- 3D Leaning Book -->
+        <div class="book-card" onclick="window.location.href='/one/silicon-sociology';" style="cursor: pointer;">
+          <div class="book-header">
+            <span class="book-chapter">Essay / I</span>
+            <h3 class="book-title">Silicon Sociology</h3>
+          </div>
+          <div class="book-cover-container">
+            <!-- Correct relative image path, displays beautifully everywhere -->
+            <img class="book-cover" src="images/silicon-sociology-cover.png" alt="Silicon Sociology Cover">
+          </div>
+          <div class="book-footer">
+            <span>by M. Samne</span>
+            <span>APRIL 2026</span>
+          </div>
+        </div>
+        <!-- Overlapping Glass Shelf Pocket -->
+        <div class="book-glass-pocket"></div>
+      </div>
+      <a href="/one/silicon-sociology" class="shelf-caption-link">Read this essay (I)</a>
+    </section>
+
+    <!-- FOOTER FEATURE CARD COLUMNS -->
+    <section class="footer-columns">
+      <div class="feature-card">
+        <h4 class="feature-title">Venture & AI</h4>
+        <p class="feature-text">Working at the intersection of AI and venture capital. Investing in high-conviction founders building the cognitive layers of tomorrow's platforms.</p>
+      </div>
+      <div class="feature-card">
+        <h4 class="feature-title">Silicon Sociology</h4>
+        <p class="feature-text">My latest essay analyzing why AI is evolving to look like us, and why the resemblance runs deepest at the seams. <a href="/one/silicon-sociology">Read the full piece</a>.</p>
+      </div>
+      <div class="feature-card">
+        <h4 class="feature-title">Venture Network</h4>
+        <p class="feature-text">Translating rapid technological shifts into concepts worth paying attention to. Follow my work and connect on <a href="https://www.linkedin.com/in/maximiliansamne/" target="_blank">LinkedIn</a>.</p>
+      </div>
+    </section>
   </main>
+
+  <!-- FLOATING ACTION DOWNLOAD PILL - Sharp edges -->
+  <div class="floating-pill-container">
+    <a href="/one/silicon-sociology" class="floating-pill">
+      <span class="pill-icon">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M19 12l-7 7-7-7"/>
+        </svg>
+      </span>
+      <span>Read latest essay</span>
+    </a>
+  </div>
+
+  <!-- Bulletproof Interactive Tab Controller -->
+  <script>
+    function switchThesis(id) {
+      // Remove active classes from tabs
+      document.querySelectorAll('.thesis-tab').forEach(t => t.classList.remove('active'));
+      // Remove active classes from nodes
+      document.querySelectorAll('.node-item').forEach(n => n.classList.remove('active-node'));
+      // Hide all panes
+      document.querySelectorAll('.thesis-pane').forEach(p => p.classList.remove('active-pane'));
+
+      // Add active classes to selected
+      const selectedTab = document.getElementById('tab-' + id);
+      const selectedNode = document.getElementById('node-' + id);
+      const selectedPane = document.getElementById('pane-' + id);
+
+      if (selectedTab) selectedTab.classList.add('active');
+      if (selectedNode) selectedNode.classList.add('active-node');
+      if (selectedPane) selectedPane.classList.add('active-pane');
+
+      // Update system status and CTA button accordingly
+      const statusText = document.getElementById('system-status-text');
+      const ctaBtn = document.getElementById('thesis-cta-btn');
+
+      if (id === 'soc') {
+        statusText.textContent = 'THESIS_SOC // SYNCHRONIZED';
+        ctaBtn.setAttribute('href', '/one/silicon-sociology');
+        ctaBtn.textContent = 'Read essay: Silicon Sociology →';
+        ctaBtn.style.display = 'inline-flex';
+      } else if (id === 'cap') {
+        statusText.textContent = 'THESIS_CAP // LOCAL_RECORD';
+        ctaBtn.setAttribute('href', 'https:' + '//' + 'www.linkedin.com/in/maximiliansamne/');
+        ctaBtn.textContent = 'Venture Inquiries on LinkedIn →';
+        ctaBtn.style.display = 'inline-flex';
+      } else if (id === 'inf') {
+        statusText.textContent = 'THESIS_INF // LOCAL_RECORD';
+        ctaBtn.setAttribute('href', 'https:' + '//' + 'www.linkedin.com/in/maximiliansamne/');
+        ctaBtn.textContent = 'Inquire on Infrastructure Thesis →';
+        ctaBtn.style.display = 'inline-flex';
+      } else if (id === 'epi') {
+        statusText.textContent = 'THESIS_EPI // ARCHIVED';
+        ctaBtn.setAttribute('href', 'https:' + '//' + 'www.linkedin.com/in/maximiliansamne/');
+        ctaBtn.textContent = 'Connect to discuss Epistemology →';
+        ctaBtn.style.display = 'inline-flex';
+      }
+    }
+  </script>
 </body>
 </html>
