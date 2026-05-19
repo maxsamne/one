@@ -62,7 +62,7 @@ _ollama = create_client(ModelProvider.OLLAMA)
 _embedder = create_embedding_client(EmbeddingModel.QWEN, dimensions=768)
 
 _lib_nano   = create_client(ModelProvider.OPENAI, model_name="gpt-5.4-nano")
-_lib_gemini = create_client(ModelProvider.GEMINI, model_name="gemini-3-flash-preview")
+_lib_gemini = create_client(ModelProvider.GEMINI, model_name="gemini-3.5-flash")
 _helper_mini = create_client(ModelProvider.OPENAI, model_name="gpt-5.4-mini")
 
 _LIBRARIANS: dict[str, LibrarianAgent] = {
@@ -133,7 +133,7 @@ async def _run(record: TaskRecord) -> None:
     lib_token = LIBRARIAN_CTX.set(_LIBRARIANS.get(record.tier, _LIBRARIANS["ultra_cheap"]))
     exa_log: list[str] = []
     exa_token = EXA_CALL_LOG.set(exa_log)
-    usage_log: list[tuple[str, int, int]] = []
+    usage_log: list[tuple[str, int, int, int]] = []
     usage_token = TASK_USAGE_LOG.set(usage_log)
     tier = _get_tier(record.tier)
     _log(Category.GATEWAY, "task started", task=record.prompt[:120], tier=record.tier)
@@ -180,9 +180,9 @@ async def _run(record: TaskRecord) -> None:
         TASK_USAGE_LOG.reset(usage_token)
         elapsed = round(record.finished_at - (record.started_at or record.finished_at), 2)
         ts = text_stats(record.result or "")
-        total_in = sum(inp for _, inp, _ in usage_log)
-        total_out = sum(out for _, _, out in usage_log)
-        usd = sum(cost_usd(model, inp, out) for model, inp, out in usage_log) + len(exa_log) * 0.007
+        total_in = sum(inp for _, inp, _, _ in usage_log)
+        total_out = sum(out for _, _, out, _ in usage_log)
+        usd = sum(cost_usd(model, inp, out, cached) for model, inp, out, cached in usage_log) + len(exa_log) * 0.007
         _log(Category.GATEWAY, "task complete", status=record.status, elapsed_s=elapsed,
              tokens_in=total_in, tokens_out=total_out, cost=format_cost(usd), **ts)
         tasks_update(
@@ -210,6 +210,7 @@ _MAX_IMAGE_BYTES = 10 * 1024 * 1024  # 10 MB per image
 
 def _parse_data_uri(uri: str) -> ImageContent:
     import base64 as _b64
+    from core.images import shrink
     m = _DATA_URI_RE.match(uri.strip())
     if not m:
         raise ValueError(f"image must be a data URI of form 'data:image/<png|jpeg|webp|gif>;base64,...'")
@@ -222,7 +223,13 @@ def _parse_data_uri(uri: str) -> ImageContent:
         raise ValueError(f"invalid base64 in image: {e}")
     if len(data) > _MAX_IMAGE_BYTES:
         raise ValueError(f"image exceeds {_MAX_IMAGE_BYTES // (1024*1024)} MB")
-    return ImageContent(mime=mime, data=data)
+    resized = shrink(data)
+    _log(Category.GATEWAY, "image upload",
+         original_px=f"{resized.original_size[0]}x{resized.original_size[1]}",
+         new_px=f"{resized.new_size[0]}x{resized.new_size[1]}",
+         original_kb=resized.original_bytes // 1024,
+         new_kb=resized.new_bytes // 1024)
+    return ImageContent(mime=resized.mime, data=resized.data)
 
 
 def _valid_skill_paths() -> set[str]:

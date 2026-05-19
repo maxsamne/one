@@ -48,7 +48,7 @@ class FallbackClient(AiClient):
             return await self.fallback.complete(*args, **kwargs)
 
     # Abstract-method stubs — never called because we override complete() above.
-    async def _text_complete(self, *args: Any, **kwargs: Any) -> tuple[str, int, int]:  # type: ignore[override]
+    async def _text_complete(self, *args: Any, **kwargs: Any) -> tuple[str, int, int, int]:  # type: ignore[override]
         raise NotImplementedError("FallbackClient delegates via complete()")
 
     async def _structured_complete(self, *args: Any, **kwargs: Any) -> Any:  # type: ignore[override]

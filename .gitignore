@@ -2,6 +2,7 @@
 .librarian.db
 .agent_ledger.db
 .agent_log.jsonl
+.agent_transcripts/
 .agent_stats.db
 .agent_stats.db-shm
 .agent_stats.db-wal

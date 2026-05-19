@@ -12,7 +12,6 @@ Run whenever new inspiration images are added:
 """
 
 import asyncio
-import io
 import os
 import sys
 from pathlib import Path
@@ -24,13 +23,13 @@ load_dotenv()
 
 from core.ai_client import ModelProvider, ThinkingLevel, create_client
 from core.ai_client.models import ImageContent
+from core.images import shrink
 
 SKILL_DIR = Path(__file__).resolve().parent.parent / "src/core/skills/general/artifact-design"
 INSPO_DIR = SKILL_DIR / "inspiration"
 OUT_FILE  = SKILL_DIR / "DESIGN_SPEC.md"
 
-MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp"}
-MAX_PX = 1024  # longest side cap before upload
+ALLOWED_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
 
 PROMPT = """\
 You are a senior product designer. I'm giving you design inspiration screenshots that
@@ -94,21 +93,13 @@ genuine variety across runs without ever feeling chaotic.
 
 
 async def main() -> None:
-    from PIL import Image as PILImage
-
     images = []
     for f in sorted(INSPO_DIR.iterdir()):
-        mime = MIME.get(f.suffix.lower())
-        if not mime:
+        if f.suffix.lower() not in ALLOWED_SUFFIXES:
             continue
-        img = PILImage.open(f).convert("RGB")
-        if max(img.size) > MAX_PX:
-            img.thumbnail((MAX_PX, MAX_PX), PILImage.LANCZOS)
-        buf = io.BytesIO()
-        img.save(buf, format="JPEG", quality=85)
-        data = buf.getvalue()
-        print(f"  {f.name}: {os.path.getsize(f):,} → {len(data):,} bytes")
-        images.append(ImageContent(mime="image/jpeg", data=data))
+        r = shrink(f.read_bytes())
+        print(f"  {f.name}: {r.original_bytes:,} → {r.new_bytes:,} bytes")
+        images.append(ImageContent(mime=r.mime, data=r.data))
     if not images:
         print("No inspiration images found.")
         return

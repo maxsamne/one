@@ -33,7 +33,7 @@ class MockClient(AiClient):
         images: list[ImageContent] = (),
     ) -> str:
         self.calls.append({"prompt": prompt, "model": self.model_name, "thinking": thinking, "type": "text", "images": len(images)})
-        return self._text
+        return self._text, 0, 0, 0
 
     async def _structured_complete(
         self,

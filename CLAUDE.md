@@ -52,7 +52,7 @@ from core.ai_client import create_client, ModelProvider, ThinkingLevel
 
 client = create_client(ModelProvider.CLAUDE, model_name="claude-sonnet-4-6")   # ANTHROPIC_API_KEY
 client = create_client(ModelProvider.OPENAI, model_name="gpt-5.4-mini")        # OPENAI_API_KEY
-client = create_client(ModelProvider.GEMINI, model_name="gemini-3-flash-preview")  # GOOGLE_API_KEY
+client = create_client(ModelProvider.GEMINI, model_name="gemini-3.5-flash")  # GOOGLE_API_KEY
 client = create_client(ModelProvider.OLLAMA)                                    # local, no key
 
 text   = await client.complete("task")

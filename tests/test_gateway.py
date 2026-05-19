@@ -15,12 +15,11 @@ def _png_data_uri():
     return "data:image/png;base64," + base64.b64encode(raw).decode()
 
 
-def test_parse_data_uri_accepts_valid_png_and_normalizes_jpg():
+def test_parse_data_uri_accepts_and_reencodes_to_jpeg():
+    # All accepted inputs are downsampled + re-encoded to JPEG at the gateway,
+    # so the resulting ImageContent is always image/jpeg regardless of source mime.
     img = _parse_data_uri(_png_data_uri())
-    assert img.mime == "image/png" and isinstance(img.data, bytes) and len(img.data) > 0
-    # `image/jpg` is normalized to `image/jpeg`.
-    jpg = _parse_data_uri("data:image/jpg;base64,/9j/")
-    assert jpg.mime == "image/jpeg"
+    assert img.mime == "image/jpeg" and isinstance(img.data, bytes) and len(img.data) > 0
 
 
 def test_parse_data_uri_rejects_garbage():

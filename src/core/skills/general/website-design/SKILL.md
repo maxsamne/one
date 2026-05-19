@@ -59,6 +59,7 @@ These extend the DESIGN_SPEC — they don't override it:
 - **Writing pages:** prose-first. Lora body, generous line-height (1.75+), max-width ~680px.
 - **No JavaScript by default.** Add it only when interactivity is genuinely needed.
 - **No framework, no build.** Plain HTML + inlined CSS. GitHub Pages serves it directly.
+- **No non-functional interactive elements.** Never build UI that *implies* a working backend it doesn't have — chat inputs, search bars, login forms, "subscribe" inputs, send buttons, comment boxes, like/upvote controls, or anything else a visitor would reasonably expect to *do something* when used. If the backend doesn't exist, the element doesn't exist. Cosmetic-only things are fine (tabs that navigate between static pages, image carousels, animated decorations, theme toggles, badges, status pills that just label state) — the test is: *would a reasonable visitor type/click this and expect a response?* If yes and there's no handler, cut it.
 
 ---
 

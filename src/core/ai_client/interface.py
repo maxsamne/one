@@ -138,7 +138,7 @@ class AiClient(ABC):
         from core.log import Category
         from core.log import log as _log
         start = time.monotonic()
-        text, input_tokens, completion_tokens = await self._text_complete(
+        text, input_tokens, completion_tokens, cached_tokens = await self._text_complete(
             prompt, instructions=instructions, thinking=thinking,
             tools=tools, native_search=native_search, code_execution=code_execution,
             images=images or [],
@@ -148,7 +148,7 @@ class AiClient(ABC):
         self.total_output_tokens += completion_tokens
         try:
             from core.agents.task_ctx import TASK_USAGE_LOG
-            TASK_USAGE_LOG.get().append((self.model_name or "", input_tokens, completion_tokens))
+            TASK_USAGE_LOG.get().append((self.model_name or "", input_tokens, completion_tokens, cached_tokens))
         except LookupError:
             pass
         _log(
@@ -171,7 +171,7 @@ class AiClient(ABC):
         native_search: bool,
         code_execution: bool,
         images: list[ImageContent] = ...,
-    ) -> tuple[str, int, int]: ...  # (text, input_tokens, output_tokens)
+    ) -> tuple[str, int, int, int]: ...  # (text, input_tokens, output_tokens, cached_tokens)
 
     @abstractmethod
     async def _structured_complete(

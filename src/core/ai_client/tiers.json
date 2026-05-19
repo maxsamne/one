@@ -9,9 +9,9 @@
 
   "_grader_judge": {
     "provider": "gemini",
-    "model":    "gemini-3-flash-preview",
+    "model":    "gemini-3.5-flash",
     "fallback": {"provider": "openai", "model": "gpt-5.4"},
-    "_note":    "Default LLM-as-judge for every GraderHook. Update here once when the flagship flash model bumps (e.g. gemini-3.2-flash) and every grader inherits. Per-grader override still allowed via the `judge:` frontmatter field. Fallback fires on 503/UNAVAILABLE."
+    "_note":    "Default LLM-as-judge for every GraderHook. Update here once when the flagship flash model bumps and every grader inherits. Per-grader override still allowed via the `judge:` frontmatter field. Fallback fires on 503/UNAVAILABLE."
   },
 
   "ultra_cheap": {
@@ -31,8 +31,6 @@
     "options": [
       {"provider": "openai", "model": "gpt-5.4-nano",     "desc": "Fastest, cheapest.",
        "fallback": {"provider": "ollama", "model": "qwen3.5:9b"}},
-      {"provider": "openai", "model": "gpt-5.4-mini",     "desc": "Stronger reasoning.",
-       "fallback": {"provider": "claude", "model": "claude-haiku-4-5"}},
       {"provider": "claude", "model": "claude-haiku-4-5", "desc": "Best code editing.",
        "fallback": {"provider": "openai", "model": "gpt-5.4-mini"}}
     ],
@@ -43,15 +41,13 @@
   },
 
   "default": {
-    "manager": {"provider": "gemini", "model": "gemini-3.1-pro-preview"},
-    "coder":   {"provider": "gemini", "model": "gemini-3-flash-preview"},
+    "manager": {"provider": "gemini", "model": "gemini-3.5-flash"},
+    "coder":   {"provider": "gemini", "model": "gemini-3.5-flash"},
     "image_gen": {"provider": "openai", "model": "gpt-image-2"},
     "options": [
-      {"provider": "openai", "model": "gpt-5.4-mini",           "desc": "Fast, cheap.",
-       "fallback": {"provider": "claude", "model": "claude-haiku-4-5"}},
       {"provider": "openai", "model": "gpt-5.4",                "desc": "Strong general-purpose.",
        "fallback": {"provider": "claude", "model": "claude-sonnet-4-6"}},
-      {"provider": "gemini", "model": "gemini-3-flash-preview", "desc": "Fast, long context.",
+      {"provider": "gemini", "model": "gemini-3.5-flash", "desc": "Fast, long context.",
        "fallback": {"provider": "openai", "model": "gpt-5.4-mini"}},
       {"provider": "claude", "model": "claude-sonnet-4-6",      "desc": "Best code editing.",
        "fallback": {"provider": "openai", "model": "gpt-5.4"}}

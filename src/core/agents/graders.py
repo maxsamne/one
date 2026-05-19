@@ -4,7 +4,7 @@ Graders live under `src/core/graders/<domain>/<name>.md`. Each file is markdown 
 optional YAML frontmatter:
 
     ---
-    judge: gemini:gemini-3-flash-preview
+    judge: gemini:gemini-3.5-flash
     suggested_for_skills:
       - general/article-writer/SKILL.md
     ---
@@ -20,7 +20,7 @@ optional YAML frontmatter:
     Another criterion (weight defaults to 1).
 
 Discovery is cached. `instantiate(path)` returns a wired `GraderHook` with a judge
-client. The judge defaults to gemini-3-flash-preview when frontmatter omits it.
+client. The judge defaults to gemini-3.5-flash when frontmatter omits it.
 
 Graders are attached per task via `TASK_GRADERS_CTX` (set by the gateway). The
 manager calls `instantiate` for each attached path and prepends the resulting

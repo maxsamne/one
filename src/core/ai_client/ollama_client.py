@@ -7,6 +7,7 @@ from ollama import AsyncClient
 from core.ai_client.interface import AiClient, EmbeddingClient, _execute_tools
 from core.ai_client.models import EmbeddingModel, ImageContent, ThinkingLevel, Tool
 from core.debug import trace as _dtrace
+from core import transcripts
 
 logger = logging.getLogger(__name__)
 
@@ -110,12 +111,15 @@ class OllamaClient(AiClient):
             response = await self._client.chat(messages=messages, **kwargs)
             msg = response.message
             completion_tokens += response.eval_count or 0
+            transcripts.dump(model=self.model_name, iteration=inner_turn, instructions=instructions,
+                             input_payload=messages, output=msg,
+                             usage={"input": response.prompt_eval_count or 0, "output": response.eval_count or 0})
 
             if not msg.tool_calls:
                 if msg.content:
                     _dtrace("ollama.response", turn=inner_turn, content=msg.content)
                     input_tokens = response.prompt_eval_count or 0
-                    return msg.content, input_tokens, completion_tokens
+                    return msg.content, input_tokens, completion_tokens, 0
                 # Qwen3 sometimes returns empty after tool use — nudge for final answer
                 _dtrace("ollama.response", turn=inner_turn, content="<empty> — nudging")
                 messages.append({"role": "assistant", "content": ""})

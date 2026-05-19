@@ -1,9 +1,17 @@
 """Filesystem tools — view, create, str_replace, grep, list_dir, delete."""
 
+import difflib
 import re
 import unicodedata
 from pathlib import Path
 from urllib.parse import unquote
+
+
+def _diff_stats(old: str, new: str) -> str:
+    lines = list(difflib.unified_diff(old.splitlines(), new.splitlines(), n=0))
+    added = sum(1 for l in lines if l.startswith("+") and not l.startswith("+++"))
+    removed = sum(1 for l in lines if l.startswith("-") and not l.startswith("---"))
+    return f"+{added}/-{removed} lines"
 
 from core.ai_client.models import Tool
 from core.text import text_stats
@@ -91,9 +99,12 @@ async def write_file(path: str, content: str) -> str:
         result = "FATAL: content exceeds 10 MB limit"
         log_call("write_file", {"path": path}, result)
         return result
+    existed = p.exists()
+    old = p.read_text(encoding="utf-8") if existed else ""
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(content, encoding="utf-8")
-    result = f"Created: {path}"
+    verb = "Updated" if existed else "Created"
+    result = f"{verb}: {path} ({_diff_stats(old, content)})"
     log_call("write_file", {"path": path}, result)
     return result
 
@@ -129,7 +140,7 @@ async def edit_file(path: str, old_string: str, new_string: str, replace_all: bo
     p.write_text(updated, encoding="utf-8")
     count = content.count(old_string)
     replaced = count if replace_all else 1
-    result = f"Edited: {path} ({replaced} replacement{'s' if replaced > 1 else ''})"
+    result = f"Edited: {path} ({replaced} replacement{'s' if replaced > 1 else ''}, {_diff_stats(content, updated)})"
     log_call("edit_file", args, result)
     return result
 

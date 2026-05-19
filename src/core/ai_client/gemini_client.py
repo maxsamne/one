@@ -5,6 +5,7 @@ from google.genai import types
 
 from core.ai_client.interface import AiClient, EmbeddingClient, _execute_tools
 from core.ai_client.models import ImageContent, ThinkingLevel, Tool
+from core import transcripts
 
 
 def _user_contents(prompt: str, images: list[ImageContent]) -> Any:
@@ -109,20 +110,32 @@ class GeminiClient(AiClient):
             meta = response.usage_metadata
             inp = (meta.prompt_token_count or 0) if meta else 0
             out = (meta.candidates_token_count or 0) if meta else 0
-            return response.text or "", inp, out
+            cached = (getattr(meta, "cached_content_token_count", 0) or 0) if meta else 0
+            transcripts.dump(model=self.model_name, iteration=0, instructions=instructions,
+                             input_payload=user_contents, output=response.text,
+                             usage={"input": inp, "output": out, "cached": cached})
+            return response.text or "", inp, out, cached
 
         tool_map = {t.name: t for t in tools}
         contents: list[Any] = list(user_contents) if isinstance(user_contents, list) else [user_contents]
         input_tokens = 0
         completion_tokens = 0
+        cached_tokens = 0
 
-        for _ in range(_MAX_TURNS):
+        for i in range(_MAX_TURNS):
             response = await self._client.aio.models.generate_content(
                 model=self.model_name, contents=contents, config=config
             )
             meta = response.usage_metadata
-            input_tokens += (meta.prompt_token_count or 0) if meta else 0
-            completion_tokens += (meta.candidates_token_count or 0) if meta else 0
+            iter_in = (meta.prompt_token_count or 0) if meta else 0
+            iter_out = (meta.candidates_token_count or 0) if meta else 0
+            iter_cached = (getattr(meta, "cached_content_token_count", 0) or 0) if meta else 0
+            input_tokens += iter_in
+            completion_tokens += iter_out
+            cached_tokens += iter_cached
+            transcripts.dump(model=self.model_name, iteration=i, instructions=instructions,
+                             input_payload=contents, output=response.candidates[0].content if response.candidates else None,
+                             usage={"input": iter_in, "output": iter_out, "cached": iter_cached})
             candidate = response.candidates[0]
             fn_calls = [
                 part.function_call
@@ -130,7 +143,7 @@ class GeminiClient(AiClient):
                 if getattr(part, "function_call", None)
             ]
             if not fn_calls:
-                return response.text or "", input_tokens, completion_tokens
+                return response.text or "", input_tokens, completion_tokens, cached_tokens
 
             calls = [(fc.name, dict(fc.args)) for fc in fn_calls]
             results = await _execute_tools(tool_map, calls)
