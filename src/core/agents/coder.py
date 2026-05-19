@@ -87,7 +87,7 @@ async def run(
     workdir: Path | None = None,
     max_turns: int = 30,
     ledger: Ledger | None = None,
-    context_window: int = 32_768,
+    context_window: int = 128_000,
     agent_id: str | None = None,
     role: str = "default",
     images: list[ImageContent] | None = None,
@@ -150,7 +150,13 @@ async def run(
     if prior_history:
         history.load(prior_history)
         _log(Category.AGENT, "coder resumed", agent=effective_agent_id,
-             prior_turns=len(prior_history.get("turns", [])))
+             prior_turns=len(prior_history.get("turns", [])),
+             prior_images=len(history.images))
+    # Merge parent's images (from history) with this turn's new uploads (from kwarg).
+    # Parent first so the model sees originals before follow-up references.
+    merged = list(history.images) + [i for i in (images or []) if i not in history.images]
+    images = merged
+    history.images = list(merged)
     response = ""
     effective_hooks = (list(DEFAULT_HOOKS) + list(extra_hooks or [])) if hooks is None else hooks
     hook_retries_left = hook_retries
@@ -177,9 +183,11 @@ async def run(
             else:
                 user_input = base_input
 
-            prompt = await history.next_prompt(user_input, client)
+            history.add("user", user_input)
+            prompt = await history.next_prompt(client)
 
-            _log(Category.AGENT, "turn", ui=False, n=turn + 1, tokens=history.total_tokens)
+            _log(Category.AGENT, "turn", ui=False, n=turn + 1,
+                 tokens=history.total_tokens, window=context_window)
             _trace(effective_agent_id, turn + 1, "→ user", user_input)
 
             tools_before = len(TOOL_LOG.get())

@@ -7,11 +7,12 @@ The summary + recent turns are then fed as context for the next call.
 
 from __future__ import annotations
 
+import base64
 import time
 from dataclasses import dataclass, field
 
 from core.ai_client import AiClient
-from core.ai_client.models import ThinkingLevel
+from core.ai_client.models import ImageContent, ThinkingLevel
 from core.log import Category
 from core.log import log as _log
 from core.log import stat_inc
@@ -43,14 +44,15 @@ class ConversationHistory:
 
     Args:
         goal:      The original task — included in every compaction prompt.
-        window:    Model context window in tokens (default: 8192 for Gemma4).
+        window:    Model context window in tokens (default: 128K — fits Qwen3 YaRN max,
+                   well inside every cloud model).
         threshold: Fraction of window at which compaction triggers (default: 0.75).
     """
 
     def __init__(
         self,
         goal: str,
-        window: int = 8_192,
+        window: int = 128_000,
         threshold: float = 0.75,
     ) -> None:
         self.goal = goal
@@ -58,6 +60,9 @@ class ConversationHistory:
         self._threshold = threshold
         self._turns: list[Turn] = []
         self._summary: str | None = None
+        # Turn-0 images — kept on the history so they survive snapshot/load for
+        # `@task_id` follow-ups. coder.run reads this on resume.
+        self.images: list[ImageContent] = []
 
     # ------------------------------------------------------------------
     # Public API
@@ -66,11 +71,15 @@ class ConversationHistory:
         self._turns.append(Turn(role=role, content=content))
 
     def snapshot(self) -> dict:
-        """Serialisable snapshot — used to persist + replay the loop on follow-ups."""
+        """Serialisable snapshot — used to persist + replay the loop on follow-ups.
+
+        Images are base64-encoded so the snapshot is pure JSON. Stored as a list of
+        `{mime, data_b64}` dicts."""
         return {
             "goal":    self.goal,
             "summary": self._summary,
             "turns":   [{"role": t.role, "content": t.content, "ts": t.ts} for t in self._turns],
+            "images":  [{"mime": i.mime, "data_b64": base64.b64encode(i.data).decode("ascii")} for i in self.images],
         }
 
     def load(self, snapshot: dict) -> None:
@@ -79,6 +88,10 @@ class ConversationHistory:
         self._turns = [
             Turn(role=t["role"], content=t["content"], ts=t.get("ts", time.time()))
             for t in snapshot.get("turns", [])
+        ]
+        self.images = [
+            ImageContent(mime=img["mime"], data=base64.b64decode(img["data_b64"]))
+            for img in snapshot.get("images", [])
         ]
 
     @property
@@ -115,21 +128,26 @@ class ConversationHistory:
 
         _log(Category.COMPACT, "done", turns_compacted=turns_compacted, summary_tokens=_count_tokens(self._summary))
 
-    def build_prompt(self, user_input: str) -> str:
-        """Assemble a single prompt string from summary + turns + new input."""
+    def build_prompt(self) -> str:
+        """Render summary + all turns as a single prompt string.
+
+        Caller is responsible for `add("user", ...)` before calling — the new user
+        input is just the last turn from this method's perspective."""
         parts: list[str] = []
         if self._summary:
             parts.append(f"[Context so far]\n{self._summary}")
         for t in self._turns:
             parts.append(f"{t.role.upper()}: {t.content}")
-        parts.append(f"USER: {user_input}")
         return "\n\n".join(parts)
 
     # ------------------------------------------------------------------
     # Compact-then-build helper
 
-    async def next_prompt(self, user_input: str, client: AiClient) -> str:
-        """Auto-compact if needed, then return the prompt for the next LLM call."""
+    async def next_prompt(self, client: AiClient) -> str:
+        """Auto-compact if needed, then return the prompt for the next LLM call.
+
+        Assumes the caller has already `add("user", ...)`'d this turn's input so
+        compaction sees it in the token budget."""
         if self.needs_compaction():
             await self.compact(client)
-        return self.build_prompt(user_input)
+        return self.build_prompt()
