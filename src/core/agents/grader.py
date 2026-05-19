@@ -29,7 +29,6 @@ from core.log import log as _log
 GRADER_HOOK_RETRIES = 4
 MAX_SCORE = 5  # Score range is 0..MAX_SCORE inclusive. Bump here to widen the rubric.
 
-
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -40,6 +39,35 @@ class Criterion:
     name: str          # snake_case identifier
     description: str   # what the grader looks for — shown verbatim to the judge
     weight: int = 1    # relative importance; used only for logging/display, not scoring
+
+
+# Universal baseline criterion baked into every grader. Catches the failure mode where the
+# output follows the skill rules perfectly but ignores what the user actually asked for or
+# the reference images they attached. The judge sees the user prompt + images on every call,
+# so it can grade this in the same pass as the grader's own criteria.
+_USER_SATISFACTION = Criterion(
+    name="user_satisfaction",
+    weight=3,
+    description=(
+        "Does the output address what the user actually asked for in the original prompt "
+        "above, and — if reference images were attached — take real inspiration from them? "
+        "Check every concrete ask in the prompt has a corresponding piece in the output; "
+        "negative constraints ('don't add features', 'same text') are honoured; the output is "
+        "a substantive response, not a thin gesture. When references are attached, the output's "
+        "composition, density, palette and type voice must be visibly inspired by them — "
+        "translated through the design system, not copied, but the family resemblance must be "
+        "obvious at a glance. A response that follows the skill rules perfectly but ignores "
+        "the user's literal request or attached references is a low score. Cite the specific "
+        "part of the prompt or the specific reference element that was missed."
+    ),
+)
+
+
+def _with_baseline(criteria: list[Criterion]) -> list[Criterion]:
+    """Prepend the universal user_satisfaction criterion unless the grader already declares one."""
+    if any(c.name == _USER_SATISFACTION.name for c in criteria):
+        return list(criteria)
+    return [_USER_SATISFACTION, *criteria]
 
 
 @dataclass
@@ -140,16 +168,15 @@ class GraderHook(Hook):
     """
     name = "grader"
 
-    def __init__(self, criteria: list[Criterion], judge: AiClient, needs_images: bool = False) -> None:
-        self._criteria = criteria
+    def __init__(self, criteria: list[Criterion], judge: AiClient) -> None:
+        self._criteria = _with_baseline(criteria)
         self._judge = judge
-        self._needs_images = needs_images
         self._history: list[GradeSnapshot] = []
 
     async def check(self, ctx: HookContext) -> str | None:
         version = len(self._history) + 1
         prompt = self._build_prompt(ctx.response)
-        images = self._collect_images() if self._needs_images else None
+        images = self._collect_images()
 
         try:
             grade: _GradeResponse = await self._judge.complete(
@@ -197,13 +224,17 @@ class GraderHook(Hook):
 
         parts: list[str] = []
 
-        # Inject the original user prompt when this grader judges prompt fidelity.
-        # Other graders skip this — they only care about the output against their criteria.
-        if self._needs_images:
-            ctx = TASK_CTX.get()
-            user_prompt = (ctx.prompt if ctx else "") or ""
-            if user_prompt:
-                parts.append(f"## Original user prompt — judge whether the output answers this\n\n{user_prompt}")
+        # Always inject the original user prompt — the baked-in user_satisfaction criterion
+        # grades against it, and the other criteria benefit from the context too.
+        ctx = TASK_CTX.get()
+        user_prompt = (ctx.prompt if ctx else "") or ""
+        if user_prompt:
+            parts.append(
+                "## User context — the original request (and any reference images travel on this call)\n\n"
+                "For reference only. Grade the output against the criteria below; do not invent "
+                "criteria from this context.\n\n"
+                f"> {user_prompt}"
+            )
 
         # Inject actual skill bodies so the judge checks real rules
         skill_paths = list(TASK_SKILLS_CTX.get() or [])
