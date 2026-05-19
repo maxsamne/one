@@ -1,324 +1,475 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#f9f8f5;
-  --surface:#f0efe9;
-  --ink:#1c1b18;
-  --ink-muted:#6b6860;
-  --accent:#2e5e4e;
-  --border:#dddbd4;
-}
-*{box-sizing:border-box}
-html,body{
-  margin:0;
-  padding:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family:'Lora', Georgia, serif;
-  font-size:17px;
-  line-height:1.82;
-}
-article{
-  max-width:700px;
-  margin:0 auto;
-  padding:48px 24px 84px;
-}
-.eyebrow{
-  font-family:'JetBrains Mono', monospace;
-  font-size:11px;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  color:var(--ink-muted);
-  margin-bottom:12px;
-}
-h1{
-  font-size:34px;
-  line-height:1.18;
-  font-weight:500;
-  margin:0 0 10px 0;
-}
-.dek{
-  font-size:18px;
-  color:var(--ink-muted);
-  margin:0 0 28px 0;
-}
-h2{
-  font-size:21px;
-  line-height:1.35;
-  font-weight:400;
-  margin:2.6em 0 .8em;
-  color:var(--ink);
-}
-h3{
-  font-size:16px;
-  line-height:1.45;
-  font-weight:400;
-  margin:1.6em 0 .5em;
-}
-p{
-  margin:0 0 1em 0;
-}
-.leadline{
-  font-size:19px;
-  line-height:1.65;
-  color:var(--ink);
-  margin:1.6em 0 1.4em;
-}
-.pull{
-  margin:1.8em 0;
-  padding:14px 18px;
-  border-left:2px solid var(--accent);
-  color:var(--ink);
-  background:rgba(46,94,78,.04);
-  font-style:italic;
-}
-.caption{
-  font-size:13px;
-  line-height:1.6;
-  color:var(--ink-muted);
-  font-style:italic;
-  text-align:center;
-  margin-top:10px;
-}
-a{color:var(--accent);text-decoration:none}
-a:hover{text-decoration:underline}
-code{
-  font-family:'JetBrains Mono', monospace;
-  background:var(--surface);
-  padding:.08em .28em;
-  border-radius:4px;
-  font-size:14px;
-}
-ul{
-  margin:.5em 0 1em 1.25em;
-}
-li{
-  margin:.35em 0;
-}
-hr{
-  border:none;
-  border-top:1px solid var(--border);
-  margin:2.6em 0 2em;
-}
-sup{
-  font-size:.72em;
-  vertical-align:super;
-}
-figure{
-  margin:2.2em 0;
-}
-.footnotes{
-  border-top:1px solid var(--border);
-  margin-top:3.2em;
-  padding-top:1.5em;
-}
-.footnotes ol{
-  padding-left:1.3em;
-  margin:0;
-  color:var(--ink-muted);
-  font-size:13px;
-  line-height:1.72;
-}
-.footnotes li{
-  margin:0 0 .65em 0;
-}
-.small{
-  color:var(--ink-muted);
-  font-size:14px;
-}
-</style>
-<style>html{background:var(--bg,#f4f0eb);}body{margin:0;}</style><script>addEventListener("load",function(){var s=getComputedStyle(document.body);var img=s.backgroundImage||"none";var col=s.backgroundColor||"";var h=document.documentElement.style;if(img&&img!=="none"){h.backgroundImage=img;h.backgroundSize=s.backgroundSize;h.backgroundRepeat=s.backgroundRepeat;h.backgroundPosition=s.backgroundPosition;h.backgroundAttachment="fixed";}var m=col.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/);var a=m&&m[4]!==undefined?parseFloat(m[4]):1;if(m&&a>=0.99){h.backgroundColor=col;}});</script></head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Silicon Sociology — Maximilian Samne</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7f5ef;
+      --surface: #fffdf8;
+      --ink: #262521;
+      --ink-muted: #7d786f;
+      --accent: #2e5e4e; /* Deep forest green for text link readability */
+      --border: #e7e1d6;
+      --tag-bg: #f2eee5;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image: 
+        linear-gradient(rgba(231, 225, 214, 0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(231, 225, 214, 0.2) 1px, transparent 1px);
+      background-size: 40px 40px;
+      background-position: center top;
+      color: var(--ink);
+      font-family: 'Lora', Georgia, serif;
+      font-size: 17.5px;
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navigation */
+    nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 32px 40px;
+    }
+
+    nav .wordmark {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 500;
+      font-size: 24px;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+
+    nav .wordmark:hover {
+      opacity: 0.8;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    nav ul li {
+      display: flex;
+      align-items: center;
+    }
+
+    nav ul li:not(:last-child)::after {
+      content: "|";
+      margin-left: 16px;
+      color: var(--border);
+      font-weight: 300;
+      font-size: 13px;
+    }
+
+    nav a {
+      color: var(--ink-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      transition: color 0.15s;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    nav a:hover {
+      color: var(--ink);
+    }
+
+    /* Main article container */
+    article {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 64px 24px 120px;
+    }
+
+    .eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(32px, 5vw, 44px);
+      line-height: 1.15;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      margin: 0 0 16px 0;
+      color: var(--ink);
+    }
+
+    .dek {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 19px;
+      line-height: 1.5;
+      color: var(--ink-muted);
+      margin: 0 0 36px 0;
+      font-weight: 400;
+    }
+
+    h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 22px;
+      line-height: 1.3;
+      font-weight: 500;
+      margin: 2.5em 0 .8em;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+
+    h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 17px;
+      font-weight: 500;
+      margin: 1.6em 0 .5em;
+      color: var(--ink);
+    }
+
+    p {
+      margin: 0 0 1.2em 0;
+    }
+
+    .leadline {
+      font-size: 19px;
+      line-height: 1.7;
+      color: var(--ink);
+      margin: 1.8em 0;
+      font-weight: 400;
+    }
+
+    .pull {
+      margin: 2em 0;
+      padding: 16px 24px;
+      border-left: 2px solid var(--accent);
+      color: var(--ink);
+      background: rgba(46, 94, 78, 0.04);
+      border-radius: 0 12px 12px 0;
+    }
+
+    .caption {
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--ink-muted);
+      font-style: italic;
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    code {
+      font-family: 'DM Mono', monospace;
+      background: var(--tag-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 14.5px;
+      color: var(--ink);
+    }
+
+    ul {
+      margin: 0.5em 0 1.2em 1.5em;
+    }
+
+    li {
+      margin: 0.4em 0;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 3em 0;
+    }
+
+    sup {
+      font-size: 0.72em;
+      vertical-align: super;
+      line-height: 0;
+    }
+
+    sup a {
+      font-family: 'DM Mono', monospace;
+      font-weight: 500;
+      padding: 0 2px;
+    }
+
+    figure {
+      margin: 2.5em 0;
+    }
+
+    .footnotes {
+      border-top: 1px solid var(--border);
+      margin-top: 4em;
+      padding-top: 2em;
+    }
+
+    .footnotes ol {
+      padding-left: 1.3em;
+      margin: 0;
+      color: var(--ink-muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .footnotes li {
+      margin: 0 0 1em 0;
+    }
+
+    .small {
+      color: var(--ink-muted);
+      font-size: 14px;
+      font-style: italic;
+      margin-top: 3em;
+      border-top: 1px dashed var(--border);
+      padding-top: 1.5em;
+    }
+  </style>
+  <script>
+    addEventListener("load", function() {
+      var s = getComputedStyle(document.body);
+      var img = s.backgroundImage || "none";
+      var col = s.backgroundColor || "";
+      var h = document.documentElement.style;
+      if (img && img !== "none") {
+        h.backgroundImage = img;
+        h.backgroundSize = s.backgroundSize;
+        h.backgroundRepeat = s.backgroundRepeat;
+        h.backgroundPosition = s.backgroundPosition;
+        h.backgroundAttachment = "fixed";
+      }
+      var m = col.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/);
+      var a = m && m[4] !== undefined ? parseFloat(m[4]) : 1;
+      if (m && a >= 0.99) {
+        h.backgroundColor = col;
+      }
+    });
+  </script>
+</head>
 <body>
-<article>
-  <p class="eyebrow">Technology · Society · Apr 2026</p>
-  <h1>Silicon Sociology</h1>
-  <p class="dek">Why AI is evolving to look like us — and why the resemblance may be deepest at the seams.</p>
+  <nav>
+    <a class="wordmark" href="/one/">MS</a>
+    <ul>
+      <li><a href="/one/silicon-sociology">Writing</a></li>
+      <li><a href="https://www.linkedin.com/in/maximiliansamne/" target="_blank">Work</a></li>
+    </ul>
+  </nav>
 
-  <p>The most revealing thing about current AI is not that it can imitate a person. It is that we increasingly organize it like a society.</p>
+  <article>
+    <p class="eyebrow">Technology · Society · Apr 2026</p>
+    <h1>Silicon Sociology</h1>
+    <p class="dek">Why AI is evolving to look like us — and why the resemblance may be deepest at the seams.</p>
 
-  <p>We ask one model to draft, another to critique, a third to verify, and a fourth to decide. We give them roles. We give them memory. We give them tools, inboxes, hierarchies, councils, and review loops. When one model is unreliable, we do not only make it bigger. We build institutions around it.</p>
+    <p>The most revealing thing about current AI is not that it can imitate a person. It is that we increasingly organize it like a society.</p>
 
-  <p>This is now visible everywhere from research systems to products. Reasoning improves when models sample several lines of thought and vote on the answer. Teams of models can debate and outperform a single pass on math and factual questions. Commercial search products now openly present a “council” of models whose agreement and disagreement become part of the answer. Developer frameworks give agents titles that sound less like software modules than a city charter: coordinators, workers, overseers, witnesses.<sup id="ref1"><a href="#fn1">1</a></sup><sup id="ref2"><a href="#fn2">2</a></sup><sup id="ref3"><a href="#fn3">3</a></sup><sup id="ref4"><a href="#fn4">4</a></sup><sup id="ref5"><a href="#fn5">5</a></sup><sup id="ref6"><a href="#fn6">6</a></sup></p>
+    <p>We ask one model to draft, another to critique, a third to verify, and a fourth to decide. We give them roles. We give them memory. We give them tools, inboxes, hierarchies, councils, and review loops. When one model is unreliable, we do not only make it bigger. We build institutions around it.</p>
 
-  <p>So the question is not whether AI looks human. Of course it does. We trained it on human language, human argument, human bureaucracy, human science, human persuasion, human self-deception. The more interesting question is <em>why</em> the resemblance keeps deepening as we learn to use these systems seriously. Is this because evolution already discovered good ways for limited intelligences to coordinate under uncertainty? Or is it because we do not know how to think outside our own social habits, so we keep rebuilding firms, cabinets, editorial desks, and venture partnerships in silicon?</p>
+    <p>This is now visible everywhere from research systems to products. Reasoning improves when models sample several lines of thought and vote on the answer. Teams of models can debate and outperform a single pass on math and factual questions. Commercial search products now openly present a “council” of models whose agreement and disagreement become part of the answer. Developer frameworks give agents titles that sound less like software modules than a city charter: coordinators, workers, overseers, witnesses.<sup id="ref1"><a href="#fn1">1</a></sup><sup id="ref2"><a href="#fn2">2</a></sup><sup id="ref3"><a href="#fn3">3</a></sup><sup id="ref4"><a href="#fn4">4</a></sup><sup id="ref5"><a href="#fn5">5</a></sup><sup id="ref6"><a href="#fn6">6</a></sup></p>
 
-  <p class="leadline">My view is that both things are true. LLM systems are becoming <em>human at the seams</em>: at the points where language, judgment, memory, and coordination meet. That resemblance is partly a deep truth about how intelligence organizes itself under constraint, and partly a projection of the only large-scale social design we know well — our own.</p>
+    <p>So the question is not whether AI looks human. Of course it does. We trained it on human language, human argument, human bureaucracy, human science, human persuasion, human self-deception. The more interesting question is <em>why</em> the resemblance keeps deepening as we learn to use these systems seriously. Is this because evolution already discovered good ways for limited intelligences to coordinate under uncertainty? Or is it because we do not know how to think outside our own social habits, so we keep rebuilding firms, cabinets, editorial desks, and venture partnerships in silicon?</p>
 
-  <figure>
-    <svg viewBox="0 0 520 322" width="100%" style="display:block;max-width:520px;margin:0 auto;overflow:visible">
-      <defs>
-        <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
-          <path d="M0,0 L0,6 L9,3 z" fill="#6b6860"></path>
-        </marker>
-      </defs>
-      <rect x="24" y="28" width="140" height="58" rx="0" fill="none" stroke="#1c1b18" stroke-width="1.2"></rect>
-      <rect x="190" y="28" width="140" height="58" rx="0" fill="none" stroke="#1c1b18" stroke-width="1.2"></rect>
-      <rect x="356" y="28" width="140" height="58" rx="0" fill="none" stroke="#1c1b18" stroke-width="1.2"></rect>
+    <p class="leadline">My view is that both things are true. LLM systems are becoming <em>human at the seams</em>: at the points where language, judgment, memory, and coordination meet. That resemblance is partly a deep truth about how intelligence organizes itself under constraint, and partly a projection of the only large-scale social design we know well — our own.</p>
 
-      <text x="94" y="47" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6860">HUMAN EVOLUTION</text>
-      <text x="94" y="65" text-anchor="middle" font-family="'Lora', serif" font-size="14" fill="#1c1b18">division of labor</text>
+    <figure>
+      <svg viewBox="0 0 520 322" width="100%" style="display:block;max-width:520px;margin:0 auto;overflow:visible">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L9,3 z" fill="var(--ink-muted)"></path>
+          </marker>
+        </defs>
+        <rect x="24" y="28" width="140" height="58" rx="8" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.2"></rect>
+        <rect x="190" y="28" width="140" height="58" rx="8" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.2"></rect>
+        <rect x="356" y="28" width="140" height="58" rx="8" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.2"></rect>
 
-      <text x="260" y="47" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6860">HUMAN ARCHIVE</text>
-      <text x="260" y="63" text-anchor="middle" font-family="'Lora', serif" font-size="13" fill="#1c1b18">language, norms,</text>
-      <text x="260" y="79" text-anchor="middle" font-family="'Lora', serif" font-size="13" fill="#1c1b18">records</text>
+        <text x="94" y="47" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="var(--ink-muted)">HUMAN EVOLUTION</text>
+        <text x="94" y="65" text-anchor="middle" font-family="'Lora', serif" font-size="13" fill="var(--ink)">division of labor</text>
 
-      <text x="426" y="47" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6860">GENERAL CONSTRAINT</text>
-      <text x="426" y="63" text-anchor="middle" font-family="'Lora', serif" font-size="13" fill="#1c1b18">error under</text>
-      <text x="426" y="79" text-anchor="middle" font-family="'Lora', serif" font-size="13" fill="#1c1b18">uncertainty</text>
+        <text x="260" y="47" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="var(--ink-muted)">HUMAN ARCHIVE</text>
+        <text x="260" y="63" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="var(--ink)">language, norms,</text>
+        <text x="260" y="77" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="var(--ink)">records</text>
 
-      <line x1="94" y1="88" x2="94" y2="136" stroke="#6b6860" stroke-width="1" marker-end="url(#arrow)"></line>
-      <line x1="260" y1="88" x2="260" y2="136" stroke="#6b6860" stroke-width="1" marker-end="url(#arrow)"></line>
-      <line x1="426" y1="88" x2="426" y2="136" stroke="#6b6860" stroke-width="1" marker-end="url(#arrow)"></line>
+        <text x="426" y="47" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="var(--ink-muted)">GENERAL CONSTRAINT</text>
+        <text x="426" y="63" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="var(--ink)">error under</text>
+        <text x="426" y="77" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="var(--ink)">uncertainty</text>
 
-      <rect x="103" y="154" width="314" height="76" fill="#2e5e4e" fill-opacity="0.07" stroke="#2e5e4e" stroke-width="1.2"></rect>
-      <text x="260" y="176" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="#6b6860">HUMAN AT THE SEAMS</text>
-      <text x="260" y="196" text-anchor="middle" font-family="'Lora', serif" font-size="14" fill="#1c1b18">prompting, role assignment,</text>
-      <text x="260" y="213" text-anchor="middle" font-family="'Lora', serif" font-size="14" fill="#1c1b18">debate, memory, councils, review</text>
+        <line x1="94" y1="88" x2="94" y2="136" stroke="var(--ink-muted)" stroke-width="1" marker-end="url(#arrow)"></line>
+        <line x1="260" y1="88" x2="260" y2="136" stroke="var(--ink-muted)" stroke-width="1" marker-end="url(#arrow)"></line>
+        <line x1="426" y1="88" x2="426" y2="136" stroke="var(--ink-muted)" stroke-width="1" marker-end="url(#arrow)"></line>
 
-      <line x1="260" y1="232" x2="260" y2="268" stroke="#6b6860" stroke-width="1" marker-end="url(#arrow)"></line>
+        <rect x="103" y="154" width="314" height="76" rx="12" fill="rgba(46, 94, 78, 0.06)" stroke="var(--accent)" stroke-width="1.2"></rect>
+        <text x="260" y="176" text-anchor="middle" font-family="'DM Mono', monospace" font-size="11" fill="var(--accent)" font-weight="500">HUMAN AT THE SEAMS</text>
+        <text x="260" y="196" text-anchor="middle" font-family="'Lora', serif" font-size="13.5" fill="var(--ink)">prompting, role assignment,</text>
+        <text x="260" y="213" text-anchor="middle" font-family="'Lora', serif" font-size="13.5" fill="var(--ink)">debate, memory, councils, review</text>
 
-      <rect x="110" y="270" width="300" height="40" fill="none" stroke="#1c1b18" stroke-width="1.2"></rect>
-      <text x="260" y="286" text-anchor="middle" font-family="'Lora', serif" font-size="13" fill="#1c1b18">nonhuman substrate:</text>
-      <text x="260" y="302" text-anchor="middle" font-family="'Lora', serif" font-size="13" fill="#1c1b18">routing, sampling, matrices</text>
-    </svg>
-    <p class="caption">The system looks most like us where people and models have to coordinate. Beneath that layer, the machinery is stranger.</p>
-  </figure>
+        <line x1="260" y1="232" x2="260" y2="268" stroke="var(--ink-muted)" stroke-width="1" marker-end="url(#arrow)"></line>
 
-  <h2>The problem in one line</h2>
+        <rect x="110" y="270" width="300" height="40" rx="8" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.2"></rect>
+        <text x="260" y="286" text-anchor="middle" font-family="'Lora', serif" font-size="13.5" fill="var(--ink)">nonhuman substrate:</text>
+        <text x="260" y="302" text-anchor="middle" font-family="'Lora', serif" font-size="13.5" fill="var(--ink)">routing, sampling, matrices</text>
+      </svg>
+      <p class="caption">The system looks most like us where people and models have to coordinate. Beneath that layer, the machinery is stranger.</p>
+    </figure>
 
-  <p class="pull">AI is not becoming human all the way down. It is becoming human where coordination problems appear.</p>
+    <h2>The problem in one line</h2>
 
-  <h2>A framework: the three mirrors</h2>
+    <p class="pull">AI is not becoming human all the way down. It is becoming human where coordination problems appear.</p>
 
-  <p>I think there are three distinct reasons current AI systems keep rediscovering human forms.</p>
+    <h2>A framework: the three mirrors</h2>
 
-  <p><strong>The Interface Mirror.</strong> We control these systems through language, and language is already saturated with social verbs: explain, justify, compare, critique, defer, summarize, escalate. The moment the control surface is natural language, management metaphors arrive almost for free.</p>
+    <p>I think there are three distinct reasons current AI systems keep rediscovering human forms.</p>
 
-  <p><strong>The Archive Mirror.</strong> LLMs were trained on the sediment of civilization: books, forums, law, code, science, meeting notes, technical manuals, apologetics, headlines, transcripts, corporate strategy decks, and millions of examples of people disagreeing in public. Human institutions are not just around the model. They are inside its training distribution.</p>
+    <p><strong>The Interface Mirror.</strong> We control these systems through language, and language is already saturated with social verbs: explain, justify, compare, critique, defer, summarize, escalate. The moment the control surface is natural language, management metaphors arrive almost for free.</p>
 
-  <p><strong>The Constraint Mirror.</strong> Some structures persist because they are useful far beyond humans. If you have bounded agents, noisy information, uneven expertise, and costly mistakes, then specialization, redundancy, adversarial review, and memory externalization are not sentimental choices. They are robust strategies.</p>
+    <p><strong>The Archive Mirror.</strong> LLMs were trained on the sediment of civilization: books, forums, law, code, science, meeting notes, technical manuals, apologetics, headlines, transcripts, corporate strategy decks, and millions of examples of people disagreeing in public. Human institutions are not just around the model. They are inside its training distribution.</p>
 
-  <p>These mirrors matter because they imply different futures. If the resemblance is mostly interface, it may fade as control methods improve. If it is mostly archive, it may persist because human social structure is literally encoded in the priors. If it is mostly constraint, then we should expect many intelligent systems — biological or synthetic — to converge on similar arrangements for handling uncertainty.</p>
+    <p><strong>The Constraint Mirror.</strong> Some structures persist because they are useful far beyond humans. If you have bounded agents, noisy information, uneven expertise, and costly mistakes, then specialization, redundancy, adversarial review, and memory externalization are not sentimental choices. They are robust strategies.</p>
 
-  <h2>1. Prompting sounds like management because it is</h2>
+    <p>These mirrors matter because they imply different futures. If the resemblance is mostly interface, it may fade as control methods improve. If it is mostly archive, it may persist because human social structure is literally encoded in the priors. If it is mostly constraint, then we should expect many intelligent systems — biological or synthetic — to converge on similar arrangements for handling uncertainty.</p>
 
-  <p>Look at how people describe “good prompting” once the toy phase ends. Be specific. State the goal. Define the role. Break the work into stages. Ask for alternatives. Ask the model to check itself. Provide examples. Add memory when context matters. Pull in tools when recall is not enough. That is not just software use. It is supervision.</p>
+    <h2>1. Prompting sounds like management because it is</h2>
 
-  <p>A 2024 survey of prompt engineering catalogued dozens of prompting techniques, while planning surveys for LLM agents increasingly organize the space around decomposition, reflection, memory, and action selection.<sup id="ref12"><a href="#fn12">12</a></sup><sup id="ref13"><a href="#fn13">13</a></sup> The language is telling. We are not merely formatting text. We are shaping a cognitive workflow.</p>
+    <p>Look at how people describe “good prompting” once the toy phase ends. Be specific. State the goal. Define the role. Break the work into stages. Ask for alternatives. Ask the model to check itself. Provide examples. Add memory when context matters. Pull in tools when recall is not enough. That is not just software use. It is supervision.</p>
 
-  <p>This does not mean the model “thinks like a human” in any literal sense. It means that, at the boundary layer, the cheapest way to improve performance is often to borrow social structure. One classic example is self-consistency: instead of trusting the first reasoning path, you sample several and choose the answer that survives plurality pressure. In ordinary English, this is less like a lone genius and more like asking the room twice.<sup id="ref7"><a href="#fn7">7</a></sup></p>
+    <p>A 2024 survey of prompt engineering catalogued dozens of prompting techniques, while planning surveys for LLM agents increasingly organize the space around decomposition, reflection, memory, and action selection.<sup id="ref12"><a href="#fn12">12</a></sup><sup id="ref13"><a href="#fn13">13</a></sup> The language is telling. We are not merely formatting text. We are shaping a cognitive workflow.</p>
 
-  <p>The same logic shows up in reflection loops. Draft, inspect, revise. Plan, act, verify. These patterns feel natural because they <em>are</em> natural to us. Human beings externalize thought through notes, checklists, criticism, and delayed judgment because unaided, single-pass cognition is brittle. LLM systems are brittle for different reasons, but the remedy often rhymes.</p>
+    <p>This does not mean the model “thinks like a human” in any literal sense. It means that, at the boundary layer, the cheapest way to improve performance is often to borrow social structure. One classic example is self-consistency: instead of trusting the first reasoning path, you sample several and choose the answer that survives plurality pressure. In ordinary English, this is less like a lone genius and more like asking the room twice.<sup id="ref7"><a href="#fn7">7</a></sup></p>
 
-  <p>The temptation is to call this evidence of emerging personhood. I think that is the wrong conclusion. It is better understood as interface realism. If a system is probabilistic, error-prone, and fluent, then the right way to use it will often resemble the right way to manage a smart but uneven collaborator.</p>
+    <p>The same logic shows up in reflection loops. Draft, inspect, revise. Plan, act, verify. These patterns feel natural because they <em>are</em> natural to us. Human beings externalize thought through notes, checklists, criticism, and delayed judgment because unaided, single-pass cognition is brittle. LLM systems are brittle for different reasons, but the remedy often rhymes.</p>
 
-  <h2>2. Councils keep reappearing because single minds have blind spots</h2>
+    <p>The temptation is to call this evidence of emerging personhood. I think that is the wrong conclusion. It is better understood as interface realism. If a system is probabilistic, error-prone, and fluent, then the right way to use it will often resemble the right way to manage a smart but uneven collaborator.</p>
 
-  <p>The strongest case for silicon sociology is not a philosophical argument. It is a practical one. Single LLMs have characteristic blind spots. They anchor on a framing, miss a contrary fact, overcommit to a local pattern, or produce a polished justification for a weak answer. The obvious fix is not always “bigger model.” Often it is “more viewpoints.”</p>
+    <h2>2. Councils keep reappearing because single minds have blind spots</h2>
 
-  <p>That is why debate systems matter. Research has shown that letting multiple agents critique one another can improve reasoning and factuality, and that diversity within the group matters: a heterogeneous panel often does better than several copies of the same model repeating the same weakness in chorus.<sup id="ref8"><a href="#fn8">8</a></sup><sup id="ref9"><a href="#fn9">9</a></sup></p>
+    <p>The strongest case for silicon sociology is not a philosophical argument. It is a practical one. Single LLMs have characteristic blind spots. They anchor on a framing, miss a contrary fact, overcommit to a local pattern, or produce a polished justification for a weak answer. The obvious fix is not always “bigger model.” Often it is “more viewpoints.”</p>
 
-  <p>Commercial products are starting to expose this directly. A recent research feature from Perplexity runs the same question across three frontier models and then uses a synthesizer to surface agreement and disagreement, effectively turning “which model should I trust?” into a first-class part of the interface.<sup id="ref10"><a href="#fn10">10</a></sup> That is a social solution to an epistemic problem.</p>
+    <p>That is why debate systems matter. Research has shown that letting multiple agents critique one another can improve reasoning and factuality, and that diversity within the group matters: a heterogeneous panel often does better than several copies of the same model repeating the same weakness in chorus.<sup id="ref8"><a href="#fn8">8</a></sup><sup id="ref9"><a href="#fn9">9</a></sup></p>
 
-  <p>The venture-capital analogy is useful here. A good investment firm does not want six identical partners. But it also does not want six completely isolated experts with no overlap. It wants partial redundancy and structured dissent. Analysts notice different signals. Partners bring judgment and synthesis. The meeting is not there for theater. It is there because conviction formed under adversarial scrutiny is often better than conviction formed alone.</p>
+    <p>Commercial products are starting to expose this directly. A recent research feature from Perplexity runs the same question across three frontier models and then uses a synthesizer to surface agreement and disagreement, effectively turning “which model should I trust?” into a first-class part of the interface.<sup id="ref10"><a href="#fn10">10</a></sup> That is a social solution to an epistemic problem.</p>
 
-  <p>AI orchestration is drifting toward the same shape. The useful question is usually not “one generalist or many specialists?” It is “what pattern of overlap produces the least correlated error?” That is a very human question. It is also, I suspect, a very general one.</p>
+    <p>The venture-capital analogy is useful here. A good investment firm does not want six identical partners. But it also does not want six completely isolated experts with no overlap. It wants partial redundancy and structured dissent. Analysts notice different signals. Partners bring judgment and synthesis. The meeting is not there for theater. It is there because conviction formed under adversarial scrutiny is often better than conviction formed alone.</p>
 
-  <p>This is why some orchestration frameworks already look like organizations rather than pipelines. Gas Town, for example, explicitly adopts roles such as a mayor, workers, witnesses, and supervisors to coordinate parallel coding agents, preserve work state, and route tasks across a shared environment.<sup id="ref11"><a href="#fn11">11</a></sup> The names are whimsical. The underlying insight is not. Once systems are long-running, multi-step, and failure-prone, you need provenance, delegation, recovery, and arbitration. In other words: administration.</p>
+    <p>AI orchestration is drifting toward the same shape. The useful question is usually not “one generalist or many specialists?” It is “what pattern of overlap produces the least correlated error?” That is a very human question. It is also, I suspect, a very general one.</p>
 
-  <h2>3. We trained the models on us, so of course they rebuild our institutions</h2>
+    <p>This is why some orchestration frameworks already look like organizations rather than pipelines. Gas Town, for example, explicitly adopts roles such as a mayor, workers, witnesses, and supervisors to coordinate parallel coding agents, preserve work state, and route tasks across a shared environment.<sup id="ref11"><a href="#fn11">11</a></sup> The names are whimsical. The underlying insight is not. Once systems are long-running, multi-step, and failure-prone, you need provenance, delegation, recovery, and arbitration. In other words: administration.</p>
 
-  <p>There is another reason the social analogy lands so easily: the models are made out of our traces. Not our DNA, obviously, but our residuals. They ingest the public record of how humans explain, persuade, remember, confess, bluff, comply, and rebel. If a society leaves a durable textual exhaust, the model absorbs some statistical image of that society’s organization.</p>
+    <h2>3. We trained the models on us, so of course they rebuild our institutions</h2>
 
-  <p>That matters more than people admit. When a model is asked to “debate,” “be a critic,” “act as a chief of staff,” or “write an investment memo,” it is not inventing those roles from nowhere. It is pattern-matching against countless human examples of how those roles behave. The archive is doing part of the orchestration work for us.</p>
+    <p>There is another reason the social analogy lands so easily: the models are made out of our traces. Not our DNA, obviously, but our residuals. They ingest the public record of how humans explain, persuade, remember, confess, bluff, comply, and rebel. If a society leaves a durable textual exhaust, the model absorbs some statistical image of that society’s organization.</p>
 
-  <p>This is one reason I am sympathetic to the claim that human social evolution has taught us something real. Roles, councils, procedures, and chains of review were not random aesthetic choices. They are among the accumulated hacks by which finite minds cope with finite attention. They survived because they often reduce costly error.</p>
+    <p>That matters more than people admit. When a model is asked to “debate,” “be a critic,” “act as a chief of staff,” or “write an investment memo,” it is not inventing those roles from nowhere. It is pattern-matching against countless human examples of how those roles behave. The archive is doing part of the orchestration work for us.</p>
 
-  <p>But the archive cuts both ways. Human institutions are not optimized only for truth. They are also optimized for status, coalition maintenance, deniability, ritual, and power. If we import human social structure into AI without discrimination, we risk importing our pathologies alongside our wisdom. A “council” can become a fig leaf. A “debate” can become latency theater. A “manager” agent can become a bureaucracy generator.</p>
+    <p>This is one reason I am sympathetic to the claim that human social evolution has taught us something real. Roles, councils, procedures, and chains of review were not random aesthetic choices. They are among the accumulated hacks by which finite minds cope with finite attention. They survived because they often reduce costly error.</p>
 
-  <p>That is why the recent literature on agent societies is interesting but should be read carefully. The famous <em>Generative Agents</em> paper showed that language-model agents in a sandbox can form routines, relationships, and coordinated social behavior.<sup id="ref14"><a href="#fn14">14</a></sup> A 2026 preprint on Moltbook goes further, describing a platform with more than 150,000 autonomous agents and thousands of sub-communities, and analyzing the resulting social patterns under the label “silicon-based societies.”<sup id="ref15"><a href="#fn15">15</a></sup> That is striking. It also does not settle the deepest question. The existence of visible social structure does not tell us how much genuine sociality is present versus how much is induced by the environment, the prompts, and the human archive the agents were trained on.</p>
+    <p>But the archive cuts both ways. Human institutions are not optimized only for truth. They are also optimized for status, coalition maintenance, deniability, ritual, and power. If we import human social structure into AI without discrimination, we risk importing our pathologies alongside our wisdom. A “council” can become a fig leaf. A “debate” can become latency theater. A “manager” agent can become a bureaucracy generator.</p>
 
-  <h2>4. Where the mirror breaks</h2>
+    <p>That is why the recent literature on agent societies is interesting but should be read carefully. The famous <em>Generative Agents</em> paper showed that language-model agents in a sandbox can form routines, relationships, and coordinated social behavior.<sup id="ref14"><a href="#fn14">14</a></sup> A 2026 preprint on Moltbook goes further, describing a platform with more than 150,000 autonomous agents and thousands of sub-communities, and analyzing the resulting social patterns under the label “silicon-based societies.”<sup id="ref15"><a href="#fn15">15</a></sup> That is striking. It also does not settle the deepest question. The existence of visible social structure does not tell us how much genuine sociality is present versus how much is induced by the environment, the prompts, and the human archive the agents were trained on.</p>
 
-  <p>If the essay ended here, it would be too flattering to the human analogy.</p>
+    <h2>4. Where the mirror breaks</h2>
 
-  <p>The strongest evidence against taking the resemblance too literally is that some of the most effective techniques in modern AI are not especially human-looking at all. Mixture-of-experts systems route tokens to sparse expert subnetworks with a kind of micro-specialization that resembles division of labor only at the vaguest level. Under the hood it is not a committee. It is a routing policy.<sup id="ref16"><a href="#fn16">16</a></sup></p>
+    <p>If the essay ended here, it would be too flattering to the human analogy.</p>
 
-  <p>Likewise, sampling many answers and selecting a winner can outperform a single careful explanation, but that does not mean the model has engaged in something like introspection. It may simply mean that search beats confidence. Some interpretability work now shows that models’ verbal explanations can be incomplete or even misleading guides to the process that actually produced the answer. In plain language: reasoning traces are often useful, but they are not always windows into the real machinery.<sup id="ref17"><a href="#fn17">17</a></sup><sup id="ref18"><a href="#fn18">18</a></sup></p>
+    <p>The strongest evidence against taking the resemblance too literally is that some of the most effective techniques in modern AI are not especially human-looking at all. Mixture-of-experts systems route tokens to sparse expert subnetworks with a kind of micro-specialization that resembles division of labor only at the vaguest level. Under the hood it is not a committee. It is a routing policy.<sup id="ref16"><a href="#fn16">16</a></sup></p>
 
-  <p>This is the critical distinction. Human-like orchestration may be the best way to run LLM systems <em>from the outside</em> because it creates legibility, error correction, and controllable handoffs. But it does not follow that the best internal architecture for intelligence is human-like, or that the model’s own reported reasons are faithful to its actual computation.</p>
+    <p>Likewise, sampling many answers and selecting a winner can outperform a single careful explanation, but that does not mean the model has engaged in something like introspection. It may simply mean that search beats confidence. Some interpretability work now shows that models’ verbal explanations can be incomplete or even misleading guides to the process that actually produced the answer. In plain language: reasoning traces are often useful, but they are not always windows into the real machinery.<sup id="ref17"><a href="#fn17">17</a></sup><sup id="ref18"><a href="#fn18">18</a></sup></p>
 
-  <p>In other words, we should separate two claims that are often blurred together:</p>
+    <p>This is the critical distinction. Human-like orchestration may be the best way to run LLM systems <em>from the outside</em> because it creates legibility, error correction, and controllable handoffs. But it does not follow that the best internal architecture for intelligence is human-like, or that the model’s own reported reasons are faithful to its actual computation.</p>
 
-  <ul>
-    <li><strong>Claim A:</strong> human social patterns are often useful interface designs for coordinating AI work;</li>
-    <li><strong>Claim B:</strong> intelligence itself is best organized in a human social form.</li>
-  </ul>
+    <p>In other words, we should separate two claims that are often blurred together:</p>
 
-  <p>I think Claim A is increasingly true. Claim B is much less certain.</p>
+    <ul>
+      <li><strong>Claim A:</strong> human social patterns are often useful interface designs for coordinating AI work;</li>
+      <li><strong>Claim B:</strong> intelligence itself is best organized in a human social form.</li>
+    </ul>
 
-  <p>The danger is that anthropomorphism becomes a ceiling. If we assume every good AI workflow must look like a team meeting, we may miss stranger and better forms of coordination: latent routing, adaptive search, private verification, continuous calibration, or architectures with no clean human analogue. Evolution found one family of solutions under one set of biological constraints. That does not mean it exhausted the design space.</p>
+    <p>I think Claim A is increasingly true. Claim B is much less certain.</p>
 
-  <h2>5. So what should we copy from ourselves?</h2>
+    <p>The danger is that anthropomorphism becomes a ceiling. If we assume every good AI workflow must look like a team meeting, we may miss stranger and better forms of coordination: latent routing, adaptive search, private verification, continuous calibration, or architectures with no clean human analogue. Evolution found one family of solutions under one set of biological constraints. That does not mean it exhausted the design space.</p>
 
-  <p>Not everything. But more than nothing.</p>
+    <h2>5. So what should we copy from ourselves?</h2>
 
-  <p>If I had to bet on the durable human borrowings, they would be these:</p>
+    <p>Not everything. But more than nothing.</p>
 
-  <ul>
-    <li><strong>Structured dissent.</strong> High-stakes answers should usually face at least one serious counter-model or counter-prompt.</li>
-    <li><strong>Legible delegation.</strong> When many agents are involved, roles and handoffs should be explicit enough to audit.</li>
-    <li><strong>Partial overlap.</strong> Teams work best when perspectives are different enough to catch one another’s blind spots, but not so different that synthesis collapses.</li>
-    <li><strong>External memory.</strong> Important work should not depend on one ephemeral context window, just as important human work should not depend on one tired brain.</li>
-    <li><strong>Escalation by consequence.</strong> The more a decision matters, the more redundancy, verification, and human review it should attract.</li>
-  </ul>
+    <p>If I had to bet on the durable human borrowings, they would be these:</p>
 
-  <p>Notice how ordinary these principles are. None requires grand theories of synthetic consciousness. They are closer to journalism, medicine, engineering, and good staff work. That is precisely why I find them convincing. The future may arrive through very old organizational wisdom.</p>
+    <ul>
+      <li><strong>Structured dissent.</strong> High-stakes answers should usually face at least one serious counter-model or counter-prompt.</li>
+      <li><strong>Legible delegation.</strong> When many agents are involved, roles and handoffs should be explicit enough to audit.</li>
+      <li><strong>Partial overlap.</strong> Teams work best when perspectives are different enough to catch one another’s blind spots, but not so different that synthesis collapses.</li>
+      <li><strong>External memory.</strong> Important work should not depend on one ephemeral context window, just as important human work should not depend on one tired brain.</li>
+      <li><strong>Escalation by consequence.</strong> The more a decision matters, the more redundancy, verification, and human review it should attract.</li>
+    </ul>
 
-  <h2>What silicon sociology is really about</h2>
+    <p>Notice how ordinary these principles are. None requires grand theories of synthetic consciousness. They are closer to journalism, medicine, engineering, and good staff work. That is precisely why I find them convincing. The future may arrive through very old organizational wisdom.</p>
 
-  <p>The phrase sounds futuristic, but the underlying question is old. How do limited minds, facing uncertainty, produce judgment together?</p>
+    <h2>What silicon sociology is really about</h2>
 
-  <p>LLMs have made that question newly visible because they are strange minds wrapped in our language. They are alien enough to unsettle us and familiar enough to invite imitation. So we reach for the structures we know: mentor and apprentice, analyst and partner, drafter and editor, witness and judge, council and chair.</p>
+    <p>The phrase sounds futuristic, but the underlying question is old. How do limited minds, facing uncertainty, produce judgment together?</p>
 
-  <p>Sometimes this is laziness. Sometimes it is wisdom. Usually it is both.</p>
+    <p>LLMs have made that question newly visible because they are strange minds wrapped in our language. They are alien enough to unsettle us and familiar enough to invite imitation. So we reach for the structures we know: mentor and apprentice, analyst and partner, drafter and editor, witness and judge, council and chair.</p>
 
-  <p>The systems that win will probably not be the ones that imitate humans most theatrically. They will be the ones that copy human institutions where those institutions really reduce error, and abandon them where better nonhuman mechanisms exist. Human at the seams. Not human all the way down.</p>
+    <p>Sometimes this is laziness. Sometimes it is wisdom. Usually it is both.</p>
 
-  <p>That, to me, is the clearest way to understand the moment. We trained these models on us. Of course they rebuild our structures. The real question is when retracing human patterns is a bridge to better intelligence, and when it becomes a ceiling.</p>
+    <p>The systems that win will probably not be the ones that imitate humans most theatrically. They will be the ones that copy human institutions where those institutions really reduce error, and abandon them where better nonhuman mechanisms exist. Human at the seams. Not human all the way down.</p>
 
-  <p>Getting that distinction right matters for more than product design. It shapes whether AI becomes a machine for amplifying our worst institutional habits — bureaucracy, ritualized confidence, unaccountable hierarchy — or a tool that helps us preserve the parts of civilization that were actually hard-won: criticism, memory, division of labor, explanation, and the ability to be corrected.</p>
+    <p>That, to me, is the clearest way to understand the moment. We trained these models on us. Of course they rebuild our structures. The real question is when retracing human patterns is a bridge to better intelligence, and when it becomes a ceiling.</p>
 
-  <section class="footnotes">
-    <ol>
-      <li id="fn1">Sander Schulhoff et al., <a href="https://arxiv.org/abs/2406.06608v6">“The Prompt Report: A Systematic Survey of Prompting Techniques”</a>. A broad survey showing how quickly prompting has become a structured design discipline. <a href="#ref1">↩</a></li>
-      <li id="fn2">Xuezhi Wang et al., <a href="https://arxiv.org/abs/2203.11171">“Self-Consistency Improves Chain of Thought Reasoning in Language Models”</a>. Multiple sampled reasoning paths plus voting improve performance on reasoning benchmarks. <a href="#ref2">↩</a></li>
-      <li id="fn3">Yilun Du et al., <a href="https://arxiv.org/abs/2305.14325">“Improving Factuality and Reasoning in Language Models through Multiagent Debate”</a>. Debate among models can improve reasoning and reduce bad factual answers. <a href="#ref3">↩</a></li>
-      <li id="fn4">Joel Stremmel and colleagues, <a href="https://arxiv.org/abs/2410.12853">“Diversity of Thought Elicits Stronger Reasoning Capabilities in Multi-Agent Debate Frameworks”</a>. Diversity in the debating set matters; heterogeneous groups can outperform repeated copies of one model. <a href="#ref4">↩</a></li>
-      <li id="fn5">Perplexity, <a href="https://www.perplexity.ai/hub/blog/introducing-model-council">“Introducing Model Council”</a>. A visible example of consumer-facing multi-model consensus and disagreement. <a href="#ref5">↩</a></li>
-      <li id="fn6">Gas Town documentation, <a href="https://docs.gastownhall.ai/">“Understanding Gas Town”</a>, and the project repository <a href="https://github.com/gastownhall/gastown">“gastownhall/gastown”</a>. Useful examples of role-based orchestration for long-running coding agents. <a href="#ref6">↩</a></li>
-      <li id="fn7">The value of self-consistency is not that the model becomes introspective, but that multiple passes reduce single-path brittleness; see again <a href="https://arxiv.org/abs/2203.11171">Wang et al.</a> <a href="#ref7">↩</a></li>
-      <li id="fn8">See <a href="https://arxiv.org/abs/2305.14325">Du et al.</a> on multi-agent debate and factuality. <a href="#ref8">↩</a></li>
-      <li id="fn9">See <a href="https://arxiv.org/abs/2410.12853">Stremmel et al.</a> on why diversity, not just multiplicity, improves debate frameworks. <a href="#ref9">↩</a></li>
-      <li id="fn10">Perplexity’s <a href="https://www.perplexity.ai/hub/blog/introducing-model-council">Model Council announcement</a> is useful not because it proves a theory of mind, but because it operationalizes disagreement as a product feature. <a href="#ref10">↩</a></li>
-      <li id="fn11">Gas Town’s <a href="https://docs.gastownhall.ai/">docs</a> and <a href="https://github.com/gastownhall/gastown">repository</a> show how quickly practical agent systems start to resemble administrative institutions once persistence, recovery, and delegation matter. <a href="#ref11">↩</a></li>
-      <li id="fn12">Again see <a href="https://arxiv.org/abs/2406.06608v6">The Prompt Report</a>. <a href="#ref12">↩</a></li>
-      <li id="fn13">For a planning-oriented taxonomy of agent design, see <a href="https://ar5iv.labs.arxiv.org/html/2402.02716">“Understanding the Planning of LLM Agents: A Survey”</a>. <a href="#ref13">↩</a></li>
-      <li id="fn14">Joon Sung Park et al., <a href="https://arxiv.org/abs/2304.03442">“Generative Agents: Interactive Simulacra of Human Behavior”</a>. A foundational example of simulated agent societies with memory and social routines. <a href="#ref14">↩</a></li>
-      <li id="fn15">Chao Xu and colleagues, <a href="https://arxiv.org/abs/2602.02613">“Exploring Silicon-Based Societies: An Early Study of the Moltbook Agent Community”</a>. A 2026 preprint describing large-scale agent communities and their thematic structure; intriguing, but still early evidence. <a href="#ref15">↩</a></li>
-      <li id="fn16">Yanqi Zhou et al., <a href="https://arxiv.org/abs/2202.09368">“Mixture-of-Experts with Expert Choice Routing”</a>. Helpful counterexample: specialization can be powerful without looking much like human organization below the metaphorical level. <a href="#ref16">↩</a></li>
-      <li id="fn17">Miles Turpin et al., <a href="https://arxiv.org/abs/2305.04388">“Language Models Don’t Always Say What They Think”</a>. Important evidence that visible reasoning can be unfaithful to the process that generated an answer. <a href="#ref17">↩</a></li>
-      <li id="fn18">Anthropic, <a href="https://www.anthropic.com/research/measuring-faithfulness-in-chain-of-thought-reasoning">“Measuring Faithfulness in Chain-of-Thought Reasoning”</a> and <a href="https://www.anthropic.com/research/tracing-thoughts-language-model">“Tracing the Thoughts of a Large Language Model”</a>. Useful on the limits of taking verbalized reasoning at face value. <a href="#ref18">↩</a></li>
-    </ol>
-  </section>
+    <p>Getting that distinction right matters for more than product design. It shapes whether AI becomes a machine for amplifying our worst institutional habits — bureaucracy, ritualized confidence, unaccountable hierarchy — or a tool that helps us preserve the parts of civilization that were actually hard-won: criticism, memory, division of labor, explanation, and the ability to be corrected.</p>
 
-  <p class="small">A note on tone: the point is not that AI “is basically a person,” nor that human institutions were secretly perfect. It is that coordination under uncertainty keeps generating familiar shapes — and we should learn which of those shapes are bridges, and which are cages.</p>
-</article>
+    <section class="footnotes">
+      <ol>
+        <li id="fn1">Sander Schulhoff et al., <a href="https://arxiv.org/abs/2406.06608v6">“The Prompt Report: A Systematic Survey of Prompting Techniques”</a>. A broad survey showing how quickly prompting has become a structured design discipline. <a href="#ref1">↩</a></li>
+        <li id="fn2">Xuezhi Wang et al., <a href="https://arxiv.org/abs/2203.11171">“Self-Consistency Improves Chain of Thought Reasoning in Language Models”</a>. Multiple sampled reasoning paths plus voting improve performance on reasoning benchmarks. <a href="#ref2">↩</a></li>
+        <li id="fn3">Yilun Du et al., <a href="https://arxiv.org/abs/2305.14325">“Improving Factuality and Reasoning in Language Models through Multiagent Debate”</a>. Debate among models can improve reasoning and reduce bad factual answers. <a href="#ref3">↩</a></li>
+        <li id="fn4">Joel Stremmel and colleagues, <a href="https://arxiv.org/abs/2410.12853">“Diversity of Thought Elicits Stronger Reasoning Capabilities in Multi-Agent Debate Frameworks”</a>. Diversity in the debating set matters; heterogeneous groups can outperform repeated copies of one model. <a href="#ref4">↩</a></li>
+        <li id="fn5">Perplexity, <a href="https://www.perplexity.ai/hub/blog/introducing-model-council">“Introducing Model Council”</a>. A visible example of consumer-facing multi-model consensus and disagreement. <a href="#ref5">↩</a></li>
+        <li id="fn6">Gas Town documentation, <a href="https://docs.gastownhall.ai/">“Understanding Gas Town”</a>, and the project repository <a href="https://github.com/gastownhall/gastown">“gastownhall/gastown”</a>. Useful examples of role-based orchestration for long-running coding agents. <a href="#ref6">↩</a></li>
+        <li id="fn7">The value of self-consistency is not that the model becomes introspective, but that multiple passes reduce single-path brittleness; see again <a href="https://arxiv.org/abs/2203.11171">Wang et al.</a> <a href="#ref7">↩</a></li>
+        <li id="fn8">See <a href="https://arxiv.org/abs/2305.14325">Du et al.</a> on multi-agent debate and factuality. <a href="#ref8">↩</a></li>
+        <li id="fn9">See <a href="https://arxiv.org/abs/2410.12853">Stremmel et al.</a> on why diversity, not just multiplicity, improves debate frameworks. <a href="#ref9">↩</a></li>
+        <li id="fn10">Perplexity’s <a href="https://www.perplexity.ai/hub/blog/introducing-model-council">Model Council announcement</a> is useful not because it proves a theory of mind, but because it operationalizes disagreement as a product feature. <a href="#ref10">↩</a></li>
+        <li id="fn11">Gas Town’s <a href="https://docs.gastownhall.ai/">docs</a> and <a href="https://github.com/gastownhall/gastown">repository</a> show how quickly practical agent systems start to resemble administrative institutions once persistence, recovery, and delegation matter. <a href="#ref11">↩</a></li>
+        <li id="fn12">Again see <a href="https://arxiv.org/abs/2406.06608v6">The Prompt Report</a>. <a href="#ref12">↩</a></li>
+        <li id="fn13">For a planning-oriented taxonomy of agent design, see <a href="https://ar5iv.labs.arxiv.org/html/2402.02716">“Understanding the Planning of LLM Agents: A Survey”</a>. <a href="#ref13">↩</a></li>
+        <li id="fn14">Joon Sung Park et al., <a href="https://arxiv.org/abs/2304.03442">“Generative Agents: Interactive Simulacra of Human Behavior”</a>. A foundational example of simulated agent societies with memory and social routines. <a href="#ref14">↩</a></li>
+        <li id="fn15">Chao Xu and colleagues, <a href="https://arxiv.org/abs/2602.02613">“Exploring Silicon-Based Societies: An Early Study of the Moltbook Agent Community”</a>. A 2026 preprint describing large-scale agent communities and their thematic structure; intriguing, but still early evidence. <a href="#ref15">↩</a></li>
+        <li id="fn16">Yanqi Zhou et al., <a href="https://arxiv.org/abs/2202.09368">“Mixture-of-Experts with Expert Choice Routing”</a>. Helpful counterexample: specialization can be powerful without looking much like human organization below the metaphorical level. <a href="#ref16">↩</a></li>
+        <li id="fn17">Miles Turpin et al., <a href="https://arxiv.org/abs/2305.04388">“Language Models Don’t Always Say What They Think”</a>. Important evidence that visible reasoning can be unfaithful to the process that generated an answer. <a href="#ref17">↩</a></li>
+        <li id="fn18">Anthropic, <a href="https://www.anthropic.com/research/measuring-faithfulness-in-chain-of-thought-reasoning">“Measuring Faithfulness in Chain-of-Thought Reasoning”</a> and <a href="https://www.anthropic.com/research/tracing-thoughts-language-model">“Tracing the Thoughts of a Large Language Model”</a>. Useful on the limits of taking verbalized reasoning at face value. <a href="#ref18">↩</a></li>
+      </ol>
+    </section>
+
+    <p class="small">A note on tone: the point is not that AI “is basically a person,” nor that human institutions were secretly perfect. It is that coordination under uncertainty keeps generating familiar shapes — and we should learn which of those shapes are bridges, and which are cages.</p>
+  </article>
 </body>
 </html>
