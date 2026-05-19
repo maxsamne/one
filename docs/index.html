@@ -5,125 +5,266 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maximilian Samne</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Source+Sans+3:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f7f5f1;
-      --surface: #eeecea;
-      --ink: #1c1a18;
-      --ink-muted: #7a756e;
-      --accent: #2d4a3e;
-      --border: #dedad4;
+      --bg: #f7f5ef;
+      --surface: rgba(255, 253, 248, 0.78);
+      --surface-strong: rgba(255, 253, 248, 0.94);
+      --ink: #262521;
+      --ink-soft: #3a3834;
+      --ink-muted: #7d786f;
+      --accent: #7fb89d;
+      --accent-deep: #648f79;
+      --border: rgba(231, 225, 214, 0.92);
+      --shadow: 0 22px 60px rgba(36, 29, 18, 0.08);
+      --shadow-soft: 0 12px 30px rgba(36, 29, 18, 0.05);
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0)) 0 0 / 100% 100% no-repeat,
+        linear-gradient(to right, rgba(125, 120, 111, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(125, 120, 111, 0.06) 1px, transparent 1px),
+        var(--bg);
+      background-size: 100% 100%, 72px 72px, 72px 72px, auto;
+      background-attachment: fixed;
+    }
 
     body {
-      background: var(--bg);
-      color: var(--ink);
-      font-family: 'Inter', sans-serif;
-      font-weight: 400;
-      font-size: 15px;
-      line-height: 1.6;
+      margin: 0;
       min-height: 100vh;
+      color: var(--ink);
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      background: radial-gradient(circle at top, rgba(255,255,255,0.5), rgba(255,255,255,0) 42%);
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .page-shell {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 22px auto;
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      border-radius: 28px;
+      background: rgba(247, 245, 239, 0.72);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      overflow: hidden;
     }
 
     nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 28px 48px;
+      gap: 24px;
+      padding: 18px 24px;
       border-bottom: 1px solid var(--border);
+      background: rgba(255, 253, 248, 0.66);
     }
 
     nav .wordmark {
-      font-family: 'Lora', serif;
-      font-size: 17px;
-      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 48px;
+      height: 48px;
+      padding: 0 16px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface-strong);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
       text-decoration: none;
+      font: 500 15px/1 'DM Mono', monospace;
+      letter-spacing: 0.04em;
+      color: var(--ink);
     }
 
     nav ul {
-      list-style: none;
       display: flex;
-      gap: 32px;
+      align-items: center;
+      gap: 12px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
     }
 
-    nav a {
+    nav ul a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 42px;
+      padding: 0 16px;
+      border: 1px solid transparent;
+      border-radius: 14px;
       color: var(--ink-muted);
       text-decoration: none;
-      font-size: 13px;
-      letter-spacing: 0.02em;
-      transition: color 0.15s;
+      font: 500 14px/1 'Hanken Grotesk', sans-serif;
+      letter-spacing: -0.01em;
+      transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
     }
 
-    nav a:hover { color: var(--ink); }
+    nav ul a:hover,
+    nav ul a:focus-visible {
+      color: var(--ink);
+      background: rgba(255, 253, 248, 0.82);
+      border-color: var(--border);
+      outline: none;
+      transform: translateY(-1px);
+    }
 
     main {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 96px 48px 120px;
+      padding: 52px 24px 24px;
+    }
+
+    .hero-card {
+      max-width: 760px;
+      padding: 40px 42px;
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.64), rgba(255,253,248,0.9));
+      box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,0.75);
     }
 
     .eyebrow {
-      font-size: 11px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
+      margin: 0 0 18px;
       color: var(--ink-muted);
-      margin-bottom: 20px;
+      font: 500 12px/1.2 'DM Mono', monospace;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
     }
 
     h1 {
-      font-family: 'Lora', serif;
-      font-size: 36px;
-      font-weight: 500;
-      line-height: 1.25;
-      color: var(--ink);
-      margin-bottom: 24px;
+      margin: 0 0 20px;
+      max-width: 10ch;
+      color: var(--ink-soft);
+      font: 600 clamp(3rem, 7vw, 5.15rem)/0.96 'Hanken Grotesk', sans-serif;
+      letter-spacing: -0.055em;
+      text-wrap: balance;
     }
 
     .lead {
-      font-size: 17px;
-      color: var(--ink-muted);
-      line-height: 1.7;
       max-width: 560px;
-      margin-bottom: 48px;
+      margin: 0 0 32px;
+      color: var(--ink-muted);
+      font: 400 20px/1.58 'Source Sans 3', sans-serif;
+      letter-spacing: -0.01em;
     }
 
     .links {
       display: flex;
-      gap: 24px;
       flex-wrap: wrap;
+      gap: 12px;
     }
 
     .links a {
-      font-size: 13px;
-      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 18px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface-strong);
+      color: var(--ink-soft);
       text-decoration: none;
-      border-bottom: 1px solid var(--accent);
-      padding-bottom: 1px;
-      transition: opacity 0.15s;
+      font: 500 14px/1 'Hanken Grotesk', sans-serif;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.72);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
     }
 
-    .links a:hover { opacity: 0.65; }
+    .links a:hover,
+    .links a:focus-visible {
+      transform: translateY(-1px);
+      border-color: rgba(127, 184, 157, 0.7);
+      box-shadow: 0 12px 24px rgba(71, 88, 69, 0.08), inset 0 1px 0 rgba(255,255,255,0.8);
+      outline: none;
+    }
+
+    .links a:last-child {
+      background: #2e2d2b;
+      border-color: #2e2d2b;
+      color: #f8f6f1;
+      box-shadow: 0 12px 28px rgba(28, 27, 24, 0.18);
+    }
+
+    .links a:last-child:hover,
+    .links a:last-child:focus-visible {
+      box-shadow: 0 16px 30px rgba(28, 27, 24, 0.22);
+      border-color: #2e2d2b;
+    }
+
+    @media (max-width: 720px) {
+      .page-shell {
+        width: min(100vw - 20px, 1180px);
+        margin: 10px auto;
+        border-radius: 22px;
+      }
+
+      nav {
+        padding: 16px;
+      }
+
+      nav ul {
+        gap: 8px;
+      }
+
+      nav ul a {
+        height: 38px;
+        padding: 0 12px;
+        font-size: 13px;
+      }
+
+      main {
+        padding: 28px 16px 16px;
+      }
+
+      .hero-card {
+        padding: 28px 22px;
+        border-radius: 22px;
+      }
+
+      h1 {
+        max-width: none;
+        font-size: clamp(2.65rem, 12vw, 4rem);
+      }
+
+      .lead {
+        font-size: 18px;
+      }
+    }
   </style>
 </head>
 <body>
-  <nav>
-    <a class="wordmark" href="/">MS</a>
-    <ul>
-      <li><a href="/one/silicon-sociology">Writing</a></li>
-      <li><a href="/one/work">Work</a></li>
-    </ul>
-  </nav>
-  <main>
-    <p class="eyebrow">Maximilian Samne</p>
-    <h1>Building things worth<br>paying attention to.</h1>
-    <p class="lead">Investor, builder, and occasional writer. Working at the intersection of AI and venture.</p>
-    <div class="links">
-      <a href="/one/silicon-sociology">Silicon Sociology</a>
-      <a href="https://www.linkedin.com/in/maximiliansamne/" target="_blank">LinkedIn</a>
-    </div>
-  </main>
+  <div class="page-shell">
+    <nav>
+      <a class="wordmark" href="/">MS</a>
+      <ul>
+        <li><a href="/one/silicon-sociology">Writing</a></li>
+        <li><a href="/one/work">Work</a></li>
+      </ul>
+    </nav>
+    <main>
+      <section class="hero-card">
+        <p class="eyebrow">Maximilian Samne</p>
+        <h1>Building things worth<br>paying attention to.</h1>
+        <p class="lead">Investor, builder, and occasional writer. Working at the intersection of AI and venture.</p>
+        <div class="links">
+          <a href="/one/silicon-sociology">Silicon Sociology</a>
+          <a href="https://www.linkedin.com/in/maximiliansamne/" target="_blank" rel="noreferrer">LinkedIn</a>
+        </div>
+      </section>
+    </main>
+  </div>
 </body>
 </html>
