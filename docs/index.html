@@ -16,8 +16,13 @@
       --border: #e7e1d6;
       --tag-bg: #f2eee5;
       --blue-accent: #3a86c8;
-      --shadow-soft: 0 12px 32px rgba(38, 37, 33, 0.04), 0 2px 8px rgba(38, 37, 33, 0.02);
-      --shadow-card: 0 20px 48px rgba(38, 37, 33, 0.06), 0 4px 12px rgba(38, 37, 33, 0.03);
+      --shadow-soft: 0 4px 16px rgba(38, 37, 33, 0.03), 0 1px 4px rgba(38, 37, 33, 0.01);
+      --shadow-card: 0 12px 36px rgba(38, 37, 33, 0.05), 0 2px 8px rgba(38, 37, 33, 0.02);
+      
+      /* Crisp, tight corners instead of large bubbly rounded ones */
+      --radius-lg: 6px;
+      --radius-md: 4px;
+      --radius-sm: 3px;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -69,10 +74,10 @@
       align-items: center;
       list-style: none;
       gap: 16px;
-      background: rgba(255, 253, 248, 0.6);
-      padding: 6px 18px;
+      background: rgba(255, 253, 248, 0.65);
+      padding: 4px 12px;
       border: 1px solid var(--border);
-      border-radius: 999px;
+      border-radius: var(--radius-md);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
@@ -112,7 +117,7 @@
 
     .hero-eyebrow {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 500;
       letter-spacing: 0.12em;
       text-transform: uppercase;
@@ -120,8 +125,8 @@
       margin-bottom: 20px;
       display: inline-block;
       background: var(--tag-bg);
-      padding: 4px 12px;
-      border-radius: 999px;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
       border: 1px solid rgba(231, 225, 214, 0.5);
     }
 
@@ -151,8 +156,8 @@
     /* CENTERPIECE WORKSPACE CARD */
     .workspace-card {
       background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: 24px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       padding: 12px;
       box-shadow: var(--shadow-card);
       display: grid;
@@ -169,40 +174,29 @@
       }
     }
 
-    /* LEFT PANE - NODE GRAPH */
+    /* LEFT PANE - TECHNICAL BLUEPRINT SYSTEMS TOPOLOGY */
     .pane-left {
       background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 18px;
+      border-radius: var(--radius-md);
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       position: relative;
       min-height: 420px;
       overflow: hidden;
+      padding: 24px;
     }
 
     .node-graph-container {
       position: relative;
       width: 100%;
-      max-width: 380px;
-      height: 380px;
+      max-width: 360px;
+      height: 360px;
       display: flex;
       justify-content: center;
       align-items: center;
-      transform-origin: center center;
-    }
-
-    @media (max-width: 440px) {
-      .node-graph-container {
-        transform: scale(0.8);
-      }
-    }
-
-    @media (max-width: 375px) {
-      .node-graph-container {
-        transform: scale(0.7);
-      }
     }
 
     .graph-svg {
@@ -214,59 +208,73 @@
       pointer-events: none;
     }
 
+    /* Interactive coordinate axis labels */
+    .graph-axis-label {
+      position: absolute;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--ink-muted);
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .axis-y { top: 8px; left: 50%; transform: translateX(-50%); }
+    .axis-x { right: 8px; top: 50%; transform: translateY(-50%); }
+
+    /* Centerpoint / Focal center of thesis grid */
     .node-center {
       position: relative;
       background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: 999px;
-      padding: 14px 22px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       box-shadow: var(--shadow-soft);
       z-index: 10;
-      transition: transform 0.2s ease;
-    }
-
-    .node-center:hover {
-      transform: scale(1.05);
-    }
-
-    .node-center .sunflower {
-      font-size: 20px;
-      margin-bottom: 4px;
+      text-align: center;
+      transition: transform 0.2s ease, border-color 0.2s;
     }
 
     .node-center .center-label {
       font-family: 'Inter', sans-serif;
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 700;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.08em;
       color: var(--ink);
     }
+    
+    .node-center .center-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--ink-muted);
+      margin-top: 2px;
+    }
 
+    /* Technical Rectangular Node Items (Not sunflower/literal copy) */
     .node-item {
       position: absolute;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
       font-family: 'Inter', sans-serif;
       font-size: 11px;
       font-weight: 600;
       color: var(--ink-muted);
       cursor: pointer;
-      box-shadow: 0 4px 10px rgba(38, 37, 33, 0.02);
-      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(38, 37, 33, 0.02);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 5;
     }
 
-    .node-item:hover {
+    .node-item:hover, .node-item.active-node {
       color: var(--ink);
-      border-color: #c9bfaf;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 14px rgba(38, 37, 33, 0.05);
+      border-color: var(--ink-muted);
+      background: var(--tag-bg);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(38, 37, 33, 0.04);
     }
 
     .graph-meta {
@@ -279,119 +287,154 @@
       opacity: 0.7;
     }
 
-    /* RIGHT PANE - CHAT UI */
+    /* RIGHT PANE - INTERACTIVE THESIS PREVIEWER (NO DEAD CHAT INPUT!) */
     .pane-right {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 18px;
+      border-radius: var(--radius-md);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       min-height: 420px;
-      padding: 18px;
+      padding: 20px;
     }
 
-    .mock-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .panel-header {
       border-bottom: 1px solid var(--border);
-      padding-bottom: 12px;
-      margin-bottom: 12px;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
     }
 
-    .mock-tabs {
+    .panel-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--ink-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .thesis-tabs {
       display: flex;
-      gap: 4px;
+      gap: 6px;
       overflow-x: auto;
     }
 
-    .mock-tab {
+    .thesis-tab {
       font-family: 'Inter', sans-serif;
       font-size: 12px;
       font-weight: 500;
       color: var(--ink-muted);
-      padding: 4px 10px;
-      border-radius: 6px;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
       cursor: pointer;
-      transition: background 0.15s, color 0.15s;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      border: 1px solid transparent;
     }
 
-    .mock-tab:hover {
+    .thesis-tab:hover {
       color: var(--ink);
       background: var(--tag-bg);
     }
 
-    .mock-tab.active {
+    .thesis-tab.active {
       color: var(--ink);
-      background: var(--tag-bg);
+      background: var(--surface);
+      border-color: var(--border);
       font-weight: 600;
+      box-shadow: 0 2px 4px rgba(38, 37, 33, 0.01);
     }
 
-    .chat-history {
+    /* Content Area */
+    .thesis-content-container {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      margin-bottom: 14px;
-      overflow-y: auto;
-      justify-content: flex-end;
+      justify-content: flex-start;
+      padding: 8px 0;
     }
 
-    .chat-bubble {
-      max-width: 90%;
-      padding: 12px 16px;
-      border-radius: 14px;
+    .thesis-pane {
+      display: none;
+      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .thesis-pane.active-pane {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .thesis-title {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+
+    .thesis-body {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--ink-muted);
+    }
+
+    .thesis-list {
+      margin-top: 4px;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .thesis-list li {
       font-family: 'Inter', sans-serif;
       font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .chat-bubble.user {
-      align-self: flex-end;
-      background: var(--tag-bg);
       color: var(--ink);
-      border-bottom-right-radius: 4px;
-      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .chat-bubble.system {
-      align-self: flex-start;
-      background: #faf9f6;
-      color: var(--ink);
-      border: 1px solid var(--border);
-      border-bottom-left-radius: 4px;
+    .thesis-list li::before {
+      content: "→";
+      color: var(--accent);
+      font-weight: bold;
     }
 
-    .chat-bubble.system strong {
-      font-weight: 600;
+    /* Pristine Live Status Footnotes (Completely interactive/dynamic, NO dead buttons/inputs) */
+    .panel-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+      margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
-    .chat-bubble .bullet-list {
-      margin-top: 6px;
-      padding-left: 14px;
-    }
-
-    .chat-status-pill {
+    .system-status {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 8px;
-      background: rgba(127, 184, 157, 0.1);
-      border: 1px solid rgba(127, 184, 157, 0.3);
-      border-radius: 999px;
-      color: #558770;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 500;
-      margin-top: 10px;
+      color: var(--ink-muted);
     }
 
-    .chat-status-pill .dot {
-      width: 6px;
-      height: 6px;
+    .system-status .indicator-dot {
+      width: 5px;
+      height: 5px;
       background-color: var(--accent);
-      border-radius: 999px;
+      border-radius: 50%;
       animation: pulse 2s infinite;
     }
 
@@ -401,72 +444,29 @@
       100% { opacity: 0.4; }
     }
 
-    .chat-cta-btn {
+    .action-btn {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      margin-top: 10px;
-      color: #3b6b55;
+      color: var(--ink);
       text-decoration: none;
       font-family: 'Inter', sans-serif;
       font-size: 12px;
       font-weight: 600;
-      border-bottom: 1.5px solid rgba(127, 184, 157, 0.5);
-      padding-bottom: 1px;
-      transition: border-color 0.15s;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2px;
+      transition: border-color 0.15s, color 0.15s;
     }
 
-    .chat-cta-btn:hover {
-      border-color: #3b6b55;
-    }
-
-    .chat-input-container {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    .chat-input {
-      width: 100%;
-      padding: 12px 42px 12px 16px;
-      background: #faf9f6;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      font-family: 'Inter', sans-serif;
-      font-size: 13px;
+    .action-btn:hover {
+      border-color: var(--ink);
       color: var(--ink);
-      outline: none;
-      transition: border-color 0.15s;
-    }
-
-    .chat-input:focus {
-      border-color: #c0b7a8;
-    }
-
-    .chat-send-btn {
-      position: absolute;
-      right: 6px;
-      width: 32px;
-      height: 32px;
-      background: var(--ink);
-      border: none;
-      border-radius: 999px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      color: var(--surface);
-      transition: opacity 0.15s;
-    }
-
-    .chat-send-btn:hover {
-      opacity: 0.9;
     }
 
     /* SHELF & WRITING SECTION */
     .section-title {
       text-align: center;
-      margin: 80px auto 16px;
+      margin: 80px auto 12px;
       font-family: 'Lora', Georgia, serif;
       font-size: 26px;
       font-weight: 500;
@@ -506,24 +506,24 @@
       height: 390px;
       background: #ffffff;
       border: 1px solid #eae5db;
-      border-radius: 12px;
+      border-radius: var(--radius-md);
       padding: 24px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       box-shadow: 
-        0 10px 30px rgba(38, 37, 33, 0.04), 
-        0 1px 3px rgba(38, 37, 33, 0.02);
+        0 6px 18px rgba(38, 37, 33, 0.03), 
+        0 1px 3px rgba(38, 37, 33, 0.01);
       transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
       z-index: 2;
     }
 
     .book-card:hover {
-      transform: translateY(-12px) scale(1.02);
+      transform: translateY(-8px) scale(1.01);
       box-shadow: 
-        0 30px 60px rgba(38, 37, 33, 0.08), 
-        0 4px 15px rgba(38, 37, 33, 0.03);
+        0 20px 40px rgba(38, 37, 33, 0.06), 
+        0 2px 10px rgba(38, 37, 33, 0.02);
     }
 
     .book-header {
@@ -552,7 +552,7 @@
     .book-cover-container {
       flex: 1;
       margin: 16px 0;
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       overflow: hidden;
       position: relative;
       background: var(--bg);
@@ -567,7 +567,7 @@
     }
 
     .book-card:hover .book-cover {
-      transform: scale(1.05);
+      transform: scale(1.03);
     }
 
     .book-footer {
@@ -580,25 +580,25 @@
       font-weight: 500;
     }
 
-    /* Glass Shelf Pocket */
+    /* Glass Shelf Pocket - Less rounded, sharper structure */
     .book-glass-pocket {
       position: absolute;
       bottom: 0;
       left: 10px;
       right: 10px;
       height: 110px;
-      background: rgba(255, 253, 248, 0.25);
+      background: rgba(255, 253, 248, 0.22);
       border: 1px solid rgba(255, 255, 255, 0.4);
       border-top: 1.5px solid rgba(255, 255, 255, 0.7);
-      border-radius: 14px;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      border-radius: var(--radius-md);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       box-shadow: 
-        0 12px 32px rgba(38, 37, 33, 0.03), 
-        inset 0 1px 1px rgba(255, 255, 255, 0.6);
+        0 8px 24px rgba(38, 37, 33, 0.02), 
+        inset 0 1px 1px rgba(255, 255, 255, 0.5);
       z-index: 5;
       pointer-events: none;
-      transform: perspective(800px) rotateX(4deg);
+      transform: perspective(800px) rotateX(3deg);
     }
 
     .shelf-caption-link {
@@ -655,7 +655,7 @@
       color: var(--ink);
       text-decoration: none;
       font-weight: 600;
-      border-bottom: 1.5px solid rgba(38, 37, 33, 0.15);
+      border-bottom: 1px solid rgba(38, 37, 33, 0.15);
       padding-bottom: 1px;
       transition: border-color 0.15s;
     }
@@ -664,7 +664,7 @@
       border-color: var(--ink);
     }
 
-    /* FLOATING PILL BUTTON */
+    /* FLOATING PILL BUTTON - Crisp hardware-like action button */
     .floating-pill-container {
       position: fixed;
       bottom: 24px;
@@ -678,9 +678,9 @@
       gap: 8px;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 999px;
+      border-radius: var(--radius-sm);
       padding: 10px 16px;
-      box-shadow: 0 10px 30px rgba(38, 37, 33, 0.08);
+      box-shadow: 0 4px 12px rgba(38, 37, 33, 0.06);
       color: var(--ink);
       text-decoration: none;
       font-family: 'Inter', sans-serif;
@@ -690,19 +690,19 @@
     }
 
     .floating-pill:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 14px 35px rgba(38, 37, 33, 0.12);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(38, 37, 33, 0.1);
     }
 
     .floating-pill .pill-icon {
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       background: rgba(127, 184, 157, 0.15);
-      border-radius: 999px;
-      color: #3b6b55;
+      border-radius: var(--radius-sm);
+      color: var(--accent-dark, #3b6b55);
     }
   </style>
 </head>
@@ -711,7 +711,7 @@
   <nav>
     <a class="wordmark" href="/one/">MS</a>
     <ul>
-      <li><a href="/one/writing">Writing</a></li>
+      <li><a href="/one/writing" class="active">Writing</a></li>
       <li><a href="/one/work">Work</a></li>
     </ul>
   </nav>
@@ -728,92 +728,112 @@
       <p class="hero-lead">Investor, builder, and occasional writer. Working at the intersection of AI and venture.</p>
     </section>
 
-    <!-- CENTERPIECE WORKSPACE MOCKUP -->
+    <!-- CENTERPIECE WORKSPACE ARCHITECTURAL CARD (CREATIVE, NO DEAD INPUTS) -->
     <section class="workspace-card">
-      <!-- Left side: Node graph -->
+      <!-- Left side: Systems Topology (Subtle blueprint matrix of ideas) -->
       <div class="pane-left">
         <div class="node-graph-container">
-          <!-- Background SVG connection lines -->
-          <svg class="graph-svg" viewBox="0 0 380 380">
-            <!-- Concentric Orbits -->
-            <circle cx="190" cy="190" r="130" fill="none" stroke="rgba(231, 225, 214, 0.7)" stroke-width="1.2" stroke-dasharray="4 4" />
-            <circle cx="190" cy="190" r="70" fill="none" stroke="rgba(231, 225, 214, 0.3)" stroke-width="1.2" stroke-dasharray="4 4" />
+          <!-- Coordinates Axis Ticks -->
+          <div class="graph-axis-label axis-y">TOPOLOGY OF MIND</div>
+          <div class="graph-axis-label axis-x" style="bottom: 8px; left: 16px; top: auto; right: auto;">DB_VER / 2026.05</div>
+
+          <!-- Background SVG drafting schematic -->
+          <svg class="graph-svg" viewBox="0 0 360 360">
+            <!-- Blueprint Coordinate Grid Lines -->
+            <line x1="20" y1="180" x2="340" y2="180" stroke="rgba(231, 225, 214, 0.6)" stroke-width="1" />
+            <line x1="180" y1="20" x2="180" y2="340" stroke="rgba(231, 225, 214, 0.6)" stroke-width="1" />
             
-            <!-- Radiating Dotted Connectors -->
-            <line x1="190" y1="190" x2="190" y2="60" stroke="rgba(231, 225, 214, 0.8)" stroke-width="1" stroke-dasharray="2 2" />
-            <line x1="190" y1="190" x2="190" y2="320" stroke="rgba(231, 225, 214, 0.8)" stroke-width="1" stroke-dasharray="2 2" />
-            <line x1="190" y1="190" x2="60" y2="190" stroke="rgba(231, 225, 214, 0.8)" stroke-width="1" stroke-dasharray="2 2" />
-            <line x1="190" y1="190" x2="320" y2="190" stroke="rgba(231, 225, 214, 0.8)" stroke-width="1" stroke-dasharray="2 2" />
-            <line x1="190" y1="190" x2="98" y2="98" stroke="rgba(231, 225, 214, 0.8)" stroke-width="1" stroke-dasharray="2 2" />
-            <line x1="190" y1="190" x2="282" y2="98" stroke="rgba(231, 225, 214, 0.8)" stroke-width="1" stroke-dasharray="2 2" />
-            <line x1="190" y1="190" x2="98" y2="282" stroke="rgba(231, 225, 214, 0.8)" stroke-width="1" stroke-dasharray="2 2" />
-            <line x1="190" y1="190" x2="282" y2="282" stroke="rgba(231, 225, 214, 0.8)" stroke-width="1" stroke-dasharray="2 2" />
+            <!-- Concentric Orbits / Intellectual Horizons -->
+            <circle cx="180" cy="180" r="120" fill="none" stroke="rgba(231, 225, 214, 0.7)" stroke-width="1" stroke-dasharray="3 3" />
+            <circle cx="180" cy="180" r="75" fill="none" stroke="rgba(231, 225, 214, 0.4)" stroke-width="1" stroke-dasharray="3 3" />
+            
+            <!-- Radiating Dotted Alignments -->
+            <line x1="180" y1="180" x2="90" y2="90" stroke="rgba(231, 225, 214, 0.5)" stroke-width="0.8" stroke-dasharray="2 2" />
+            <line x1="180" y1="180" x2="270" y2="90" stroke="rgba(231, 225, 214, 0.5)" stroke-width="0.8" stroke-dasharray="2 2" />
+            <line x1="180" y1="180" x2="90" y2="270" stroke="rgba(231, 225, 214, 0.5)" stroke-width="0.8" stroke-dasharray="2 2" />
+            <line x1="180" y1="180" x2="270" y2="270" stroke="rgba(231, 225, 214, 0.5)" stroke-width="0.8" stroke-dasharray="2 2" />
           </svg>
 
-          <!-- Center Node -->
+          <!-- Focal Centerpiece of Matrix -->
           <div class="node-center">
-            <span class="sunflower">🌻</span>
-            <span class="center-label">AI & VENTURE</span>
+            <span class="center-label">M. SAMNE</span>
+            <span class="center-meta">CORE / THESIS</span>
           </div>
 
-          <!-- Surrounding Node Labels -->
-          <div class="node-item" style="top: 25px; left: 130px;">AI Infrastructure</div>
-          <div class="node-item" style="top: 80px; right: 25px;">Venture Capital</div>
-          <div class="node-item" style="top: 172px; right: 5px;">Agentic Systems</div>
-          <div class="node-item" style="bottom: 80px; right: 25px;">Founders</div>
-          <div class="node-item" style="bottom: 25px; left: 145px;">Research</div>
-          <div class="node-item" style="bottom: 80px; left: 25px;">Sociology</div>
-          <div class="node-item" style="top: 172px; left: 5px;">Writing</div>
-          <div class="node-item" style="top: 80px; left: 25px;">Philosophy</div>
+          <!-- Clickable node coordinates (Each triggers tab swap in right pane!) -->
+          <div class="node-item active-node" id="node-soc" style="top: 50px; left: 105px;" onclick="switchThesis('soc')">Sociology of Models</div>
+          <div class="node-item" id="node-cap" style="top: 110px; right: 20px;" onclick="switchThesis('cap')">Venture Architectures</div>
+          <div class="node-item" id="node-inf" style="bottom: 110px; left: 15px;" onclick="switchThesis('inf')">Compute Infrastructure</div>
+          <div class="node-item" id="node-epi" style="bottom: 50px; right: 90px;" onclick="switchThesis('epi')">Machine Epistemology</div>
         </div>
-        <div class="graph-meta">INTERSECTION / M.SAMNE</div>
+        <div class="graph-meta">GEOMETRIC RESEARCH GRID</div>
       </div>
 
-      <!-- Right side: Chat Panel -->
+      <!-- Right side: Real research preview card (Fully active, NO dead form inputs) -->
       <div class="pane-right">
-        <div class="mock-header">
-          <div class="mock-tabs">
-            <span class="mock-tab">Home</span>
-            <span class="mock-tab">Thesis</span>
-            <span class="mock-tab active">Writing</span>
-            <span class="mock-tab">Work</span>
-            <span class="mock-tab">Library</span>
+        <div class="panel-header">
+          <div class="panel-eyebrow">ACTIVE DOSSIER EXPLORER</div>
+          <div class="thesis-tabs">
+            <span class="thesis-tab active" id="tab-soc" onclick="switchThesis('soc')">Sociology</span>
+            <span class="thesis-tab" id="tab-cap" onclick="switchThesis('cap')">Capital</span>
+            <span class="thesis-tab" id="tab-inf" onclick="switchThesis('inf')">Infrastructure</span>
+            <span class="thesis-tab" id="tab-epi" onclick="switchThesis('epi')">Epistemology</span>
           </div>
         </div>
 
-        <div class="chat-history">
-          <!-- User message -->
-          <div class="chat-bubble user">
-            Let's review the research thesis at the intersection of AI and venture capital.
+        <div class="thesis-content-container">
+          <!-- Sociology pane -->
+          <div class="thesis-pane active-pane" id="pane-soc">
+            <h3 class="thesis-title">Silicon Sociology</h3>
+            <p class="thesis-body">Analyzing why artificial intelligence is increasingly structured into cooperative groups, model councils, and administrative networks rather than monolithic agents.</p>
+            <ul class="thesis-list">
+              <li>Interface Mirror — System-wide linguistic handshakes</li>
+              <li>Archive Mirror — Institutional audit records</li>
+              <li>Constraint Mirror — Specialization outperforming raw scale</li>
+            </ul>
           </div>
 
-          <!-- System reply -->
-          <div class="chat-bubble system">
-            Understood. The primary essay is <strong>Silicon Sociology</strong>, which analyzes why AI systems are being organized into societies of models (using councils, debate, and division of labor).
-            
-            <div class="bullet-list">
-              • Interface Mirror: Language control<br>
-              • Archive Mirror: Institutional records<br>
-              • Constraint Mirror: Specialization benefits
-            </div>
+          <!-- Capital pane -->
+          <div class="thesis-pane" id="pane-cap">
+            <h3 class="thesis-title">Capital Architectures</h3>
+            <p class="thesis-body">Investing in early projects where intelligence and infrastructure meet. Our focus sits at the structural shift from static software licenses to active, decentralized compute networks.</p>
+            <ul class="thesis-list">
+              <li>Marginal cost of reasoning collapsing to zero</li>
+              <li>Orchestration platforms emerging as the central gatekeepers</li>
+              <li>Capital deployment aligned directly to raw token execution speed</li>
+            </ul>
+          </div>
 
-            <div class="chat-status-pill">
-              <span class="dot"></span>
-              <span>READING COMPLETED / LIVE</span>
-            </div>
-            <br>
-            <a class="chat-cta-btn" href="/one/silicon-sociology">Read essay: Silicon Sociology →</a>
+          <!-- Infrastructure pane -->
+          <div class="thesis-pane" id="pane-inf">
+            <h3 class="thesis-title">Compute Infrastructure</h3>
+            <p class="thesis-body">Mapping foundational middleware, model pruning engines, and inference-time hyper-optimization stacks that allow small clusters to out-perform larger rigs.</p>
+            <ul class="thesis-list">
+              <li>Model coordination over high-speed networks</li>
+              <li>Context cache virtualization across distributed agents</li>
+              <li>Hardware-native task dispatch optimization</li>
+            </ul>
+          </div>
+
+          <!-- Epistemology pane -->
+          <div class="thesis-pane" id="pane-epi">
+            <h3 class="thesis-title">Machine Epistemology</h3>
+            <p class="thesis-body">How intelligence is organized, structured, and indexed under modern LLM architectures. Exploring the limits of representation and semantic data vaults.</p>
+            <ul class="thesis-list">
+              <li>Non-linear knowledge graphs as persistent model memory</li>
+              <li>Symbolic verification layers overriding raw probability</li>
+              <li>Structured dialogue frameworks for multi-model consensus</li>
+            </ul>
           </div>
         </div>
 
-        <div class="chat-input-container">
-          <input class="chat-input" type="text" placeholder="Ask Max anything..." readonly>
-          <button class="chat-send-btn">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="6" y1="10" x2="6" y2="2"></line>
-              <polyline points="2 6 6 2 10 6"></polyline>
-            </svg>
-          </button>
+        <div class="panel-footer">
+          <div class="system-status">
+            <span class="indicator-dot"></span>
+            <span id="system-status-text">THESIS_SOC // SYNCHRONIZED</span>
+          </div>
+          <!-- Real link targeting appropriate files -->
+          <a class="action-btn" id="thesis-cta-btn" href="/one/silicon-sociology">Read essay: Silicon Sociology →</a>
         </div>
       </div>
     </section>
@@ -832,7 +852,8 @@
             <h3 class="book-title">Silicon Sociology</h3>
           </div>
           <div class="book-cover-container">
-            <img class="book-cover" src="/one/images/silicon-sociology-cover.png" alt="Silicon Sociology Cover">
+            <!-- Correct relative image path, displays beautifully everywhere -->
+            <img class="book-cover" src="images/silicon-sociology-cover.png" alt="Silicon Sociology Cover">
           </div>
           <div class="book-footer">
             <span>by M. Samne</span>
@@ -862,7 +883,7 @@
     </section>
   </main>
 
-  <!-- FLOATING ACTION DOWNLOAD PILL -->
+  <!-- FLOATING ACTION DOWNLOAD PILL - Sharp edges -->
   <div class="floating-pill-container">
     <a href="/one/silicon-sociology" class="floating-pill">
       <span class="pill-icon">
@@ -873,5 +894,52 @@
       <span>Read latest essay</span>
     </a>
   </div>
+
+  <!-- Bulletproof Interactive Tab Controller -->
+  <script>
+    function switchThesis(id) {
+      // Remove active classes from tabs
+      document.querySelectorAll('.thesis-tab').forEach(t => t.classList.remove('active'));
+      // Remove active classes from nodes
+      document.querySelectorAll('.node-item').forEach(n => n.classList.remove('active-node'));
+      // Hide all panes
+      document.querySelectorAll('.thesis-pane').forEach(p => p.classList.remove('active-pane'));
+
+      // Add active classes to selected
+      const selectedTab = document.getElementById('tab-' + id);
+      const selectedNode = document.getElementById('node-' + id);
+      const selectedPane = document.getElementById('pane-' + id);
+
+      if (selectedTab) selectedTab.classList.add('active');
+      if (selectedNode) selectedNode.classList.add('active-node');
+      if (selectedPane) selectedPane.classList.add('active-pane');
+
+      // Update system status and CTA button accordingly
+      const statusText = document.getElementById('system-status-text');
+      const ctaBtn = document.getElementById('thesis-cta-btn');
+
+      if (id === 'soc') {
+        statusText.textContent = 'THESIS_SOC // SYNCHRONIZED';
+        ctaBtn.setAttribute('href', '/one/silicon-sociology');
+        ctaBtn.textContent = 'Read essay: Silicon Sociology →';
+        ctaBtn.style.display = 'inline-flex';
+      } else if (id === 'cap') {
+        statusText.textContent = 'THESIS_CAP // LOCAL_RECORD';
+        ctaBtn.setAttribute('href', 'https://www.linkedin.com/in/maximiliansamne/');
+        ctaBtn.textContent = 'Venture Inquiries on LinkedIn →';
+        ctaBtn.style.display = 'inline-flex';
+      } else if (id === 'inf') {
+        statusText.textContent = 'THESIS_INF // LOCAL_RECORD';
+        ctaBtn.setAttribute('href', 'https://www.linkedin.com/in/maximiliansamne/');
+        ctaBtn.textContent = 'Inquire on Infrastructure Thesis →';
+        ctaBtn.style.display = 'inline-flex';
+      } else if (id === 'epi') {
+        statusText.textContent = 'THESIS_EPI // ARCHIVED';
+        ctaBtn.setAttribute('href', 'https://www.linkedin.com/in/maximiliansamne/');
+        ctaBtn.textContent = 'Connect to discuss Epistemology →';
+        ctaBtn.style.display = 'inline-flex';
+      }
+    }
+  </script>
 </body>
 </html>
