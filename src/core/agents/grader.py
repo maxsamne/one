@@ -140,18 +140,21 @@ class GraderHook(Hook):
     """
     name = "grader"
 
-    def __init__(self, criteria: list[Criterion], judge: AiClient) -> None:
+    def __init__(self, criteria: list[Criterion], judge: AiClient, needs_images: bool = False) -> None:
         self._criteria = criteria
         self._judge = judge
+        self._needs_images = needs_images
         self._history: list[GradeSnapshot] = []
 
     async def check(self, ctx: HookContext) -> str | None:
         version = len(self._history) + 1
         prompt = self._build_prompt(ctx.response)
+        images = self._collect_images() if self._needs_images else None
 
         try:
             grade: _GradeResponse = await self._judge.complete(
                 prompt,
+                images=images,
                 response_model=_GradeResponse,
             )
         except Exception as e:
@@ -190,9 +193,17 @@ class GraderHook(Hook):
 
     def _build_prompt(self, response: str) -> str:
         from core.agents import skills as _skills
-        from core.agents.task_ctx import TASK_SKILLS_CTX
+        from core.agents.task_ctx import TASK_CTX, TASK_SKILLS_CTX
 
         parts: list[str] = []
+
+        # Inject the original user prompt when this grader judges prompt fidelity.
+        # Other graders skip this — they only care about the output against their criteria.
+        if self._needs_images:
+            ctx = TASK_CTX.get()
+            user_prompt = (ctx.prompt if ctx else "") or ""
+            if user_prompt:
+                parts.append(f"## Original user prompt — judge whether the output answers this\n\n{user_prompt}")
 
         # Inject actual skill bodies so the judge checks real rules
         skill_paths = list(TASK_SKILLS_CTX.get() or [])
@@ -216,3 +227,9 @@ class GraderHook(Hook):
         parts.append(response)
 
         return "\n\n".join(parts)
+
+    def _collect_images(self) -> list:
+        """Pull user-attached images from the task context. None/empty → judge runs text-only."""
+        from core.agents.task_ctx import TASK_IMAGES_CTX
+        imgs = list(TASK_IMAGES_CTX.get() or [])
+        return imgs or None

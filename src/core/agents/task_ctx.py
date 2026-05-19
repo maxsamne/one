@@ -16,6 +16,7 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class TaskContext:
     task_id: str
+    prompt: str = ""  # original user prompt — read by hooks that need to grade against it
 
 
 # Identity — wraps task_id so log/UI can stamp every event with it.

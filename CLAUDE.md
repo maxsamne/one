@@ -287,11 +287,15 @@ Multiple hooks combine their feedback into one message so the agent fixes everyt
 
 `src/core/agents/grader.py` defines `GraderHook` — a stateful LLM-as-judge hook that scores each criterion 0–`MAX_SCORE` (currently 5) and returns actionable feedback until every criterion hits the top score or the shared `hook_retries` budget runs out. Plateau detection (identical scores to prior round) appends a "try a fundamentally different approach" nudge.
 
-**Registry (`src/core/agents/graders.py`)** — graders live as markdown files at `src/core/graders/<domain>/<name>.md`, mirroring how skills are organised. Each file has YAML-ish frontmatter (`judge: provider:model`, `suggested_for_skills: [...]`) and a markdown body with a `> summary` line and `### <name> (weight: N)` blocks under `## Criteria`. Discovery is cached.
+**Registry (`src/core/agents/graders.py`)** — graders live as markdown files at `src/core/graders/<domain>/<name>.md`, mirroring how skills are organised. Each file has YAML-ish frontmatter (`judge: provider:model`, `suggested_for_skills: [...]`, optional `auto_attach_with_any_grader: true`, optional `needs_images: true`) and a markdown body with a `> summary` line and `### <name> (weight: N)` blocks under `## Criteria`. Discovery is cached.
 
 **Judge default lives in `tiers.json._grader_judge`** — single source of truth, mirrors the `_router` pattern. Bump the flash model name there once and every grader without an explicit `judge:` override inherits. `core.ai_client.tiers.load_grader_judge_config()` reads it; `core.agents.graders.instantiate(path)` resolves and caches the judge client.
 
 **Attachment** — graders attach per-task. `POST /task` accepts `graders: list[str]` (validated). Gateway sets `TASK_GRADERS_CTX`; manager calls `graders.instantiate(path)` per attached grader and prepends them to `DEFAULT_HOOKS` on `coder.run`, bumping `hook_retries` to `max(GRADER_HOOK_RETRIES, DEFAULT_HOOK_RETRIES)`. Universal linters keep firing alongside.
+
+**Auto-attach** — graders flagged `auto_attach_with_any_grader: true` in frontmatter ride along whenever the user attaches *any* other grader. The shipped `general/prompt-fidelity.md` uses this: it grades whether the output answers the user's literal prompt and, if reference images were attached, whether it took real inspiration from them. Trivial tasks with no graders attached pay nothing — the auto-attach only fires when the user has already signalled "I care about quality on this task." Implemented in `graders.auto_attach_paths()` + `manager._build_extra_hooks`.
+
+**`needs_images` flag** — graders that judge against user references set `needs_images: true`. The `GraderHook` then (a) injects the original user prompt from `TASK_CTX.prompt` into the judge call and (b) passes `TASK_IMAGES_CTX` to `judge.complete(images=...)`. Other graders skip both — keeps them cheap and text-only. `TaskContext` carries the original prompt for this purpose; gateway sets it alongside `task_id`.
 
 **Suggestions** — `GET /graders/suggest?skills=path1,path2` returns graders whose `suggested_for_skills` overlaps the given skills. UI surfaces them as "add grader?" chips when the user attaches a skill.
 

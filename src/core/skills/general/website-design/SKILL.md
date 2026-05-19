@@ -1,4 +1,4 @@
-> Personal website skill — builds and updates pages in `docs/` following the shared DESIGN_SPEC.md design system. For static HTML pages deployed via GitHub Pages.
+> Personal website skill — builds and updates pages in `docs/` for static GitHub Pages hosting. Pairs with the shared DESIGN_SPEC.md. **When reference images are attached, take heavy inspiration from them — composition, density, palette, type voice, imagery — and pick the design-spec preset that matches the reference's mood.**
 
 # Website design
 
@@ -7,10 +7,12 @@ website, personal site, homepage, landing page, about page, writing page, blog, 
 
 ## Agent hints
 - **Output:** write complete self-contained HTML files to `docs/`. Always inline all styles — no external CSS files, no build step.
-- **Design system:** always load `general/design-spec` alongside this skill — it contains the five presets (colour tokens, typography, skeletons). This site defaults to **Atelier Ledger** unless the page type calls for another.
+- **Design system:** always load `general/design-spec` alongside this skill — it contains the five presets (colour tokens, typography, skeletons, imagery guidance).
+- **Reference images come first.** If the user attached reference screenshots, they are the primary brief. Echo the reference's composition (hero / grid / chapter cards / whatever is there), density, palette family, and type voice. Pick the design-spec preset that best matches the reference's mood and translate the reference *through* that preset. Do not default to a sparser layout than the reference shows.
+- **No references? Default to Atelier Ledger.** Warm parchment tones, humanist serif for headings, generous whitespace. Switch presets if the page content calls for a different mood (a product-adjacent page → Porcelain Ops, a manifesto page → Monument Press, etc.).
 - **After writing files:** `git add docs/`, `git commit`, `git push` — GitHub Pages auto-deploys on push.
-- **Preferred thinking:** `low` for copy-only updates; `medium` for new page layouts.
-- **Images:** you may generate up to 5 images per task using the `generate_image` tool when a visual would genuinely improve the page. Save them to `docs/images/` and reference with a root-relative path (e.g. `/one/images/filename.png`). Don't generate images speculatively — only when the layout calls for it.
+- **Preferred thinking:** `low` for copy-only updates; `medium` for new page layouts or reference-driven redesigns.
+- **Images:** you may generate up to 5 images per task using the `generate_image` tool when the reference or the page calls for them (hero diagrams, chapter cards, portrait, ambient illustrations). Save them to `docs/images/` and reference with a root-relative path (e.g. `/one/images/filename.png`). Don't generate speculatively — but don't skip a clearly called-for hero image just to stay sparse.
 - **Commonly related skills:** `general/artifact-design/SKILL.md` (for the full DESIGN_SPEC), `general/article-design/SKILL.md` (for writing/essay pages).
 
 ---
@@ -52,8 +54,8 @@ Every page shares the same nav and footer. Copy this shell exactly — don't inv
 
 These extend the DESIGN_SPEC — they don't override it:
 
-- **Default preset: Atelier Ledger.** Warm parchment tones, humanist serif for headings, generous whitespace. Use Porcelain Ops for a lighter/product-adjacent page if the content warrants it.
-- **Homepage:** sparse. Name, one line of positioning, 2–3 links. No hero image.
+- **Reference-driven preset selection.** When a reference is attached, the reference picks the preset, not a hardcoded default. Match its visual density, hero style, and use of imagery.
+- **No-reference default: Atelier Ledger.** Warm parchment tones, humanist serif for headings, generous whitespace.
 - **Writing pages:** prose-first. Lora body, generous line-height (1.75+), max-width ~680px.
 - **No JavaScript by default.** Add it only when interactivity is genuinely needed.
 - **No framework, no build.** Plain HTML + inlined CSS. GitHub Pages serves it directly.
