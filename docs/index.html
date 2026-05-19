@@ -6,20 +6,23 @@
   <title>Maximilian Samne</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Source+Sans+3:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f7f5ef;
-      --surface: rgba(255, 253, 248, 0.78);
-      --surface-strong: rgba(255, 253, 248, 0.94);
-      --ink: #262521;
-      --ink-soft: #3a3834;
-      --ink-muted: #7d786f;
-      --accent: #7fb89d;
-      --accent-deep: #648f79;
-      --border: rgba(231, 225, 214, 0.92);
-      --shadow: 0 22px 60px rgba(36, 29, 18, 0.08);
-      --shadow-soft: 0 12px 30px rgba(36, 29, 18, 0.05);
+      --bg: #f7f2e8;
+      --bg-grid: rgba(111, 84, 53, 0.08);
+      --surface: rgba(252, 247, 239, 0.84);
+      --surface-strong: rgba(250, 244, 234, 0.94);
+      --surface-soft: rgba(255, 251, 244, 0.72);
+      --ink: #211a14;
+      --ink-soft: #3f3328;
+      --ink-muted: #7c6857;
+      --accent: #8a5a36;
+      --accent-soft: rgba(138, 90, 54, 0.12);
+      --border: rgba(131, 102, 72, 0.24);
+      --shadow: 0 24px 70px rgba(60, 40, 18, 0.12);
+      --shadow-soft: 0 14px 36px rgba(60, 40, 18, 0.08);
+      --focus: rgba(138, 90, 54, 0.28);
     }
 
     *, *::before, *::after {
@@ -29,9 +32,9 @@
     html {
       min-height: 100%;
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0)) 0 0 / 100% 100% no-repeat,
-        linear-gradient(to right, rgba(125, 120, 111, 0.06) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(125, 120, 111, 0.06) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(255,255,255,0.46), rgba(255,255,255,0)) 0 0 / 100% 100% no-repeat,
+        linear-gradient(to right, var(--bg-grid) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--bg-grid) 1px, transparent 1px),
         var(--bg);
       background-size: 100% 100%, 72px 72px, 72px 72px, auto;
       background-attachment: fixed;
@@ -41,10 +44,11 @@
       margin: 0;
       min-height: 100vh;
       color: var(--ink);
-      font-family: 'Source Sans 3', sans-serif;
-      font-size: 16px;
+      background:
+        radial-gradient(circle at top, rgba(255,255,255,0.48), rgba(255,255,255,0) 42%),
+        transparent;
+      font-family: 'Inter', sans-serif;
       line-height: 1.6;
-      background: radial-gradient(circle at top, rgba(255,255,255,0.5), rgba(255,255,255,0) 42%);
     }
 
     a {
@@ -52,11 +56,11 @@
     }
 
     .page-shell {
-      width: min(1180px, calc(100vw - 40px));
-      margin: 22px auto;
-      border: 1px solid rgba(255, 255, 255, 0.65);
-      border-radius: 28px;
-      background: rgba(247, 245, 239, 0.72);
+      width: min(1160px, calc(100vw - 32px));
+      margin: 16px auto;
+      border: 1px solid rgba(255,255,255,0.58);
+      border-radius: 30px;
+      background: rgba(247, 242, 232, 0.72);
       box-shadow: var(--shadow);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
@@ -67,33 +71,33 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 24px;
-      padding: 18px 24px;
+      gap: 20px;
+      padding: 18px 22px;
       border-bottom: 1px solid var(--border);
-      background: rgba(255, 253, 248, 0.66);
+      background: rgba(252, 247, 239, 0.72);
     }
 
     nav .wordmark {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 48px;
-      height: 48px;
+      min-width: 50px;
+      height: 50px;
       padding: 0 16px;
       border: 1px solid var(--border);
       border-radius: 16px;
       background: var(--surface-strong);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
       text-decoration: none;
-      font: 500 15px/1 'DM Mono', monospace;
-      letter-spacing: 0.04em;
       color: var(--ink);
+      font: 500 13px/1 'JetBrains Mono', monospace;
+      letter-spacing: 0.12em;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.72);
     }
 
     nav ul {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       list-style: none;
       margin: 0;
       padding: 0;
@@ -103,62 +107,67 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      height: 42px;
+      min-height: 42px;
       padding: 0 16px;
       border: 1px solid transparent;
-      border-radius: 14px;
+      border-radius: 999px;
       color: var(--ink-muted);
       text-decoration: none;
-      font: 500 14px/1 'Hanken Grotesk', sans-serif;
-      letter-spacing: -0.01em;
-      transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+      font: 500 14px/1 'Inter', sans-serif;
+      transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
     }
 
     nav ul a:hover,
     nav ul a:focus-visible {
       color: var(--ink);
-      background: rgba(255, 253, 248, 0.82);
+      background: rgba(255, 251, 244, 0.9);
       border-color: var(--border);
+      box-shadow: var(--shadow-soft);
       outline: none;
       transform: translateY(-1px);
     }
 
+    .page-shell :focus-visible {
+      box-shadow: 0 0 0 4px var(--focus);
+    }
+
     main {
-      padding: 52px 24px 24px;
+      padding: 34px 22px 22px;
     }
 
     .hero-card {
       max-width: 760px;
-      padding: 40px 42px;
+      padding: 42px;
       border: 1px solid var(--border);
-      border-radius: 28px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.64), rgba(255,253,248,0.9));
-      box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,0.75);
+      border-radius: 30px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.48), rgba(255,255,255,0) 55%),
+        var(--surface);
+      box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,0.72);
     }
 
     .eyebrow {
       margin: 0 0 18px;
       color: var(--ink-muted);
-      font: 500 12px/1.2 'DM Mono', monospace;
-      letter-spacing: 0.16em;
+      font: 500 12px/1.3 'JetBrains Mono', monospace;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
     }
 
     h1 {
-      margin: 0 0 20px;
-      max-width: 10ch;
+      margin: 0 0 18px;
+      max-width: 11ch;
       color: var(--ink-soft);
-      font: 600 clamp(3rem, 7vw, 5.15rem)/0.96 'Hanken Grotesk', sans-serif;
-      letter-spacing: -0.055em;
+      font: 600 clamp(3.2rem, 7.6vw, 5.4rem)/0.95 'Lora', serif;
+      letter-spacing: -0.03em;
       text-wrap: balance;
     }
 
     .lead {
       max-width: 560px;
-      margin: 0 0 32px;
+      margin: 0 0 30px;
       color: var(--ink-muted);
-      font: 400 20px/1.58 'Source Sans 3', sans-serif;
-      letter-spacing: -0.01em;
+      font: 400 19px/1.72 'Inter', sans-serif;
     }
 
     .links {
@@ -171,44 +180,68 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 46px;
+      min-height: 48px;
       padding: 0 18px;
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 999px;
       background: var(--surface-strong);
       color: var(--ink-soft);
       text-decoration: none;
-      font: 500 14px/1 'Hanken Grotesk', sans-serif;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.72);
-      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      font: 500 14px/1 'Inter', sans-serif;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.76);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
     }
 
     .links a:hover,
     .links a:focus-visible {
       transform: translateY(-1px);
-      border-color: rgba(127, 184, 157, 0.7);
-      box-shadow: 0 12px 24px rgba(71, 88, 69, 0.08), inset 0 1px 0 rgba(255,255,255,0.8);
+      border-color: rgba(138, 90, 54, 0.42);
+      background: #fffaf2;
+      box-shadow: 0 14px 28px rgba(60, 40, 18, 0.1), inset 0 1px 0 rgba(255,255,255,0.84);
       outline: none;
     }
 
     .links a:last-child {
-      background: #2e2d2b;
-      border-color: #2e2d2b;
-      color: #f8f6f1;
-      box-shadow: 0 12px 28px rgba(28, 27, 24, 0.18);
+      background: var(--ink);
+      color: #f8f2ea;
+      border-color: var(--ink);
+      box-shadow: 0 14px 30px rgba(33, 26, 20, 0.2);
     }
 
     .links a:last-child:hover,
     .links a:last-child:focus-visible {
-      box-shadow: 0 16px 30px rgba(28, 27, 24, 0.22);
-      border-color: #2e2d2b;
+      background: #2d241c;
+      border-color: #2d241c;
+      box-shadow: 0 18px 34px rgba(33, 26, 20, 0.24);
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 22px 22px;
+      color: var(--ink-muted);
+      font: 400 12px/1.6 'JetBrains Mono', monospace;
+    }
+
+    footer a {
+      color: var(--ink-muted);
+      text-decoration: none;
+    }
+
+    footer a:hover,
+    footer a:focus-visible {
+      color: var(--ink);
+      text-decoration: underline;
+      outline: none;
     }
 
     @media (max-width: 720px) {
       .page-shell {
-        width: min(100vw - 20px, 1180px);
-        margin: 10px auto;
-        border-radius: 22px;
+        width: min(100vw - 16px, 1160px);
+        margin: 8px auto;
+        border-radius: 24px;
       }
 
       nav {
@@ -216,31 +249,37 @@
       }
 
       nav ul {
-        gap: 8px;
+        gap: 6px;
       }
 
       nav ul a {
-        height: 38px;
+        min-height: 38px;
         padding: 0 12px;
         font-size: 13px;
       }
 
       main {
-        padding: 28px 16px 16px;
+        padding: 20px 16px 16px;
       }
 
       .hero-card {
         padding: 28px 22px;
-        border-radius: 22px;
+        border-radius: 24px;
       }
 
       h1 {
         max-width: none;
-        font-size: clamp(2.65rem, 12vw, 4rem);
+        font-size: clamp(2.7rem, 12vw, 4rem);
       }
 
       .lead {
-        font-size: 18px;
+        font-size: 17px;
+      }
+
+      footer {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 14px 16px 18px;
       }
     }
   </style>
@@ -248,16 +287,17 @@
 <body>
   <div class="page-shell">
     <nav>
-      <a class="wordmark" href="/">MS</a>
+      <a class="wordmark" href="/one/">MS</a>
       <ul>
-        <li><a href="/one/silicon-sociology">Writing</a></li>
+        <li><a href="/one/writing">Writing</a></li>
         <li><a href="/one/work">Work</a></li>
       </ul>
     </nav>
+
     <main>
       <section class="hero-card">
         <p class="eyebrow">Maximilian Samne</p>
-        <h1>Building things worth<br>paying attention to.</h1>
+        <h1>Building things worth paying attention to.</h1>
         <p class="lead">Investor, builder, and occasional writer. Working at the intersection of AI and venture.</p>
         <div class="links">
           <a href="/one/silicon-sociology">Silicon Sociology</a>
@@ -265,6 +305,11 @@
         </div>
       </section>
     </main>
+
+    <footer>
+      <span>Stockholm · AI · Venture</span>
+      <a href="/one/silicon-sociology">Latest writing</a>
+    </footer>
   </div>
 </body>
 </html>
