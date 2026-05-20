@@ -100,6 +100,39 @@ async def test_missing_image_file_hook_flags_dead_srcs_and_passes_real_ones(tmp_
         WORKDIR.reset(tok)
 
 
+async def test_docs_static_image_hook_rejects_gateway_images_in_docs(tmp_path):
+    from core.agents.hooks import DocsStaticImageHook
+    from core.tools.ctx import WORKDIR
+
+    docs = tmp_path / "docs"
+    (docs / "images").mkdir(parents=True)
+    (docs / "images" / "hero.png").write_bytes(b"\x89PNG-docs")
+    (tmp_path / "generated" / "images" / "tid").mkdir(parents=True)
+    (tmp_path / "generated" / "images" / "tid" / "1-hero.png").write_bytes(b"\x89PNG-local")
+
+    h = DocsStaticImageHook()
+    ctx = HookContext(response="Done", turn=1, agent_id="t", role="r")
+    tok = WORKDIR.set(tmp_path)
+    try:
+        (docs / "index.html").write_text(
+            '<img src="/one/images/hero.png"><div style="background-image:url(images/hero.png)"></div>',
+            encoding="utf-8",
+        )
+        assert await h.check(ctx) is None
+
+        (docs / "index.html").write_text(
+            '<img src="/images/tid/1-hero.png"><img src="/one/images/missing.png">',
+            encoding="utf-8",
+        )
+        fb = await h.check(ctx)
+        assert fb is not None
+        assert "/images/tid/1-hero.png" in fb
+        assert "/one/images/missing.png" in fb
+        assert "docs/images" in fb
+    finally:
+        WORKDIR.reset(tok)
+
+
 async def test_missing_inline_html_fires_when_path_mentioned_but_no_block():
     from core.agents.hooks import MissingInlineHtmlHook
     h = MissingInlineHtmlHook()

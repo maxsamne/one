@@ -2,7 +2,9 @@
 serves them from there via the workdir registry."""
 
 import pytest
+import subprocess
 from fastapi.testclient import TestClient
+from pathlib import Path
 
 from core.agents import workdir_registry
 from core.agents.task_ctx import TASK_CTX, TIER_CTX, TaskContext
@@ -18,6 +20,10 @@ class _FakeImageClient:
 
     async def generate(self, prompt: str, size: str) -> ImageContent:
         return ImageContent(mime="image/png", data=b"\x89PNG\r\n\x1a\nfake-bytes")
+
+
+def _run(cmd: list[str], cwd: Path) -> str:
+    return subprocess.check_output(cmd, cwd=str(cwd), stderr=subprocess.STDOUT).decode().strip()
 
 
 async def test_generate_image_writes_into_workdir(tmp_path, monkeypatch):
@@ -89,6 +95,74 @@ def test_persistent_manager_hides_lifecycle_git_tools():
     assert "git_checkout" not in names
     assert "git_push" not in names
     assert "git_create_pr" not in names
+
+
+async def test_persistent_run_serves_generated_image_after_cleanup(tmp_path, monkeypatch):
+    from core.agents import manager, worktree
+    from core.ai_client.models import ThinkingLevel
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _run(["git", "init", "-q", "-b", "main"], repo)
+    _run(["git", "config", "user.email", "t@t.t"], repo)
+    _run(["git", "config", "user.name", "t"], repo)
+    (repo / ".gitignore").write_text("generated/images/\n.worktrees/\n", encoding="utf-8")
+    _run(["git", "add", ".gitignore"], repo)
+    _run(["git", "commit", "-q", "-m", "seed"], repo)
+
+    monkeypatch.setattr(manager, "REPO_ROOT", repo)
+    monkeypatch.setattr(worktree, "REPO_ROOT", repo)
+    monkeypatch.setattr(worktree, "WORKTREE_DIR", repo / ".worktrees")
+    monkeypatch.setattr(worktree, "AUTO_OPEN_PR", False)
+    monkeypatch.setattr("core.gateway.server._IMAGES_DIR", repo / "generated" / "images")
+    monkeypatch.setattr("core.tools.image_gen.image_client_for_tier", lambda tier: _FakeImageClient())
+
+    captured: dict[str, str] = {}
+
+    class _ImageGeneratingClient:
+        model_name = "fake-model"
+        provider = "fake"
+
+        async def complete(self, prompt, *, instructions=None, thinking=None, extra_tools=(), images=None, response_model=None):
+            tool = next(t for t in extra_tools if t.name == "generate_image")
+            url = await tool.fn("stable local preview image")
+            captured["url"] = url
+            return f'```html\n<html><body><img src="{url}" alt="hero"></body></html>\n```'
+
+    async def fake_route(task: str, pre_loaded_paths: list[str]):
+        return _ImageGeneratingClient(), ThinkingLevel.MINIMAL, "fakeprov"
+
+    monkeypatch.setattr(manager, "_route", fake_route)
+
+    task_tok = TASK_CTX.set(TaskContext(task_id="img_e2e", prompt="make persistent image artifact"))
+    tier_tok = TIER_CTX.set("cheap")
+    try:
+        plan = manager._Plan(
+            pre_loaded_paths=[],
+            skill_bodies="",
+            skill_index="",
+            images=[],
+            n_skill_images=0,
+            n_user_images=0,
+            date_ctx="",
+        )
+        await manager._dispatch(
+            "make persistent image artifact",
+            manager.TaskMode.PERSISTENT,
+            plan,
+            extra_tools=None,
+        )
+    finally:
+        TIER_CTX.reset(tier_tok)
+        TASK_CTX.reset(task_tok)
+
+    assert captured["url"].startswith("/images/img_e2e/")
+    assert not (repo / ".worktrees" / "img_e2e-fakeprov").exists()
+
+    client = TestClient(app)
+    r = client.get(captured["url"])
+    assert r.status_code == 200
+    assert r.content.startswith(b"\x89PNG")
 
 
 async def test_resolve_parent_base_returns_none_for_unknown():

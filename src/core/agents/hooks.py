@@ -131,6 +131,7 @@ _IMG_SRC_RE = re.compile(
     r'<img\b[^>]*\bsrc\s*=\s*["\']([^"\']+)["\'][^>]*/?>',
     re.IGNORECASE,
 )
+_CSS_URL_RE = re.compile(r"url\(\s*(['\"]?)([^'\")]+)\1\s*\)", re.IGNORECASE)
 
 _REMOTE_SRC_SCHEMES = {"http", "https", "data", "mailto", "javascript", "tel", "ftp", "slack"}
 
@@ -178,6 +179,29 @@ def _candidate_exists(candidate: Path, workdir: Path) -> bool:
     return (resolved == root or root in resolved.parents) and resolved.is_file()
 
 
+def _docs_asset_exists(src: str, html_file: Path, workdir: Path) -> bool:
+    local_src = _normalise_local_img_src(src)
+    if not local_src:
+        return True
+
+    docs_root = workdir / "docs"
+    if local_src.startswith("/images/"):
+        return False
+    if local_src.startswith("/one/"):
+        candidate = docs_root / local_src[len("/one/"):]
+    elif local_src.startswith("/"):
+        candidate = docs_root / local_src.lstrip("/")
+    else:
+        candidate = html_file.parent / local_src
+
+    try:
+        resolved = candidate.resolve(strict=True)
+        docs_resolved = docs_root.resolve()
+    except (FileNotFoundError, OSError):
+        return False
+    return (resolved == docs_resolved or docs_resolved in resolved.parents) and resolved.is_file()
+
+
 class MissingImageFileHook(Hook):
     """Catches <img src="..."> entries that point to a file that doesn't exist on disk.
 
@@ -218,12 +242,60 @@ class MissingImageFileHook(Hook):
         )
 
 
+class DocsStaticImageHook(Hook):
+    """Checks committed docs HTML uses static image paths GitHub Pages can serve."""
+    name = "docs-static-image"
+
+    async def check(self, ctx: HookContext) -> str | None:
+        try:
+            workdir = WORKDIR.get()
+        except LookupError:
+            return None
+
+        docs_dir = workdir / "docs"
+        if not docs_dir.is_dir():
+            return None
+
+        bad: list[str] = []
+        for html_file in sorted(docs_dir.rglob("*.html")):
+            try:
+                html = html_file.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            refs = [m.group(1).strip() for m in _IMG_SRC_RE.finditer(html)]
+            refs.extend(m.group(2).strip() for m in _CSS_URL_RE.finditer(html))
+            for ref in refs:
+                local_ref = _normalise_local_img_src(ref)
+                if not local_ref:
+                    continue
+                if _docs_asset_exists(ref, html_file, workdir):
+                    continue
+                rel_file = html_file.relative_to(workdir)
+                bad.append(f"{rel_file}: `{ref}`")
+                if len(bad) >= 5:
+                    break
+            if len(bad) >= 5:
+                break
+
+        if not bad:
+            return None
+        bullets = "\n".join(f"  - {item}" for item in bad)
+        return (
+            "One or more images in docs/*.html use paths that GitHub Pages cannot serve:\n"
+            f"{bullets}\n\n"
+            "For committed website pages, copy generated image files into `docs/images/` "
+            "and reference them as `/one/images/<filename>` (or another existing file under `docs/`). "
+            "Do not use `/images/<task_id>/...` in docs pages; that path is only served by the local task preview gateway."
+        )
+
+
 # Registered hooks run in this order on every loop-end. Override via coder.run(hooks=...).
 DEFAULT_HOOKS: list[Hook] = [
     MissingInlineHtmlHook(),  # cheapest first — runs before HtmlLintHook so the
     HtmlLintHook(),           # lint can actually see content
     BrokenImageHook(),
     MissingImageFileHook(),
+    DocsStaticImageHook(),
 ]
 
 
