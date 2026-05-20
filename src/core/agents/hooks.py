@@ -23,6 +23,7 @@ Adding a new hook:
 
 from __future__ import annotations
 
+import asyncio
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
@@ -202,6 +203,47 @@ def _docs_asset_exists(src: str, html_file: Path, workdir: Path) -> bool:
     return (resolved == docs_resolved or docs_resolved in resolved.parents) and resolved.is_file()
 
 
+async def _git_out(workdir: Path, *args: str) -> tuple[int, str]:
+    proc = await asyncio.create_subprocess_exec(
+        "git", *args,
+        cwd=str(workdir),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT,
+    )
+    out, _ = await proc.communicate()
+    return proc.returncode or 0, out.decode(errors="replace").strip()
+
+
+async def _docs_html_files_changed_in_task(workdir: Path) -> list[Path]:
+    """Return docs HTML files changed by the current task branch."""
+    changed: set[Path] = set()
+
+    rc, out = await _git_out(workdir, "diff", "--name-only", "--diff-filter=ACMR", "HEAD", "--", "docs")
+    if rc == 0:
+        changed.update(workdir / p for p in out.splitlines() if p.endswith(".html"))
+
+    rc, branch = await _git_out(workdir, "rev-parse", "--abbrev-ref", "HEAD")
+    if rc != 0 or not branch or branch == "HEAD":
+        return sorted(p for p in changed if p.is_file())
+
+    bases: list[str] = []
+    if branch.startswith("task/") and "-" in branch:
+        bases.append(branch.rsplit("-", 1)[0])
+    if branch.startswith("task/"):
+        bases.append(f"origin/{branch}")
+
+    for base in bases:
+        rc, _ = await _git_out(workdir, "rev-parse", "--verify", base)
+        if rc != 0:
+            continue
+        rc, out = await _git_out(workdir, "diff", "--name-only", "--diff-filter=ACMR", f"{base}..HEAD", "--", "docs")
+        if rc == 0:
+            changed.update(workdir / p for p in out.splitlines() if p.endswith(".html"))
+        break
+
+    return sorted(p for p in changed if p.is_file())
+
+
 class MissingImageFileHook(Hook):
     """Catches <img src="..."> entries that point to a file that doesn't exist on disk.
 
@@ -256,8 +298,12 @@ class DocsStaticImageHook(Hook):
         if not docs_dir.is_dir():
             return None
 
+        html_files = await _docs_html_files_changed_in_task(workdir)
+        if not html_files:
+            return None
+
         bad: list[str] = []
-        for html_file in sorted(docs_dir.rglob("*.html")):
+        for html_file in html_files:
             try:
                 html = html_file.read_text(encoding="utf-8", errors="replace")
             except OSError:

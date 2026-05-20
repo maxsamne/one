@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from core.agents import worktree
+from core.agents import manager, worktree
 
 
 def _run(cmd: list[str], cwd: Path) -> str:
@@ -126,6 +126,43 @@ async def test_reuse_base_branch_restores_remote_only_parent_branch(repo):
         assert base_branch == "task/parent"
         assert wts[0].branch == "task/parent"
         assert _run(["git", "rev-parse", "--verify", "task/parent"], repo)
+    finally:
+        await worktree.cleanup(wts)
+
+
+async def test_followup_reuse_fetches_and_fast_forwards_parent_branch(repo):
+    origin = repo.parent / "origin.git"
+    clone = repo.parent / "clone"
+    _run(["git", "init", "-q", "--bare", str(origin)], repo.parent)
+    _run(["git", "remote", "add", "origin", str(origin)], repo)
+    _run(["git", "push", "-u", "origin", "main"], repo)
+
+    _run(["git", "checkout", "-q", "-b", "task/parent"], repo)
+    (repo / "base.txt").write_text("base\n")
+    _run(["git", "add", "base.txt"], repo)
+    _run(["git", "commit", "-q", "-m", "parent base"], repo)
+    _run(["git", "push", "-u", "origin", "task/parent"], repo)
+    local_old = _run(["git", "rev-parse", "task/parent"], repo)
+
+    _run(["git", "clone", "-q", str(origin), str(clone)], repo.parent)
+    _run(["git", "config", "user.email", "t@t.t"], clone)
+    _run(["git", "config", "user.name", "t"], clone)
+    _run(["git", "checkout", "-q", "task/parent"], clone)
+    (clone / "remote.txt").write_text("remote update\n")
+    _run(["git", "add", "remote.txt"], clone)
+    _run(["git", "commit", "-q", "-m", "remote parent update"], clone)
+    _run(["git", "push", "origin", "task/parent"], clone)
+    remote_new = _run(["git", "rev-parse", "HEAD"], clone)
+    assert remote_new != local_old
+
+    _run(["git", "checkout", "-q", "main"], repo)
+    assert await manager._resolve_parent_base("parent") == "task/parent"
+    _, _, wts = await worktree.setup(
+        "child", ["fakeprov"], base_ref="task/parent", reuse_base_branch=True,
+    )
+    try:
+        assert _run(["git", "rev-parse", "HEAD"], wts[0].path) == remote_new
+        assert (wts[0].path / "remote.txt").read_text() == "remote update\n"
     finally:
         await worktree.cleanup(wts)
 
