@@ -25,12 +25,15 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 import re
 
 from core.agents.lint import extract_html_block, format_feedback, lint_html
 from core.log import Category
 from core.log import log as _log
+from core.tools.ctx import WORKDIR
 
 
 @dataclass(frozen=True)
@@ -123,11 +126,104 @@ class BrokenImageHook(Hook):
         )
 
 
+# Matches <img ... src="X" ...>. Captures the src value verbatim (no trimming).
+_IMG_SRC_RE = re.compile(
+    r'<img\b[^>]*\bsrc\s*=\s*["\']([^"\']+)["\'][^>]*/?>',
+    re.IGNORECASE,
+)
+
+_REMOTE_SRC_SCHEMES = {"http", "https", "data", "mailto", "javascript", "tel", "ftp", "slack"}
+
+
+def _normalise_local_img_src(src: str) -> str | None:
+    """Return the local path part of an image src, or None for remote/anchor URLs."""
+    raw = src.strip()
+    if not raw or raw.startswith("#") or raw.startswith("//"):
+        return None
+    parsed = urlsplit(raw)
+    if parsed.scheme.lower() in _REMOTE_SRC_SCHEMES:
+        return None
+    return unquote(parsed.path or raw)
+
+
+def _resolve_img_candidates(src: str, workdir: Path) -> list[Path]:
+    """Plausible on-disk locations for an <img src="..."> in the running coder's workdir.
+
+    Matches what the coder typically writes:
+      - "/one/..."          → docs/...                  (GH Pages prefix stripped)
+      - "/images/<task>/..." → generated/images/<task>/... (gateway URL → on-disk)
+      - bare / relative     → check directly, under docs/, and under generated/
+    """
+    if src.startswith("/one/"):
+        rel = src[len("/one/"):]
+        return [workdir / "docs" / rel, workdir / rel]
+    if src.startswith("/images/"):
+        return [workdir / "generated" / src.lstrip("/")]
+    rel = src.lstrip("/")
+    return [
+        workdir / rel,
+        workdir / "docs" / rel,
+        workdir / "generated" / rel,
+    ]
+
+
+def _candidate_exists(candidate: Path, workdir: Path) -> bool:
+    try:
+        resolved = candidate.resolve(strict=True)
+        root = workdir.resolve()
+    except FileNotFoundError:
+        return False
+    except OSError:
+        return False
+    return (resolved == root or root in resolved.parents) and resolved.is_file()
+
+
+class MissingImageFileHook(Hook):
+    """Catches <img src="..."> entries that point to a file that doesn't exist on disk.
+
+    Resolves each src against the running coder's WORKDIR using a small set of
+    plausible candidates (GH-Pages prefix, generated/images/, docs/). Skips remote
+    URLs, data: URIs, and anchor links. Zero LLM cost.
+    """
+    name = "missing-image-file"
+
+    async def check(self, ctx: HookContext) -> str | None:
+        html = extract_html_block(ctx.response)
+        if not html:
+            return None
+        try:
+            workdir = WORKDIR.get()
+        except LookupError:
+            return None  # no workdir set — nothing we can check against
+        missing: list[str] = []
+        for m in _IMG_SRC_RE.finditer(html):
+            src = m.group(1).strip()
+            local_src = _normalise_local_img_src(src)
+            if not local_src:
+                continue
+            if any(_candidate_exists(p, workdir) for p in _resolve_img_candidates(local_src, workdir)):
+                continue
+            missing.append(src)
+            if len(missing) >= 5:  # cap — agent only needs a few examples
+                break
+        if not missing:
+            return None
+        bullets = "\n".join(f"  - `{s}`" for s in missing)
+        return (
+            "One or more <img src=\"...\"> values in your HTML point to files that don't exist:\n"
+            f"{bullets}\n\n"
+            "Either generate the image via `generate_image(prompt)` and use the returned path, "
+            "or copy an existing file into the expected location, or remove the <img> tag. "
+            "Do not invent filenames — every src must resolve to an actual file."
+        )
+
+
 # Registered hooks run in this order on every loop-end. Override via coder.run(hooks=...).
 DEFAULT_HOOKS: list[Hook] = [
     MissingInlineHtmlHook(),  # cheapest first — runs before HtmlLintHook so the
     HtmlLintHook(),           # lint can actually see content
     BrokenImageHook(),
+    MissingImageFileHook(),
 ]
 
 

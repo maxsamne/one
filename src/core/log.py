@@ -121,6 +121,7 @@ def _get_con() -> sqlite3.Connection:
             "ALTER TABLE tasks ADD COLUMN skills_json TEXT NOT NULL DEFAULT '[]'",
             "ALTER TABLE tasks ADD COLUMN graders_json TEXT NOT NULL DEFAULT '[]'",
             "ALTER TABLE tasks ADD COLUMN mode_override TEXT",
+            "ALTER TABLE tasks ADD COLUMN pr_url TEXT",
             "ALTER TABLE schedules ADD COLUMN mode TEXT",
             "ALTER TABLE schedules ADD COLUMN graders_json TEXT NOT NULL DEFAULT '[]'",
         ):
@@ -392,6 +393,16 @@ def task_id_exists(task_id: str) -> bool:
         return False
 
 
+def task_pr_url(task_id: str) -> str | None:
+    """Return a persisted PR URL for a task, if one was recorded."""
+    try:
+        with _lock:
+            row = _get_con().execute("SELECT pr_url FROM tasks WHERE task_id = ?", [task_id]).fetchone()
+    except Exception:
+        return None
+    return row[0] if row and row[0] else None
+
+
 def tasks_mark_orphaned_cancelled() -> int:
     """On gateway startup, any row still showing 'queued' or 'running' is from a
     previous process that died without finalising. They can't possibly still be
@@ -428,7 +439,7 @@ def tasks_history(status: str | None = "done", limit: int = 20) -> list[dict]:
         rows = _get_con().execute(
             f"""SELECT task_id, prompt, status, submitted_at, finished_at,
                        elapsed_s, parent_task_id, schedule_id, result, tier,
-                       skills_json, graders_json, mode_override
+                       skills_json, graders_json, mode_override, pr_url
                 FROM tasks {where} ORDER BY submitted_at DESC LIMIT ?""",
             params,
         ).fetchall()
@@ -443,6 +454,7 @@ def tasks_history(status: str | None = "done", limit: int = 20) -> list[dict]:
             "skills":   json.loads(r[10] or "[]"),
             "graders":  json.loads(r[11] or "[]"),
             "mode_override": r[12],
+            "pr_url": r[13],
         }
         for r in rows
     ]
@@ -492,6 +504,7 @@ def tasks_update(
     words_out: int | None = None,
     error: str | None = None,
     result: str | None = None,
+    pr_url: str | None = None,
 ) -> None:
     try:
         with _lock:
@@ -504,9 +517,10 @@ def tasks_update(
                        tokens_out = COALESCE(?, tokens_out),
                        words_out = COALESCE(?, words_out),
                        error = COALESCE(?, error),
-                       result = COALESCE(?, result)
+                       result = COALESCE(?, result),
+                       pr_url = COALESCE(?, pr_url)
                    WHERE task_id = ?""",
-                [status, started_at, finished_at, elapsed_s, tokens_out, words_out, error, result, task_id],
+                [status, started_at, finished_at, elapsed_s, tokens_out, words_out, error, result, pr_url, task_id],
             )
             _get_con().commit()
     except Exception:

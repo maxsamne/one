@@ -12,8 +12,10 @@ The result: zero LLM calls inside manager when mode is unambiguous; one when not
 """
 
 import shutil
+from contextlib import AsyncExitStack
 from dataclasses import dataclass
 from enum import StrEnum
+from pathlib import Path
 
 from pydantic import BaseModel, Field
 
@@ -21,17 +23,18 @@ from core.agents import coder, graders, router, skills, workdir_registry, worktr
 from core.agents.coder import _INSTRUCTIONS_BASE, _INSTRUCTIONS_PERSISTENT
 from core.agents.grader import GRADER_HOOK_RETRIES
 from core.agents.hooks import DEFAULT_HOOK_RETRIES, Hook
-from core.agents.task_ctx import TASK_GRADERS_CTX, TASK_IMAGES_CTX, TASK_SKILLS_CTX, TIER_CTX, current_task_id
+from core.agents.task_ctx import PR_URL_CTX, TASK_GRADERS_CTX, TASK_IMAGES_CTX, TASK_SKILLS_CTX, TIER_CTX, current_task_id
 from core.ai_client import AiClient
 from core.ai_client.models import ImageContent, ThinkingLevel, Tool
 from core.log import Category
 from core.log import log as _log
+from core.log import task_pr_url
 from core.log import transcript_load
 from core.prompt import date_context
 from core.tools.calc import CALC_TOOLS
 from core.tools.ctx import REPO_ROOT, WORKDIR, WRITE_SCOPE
 from core.tools.fs import FS_TOOLS
-from core.tools.git import GIT_TOOLS
+from core.tools.git import GIT_ADD, GIT_COMMIT, GIT_DIFF, GIT_LOG, GIT_STATUS
 from core.tools.shell import SHELL_TOOLS
 
 
@@ -42,7 +45,8 @@ class TaskMode(StrEnum):
 
 CONVERSATIONAL_TMP_CLEANUP_ON_SUCCESS = False
 _TMP_DIR = REPO_ROOT / "generated" / "tmp"
-_PERSISTENT_TOOLS = FS_TOOLS + SHELL_TOOLS + GIT_TOOLS + CALC_TOOLS
+_MANAGED_GIT_TOOLS = [GIT_STATUS, GIT_DIFF, GIT_ADD, GIT_COMMIT, GIT_LOG]
+_PERSISTENT_TOOLS = FS_TOOLS + SHELL_TOOLS + _MANAGED_GIT_TOOLS + CALC_TOOLS
 _CONVERSATIONAL_TOOLS = FS_TOOLS + CALC_TOOLS
 
 _MODE_INSTRUCTIONS = (
@@ -101,9 +105,26 @@ Output: cite sources as [text](url), never bare URLs. Don't name tools, provider
 _CONVERSATIONAL_BASE = "\n\n---\n\n".join([_INSTRUCTIONS_BASE, _CONVERSATIONAL_INSTRUCTIONS])
 _PERSISTENT_BASE = "\n\n---\n\n".join([_INSTRUCTIONS_BASE, _INSTRUCTIONS_PERSISTENT])
 
+_MANAGED_GIT_INSTRUCTIONS = """\
+## Managed git lifecycle
+The manager already created the correct branch and will push/open/update the PR after
+your final answer. Do not create branches, check out branches, push, or open PRs.
+Use only git_status, git_diff, git_add, git_commit, and git_log for your own changes.
+"""
+
 
 def _build_instructions(base: str, skill_bodies: str, skill_index: str, date_ctx: str) -> str | None:
     return "\n\n---\n\n".join(filter(None, [base, skill_bodies, skill_index, date_ctx])) or None
+
+
+def _persist_generated_images(task_id: str, workdir: Path) -> None:
+    """Keep generated image URLs serveable after the task worktree is cleaned up."""
+    src = workdir / "generated" / "images" / task_id
+    if not src.is_dir():
+        return
+    dest = REPO_ROOT / "generated" / "images" / task_id
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(src, dest, dirs_exist_ok=True)
 
 
 @dataclass(frozen=True)
@@ -219,13 +240,19 @@ async def run(
 
 
 async def _resolve_parent_base(parent_task_id: str | None) -> str | None:
-    """If the parent's base branch still exists locally, return it as a base_ref
-    so the follow-up worktree forks from it (carrying pre-merge file state).
-    Otherwise None — the parent merged + the branch was reaped, fork from default."""
+    """Return the parent's task branch if it still exists locally or on origin.
+
+    A remote-only branch is still an active follow-up target; worktree.setup()
+    recreates the local tracking branch before checking it out.
+    """
     if not parent_task_id:
         return None
-    rc, _ = await worktree._git("rev-parse", "--verify", f"task/{parent_task_id}")
-    return f"task/{parent_task_id}" if rc == 0 else None
+    branch = f"task/{parent_task_id}"
+    rc, _ = await worktree._git("rev-parse", "--verify", branch)
+    if rc == 0:
+        return branch
+    rc, _ = await worktree._git("rev-parse", "--verify", f"origin/{branch}")
+    return branch if rc == 0 else None
 
 
 async def _dispatch(
@@ -242,67 +269,92 @@ async def _dispatch(
     # Route first — worktree.setup needs the provider name.
     ai, thinking, provider = await _route(task, plan.pre_loaded_paths)
 
-    # Workspace setup based on mode.
-    if mode == TaskMode.CONVERSATIONAL:
-        workdir = _TMP_DIR / task_id
-        workdir.mkdir(parents=True, exist_ok=True)
-        tools = list(_CONVERSATIONAL_TOOLS) + list(extra_tools or [])
-        instructions = _build_instructions(_CONVERSATIONAL_BASE, plan.skill_bodies, plan.skill_index, plan.date_ctx)
-        worktrees: list = []
-        base_branch = starting_ref = ""
-        write_scope: frozenset[str] | None = None
-        _log(Category.AGENT, "conversational dispatch",
-             provider=provider, model=ai.model_name, thinking=str(thinking),
-             tmp=str(workdir.relative_to(REPO_ROOT)))
-    else:
-        parent_base = await _resolve_parent_base(parent_task_id)
-        if parent_task_id:
-            _log(Category.AGENT, "follow-up base",
-                 parent=parent_task_id,
-                 base_ref=parent_base or "default (parent branch reaped)")
-        starting_ref, base_branch, worktrees = await worktree.setup(task_id, [provider], base_ref=parent_base)
-        workdir = worktrees[0].path
-        tools = list(_PERSISTENT_TOOLS) + list(extra_tools or [])
-        git_skill = skills.join_bodies(["general/git.md"])
-        persistent_bodies = "\n\n---\n\n".join(filter(None, [git_skill, plan.skill_bodies]))
-        instructions = _build_instructions(_PERSISTENT_BASE, persistent_bodies, plan.skill_index, plan.date_ctx)
-        write_scope = frozenset({"generated/", "knowledge/", "docs/"})
-        _log(Category.AGENT, "dispatching",
-             provider=provider, model=ai.model_name, thinking=str(thinking))
-
-    workdir_token = WORKDIR.set(workdir)
-    scope_token = WRITE_SCOPE.set(write_scope) if write_scope else None
-    workdir_registry.register(task_id, workdir)
-    success = False
+    result = ""
+    worktrees: list[worktree.Worktree] = []
     merge_results: dict[str, str] = {}
-    extra_hooks, hook_retries = _build_extra_hooks()
-    try:
-        result = await coder.run(
-            task, ai,
-            instructions=instructions,
-            thinking=thinking, tools=tools,
-            workdir=workdir,
-            agent_id=f"{task_id}:{provider}",
-            images=plan.images,
-            prior_history=prior_history,
-            extra_hooks=extra_hooks,
-            hook_retries=hook_retries,
-        )
-        if worktrees:
-            merge_results = await worktree.merge(
-                task_id, base_branch, worktrees, pr_base=starting_ref, pr_title=task[:70],
+    reuse_parent_branch = False
+    workdir_token = scope_token = None
+    workdir: Path | None = None
+
+    async with AsyncExitStack() as branch_stack:
+        # Workspace setup based on mode.
+        if mode == TaskMode.CONVERSATIONAL:
+            workdir = _TMP_DIR / task_id
+            workdir.mkdir(parents=True, exist_ok=True)
+            tools = list(_CONVERSATIONAL_TOOLS) + list(extra_tools or [])
+            instructions = _build_instructions(_CONVERSATIONAL_BASE, plan.skill_bodies, plan.skill_index, plan.date_ctx)
+            base_branch = starting_ref = ""
+            write_scope: frozenset[str] | None = None
+            _log(Category.AGENT, "conversational dispatch",
+                 provider=provider, model=ai.model_name, thinking=str(thinking),
+                 tmp=str(workdir.relative_to(REPO_ROOT)))
+        else:
+            parent_base = await _resolve_parent_base(parent_task_id)
+            # Single-provider follow-up: extend the parent's task branch directly
+            # (no inner task/<id>-<provider> branch, no fresh PR — push onto the existing one).
+            reuse_parent_branch = bool(parent_base)
+            if reuse_parent_branch and parent_base:
+                await branch_stack.enter_async_context(worktree.branch_lock(parent_base, agent_id=f"{task_id}:follow-up"))
+            if parent_task_id:
+                parent_url = task_pr_url(parent_task_id)
+                if reuse_parent_branch and parent_url:
+                    PR_URL_CTX.set(parent_url)
+                _log(Category.AGENT, "follow-up base",
+                     parent=parent_task_id,
+                     base_ref=parent_base or "default (parent branch reaped)",
+                     reuse=reuse_parent_branch,
+                     pr_url=parent_url)
+            starting_ref, base_branch, worktrees = await worktree.setup(
+                task_id, [provider], base_ref=parent_base,
+                reuse_base_branch=reuse_parent_branch,
             )
-        success = True
-    finally:
-        WORKDIR.reset(workdir_token)
-        if scope_token is not None:
-            WRITE_SCOPE.reset(scope_token)
-        workdir_registry.unregister(task_id)
-        if worktrees:
-            await worktree.cleanup(worktrees)
-        if mode == TaskMode.CONVERSATIONAL and success and CONVERSATIONAL_TMP_CLEANUP_ON_SUCCESS:
-            shutil.rmtree(workdir, ignore_errors=True)
-            _log(Category.AGENT, "conversational tmp cleaned", task_id=task_id)
+            workdir = worktrees[0].path
+            tools = list(_PERSISTENT_TOOLS) + list(extra_tools or [])
+            git_skill = skills.join_bodies(["general/git.md"])
+            persistent_bodies = "\n\n---\n\n".join(filter(None, [_MANAGED_GIT_INSTRUCTIONS, git_skill, plan.skill_bodies]))
+            instructions = _build_instructions(_PERSISTENT_BASE, persistent_bodies, plan.skill_index, plan.date_ctx)
+            write_scope = frozenset({"generated/", "knowledge/", "docs/"})
+            _log(Category.AGENT, "dispatching",
+                 provider=provider, model=ai.model_name, thinking=str(thinking))
+
+        assert workdir is not None
+        workdir_token = WORKDIR.set(workdir)
+        scope_token = WRITE_SCOPE.set(write_scope) if write_scope else None
+        workdir_registry.register(task_id, workdir)
+        success = False
+        extra_hooks, hook_retries = _build_extra_hooks()
+        try:
+            result = await coder.run(
+                task, ai,
+                instructions=instructions,
+                thinking=thinking, tools=tools,
+                workdir=workdir,
+                agent_id=f"{task_id}:{provider}",
+                images=plan.images,
+                prior_history=prior_history,
+                extra_hooks=extra_hooks,
+                hook_retries=hook_retries,
+            )
+            if worktrees:
+                merge_results = await worktree.merge(
+                    task_id, base_branch, worktrees,
+                    pr_base=starting_ref, pr_title=task[:70],
+                    open_pr=not reuse_parent_branch,  # follow-ups extend the parent's PR;
+                                                      # but if parent branch was reaped, fork gets its own PR
+                )
+            success = True
+        finally:
+            _persist_generated_images(task_id, workdir)
+            if workdir_token is not None:
+                WORKDIR.reset(workdir_token)
+            if scope_token is not None:
+                WRITE_SCOPE.reset(scope_token)
+            workdir_registry.unregister(task_id)
+            if worktrees:
+                await worktree.cleanup(worktrees)
+            if mode == TaskMode.CONVERSATIONAL and success and CONVERSATIONAL_TMP_CLEANUP_ON_SUCCESS:
+                shutil.rmtree(workdir, ignore_errors=True)
+                _log(Category.AGENT, "conversational tmp cleaned", task_id=task_id)
 
     if worktrees:
         merge_status = merge_results.get(provider, "skipped")
