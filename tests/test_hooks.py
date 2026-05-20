@@ -144,6 +144,39 @@ async def test_docs_static_image_hook_rejects_gateway_images_in_docs(tmp_path):
         WORKDIR.reset(tok)
 
 
+async def test_docs_image_path_satisfies_local_and_pages_hooks(tmp_path):
+    from core.agents.hooks import DocsStaticImageHook, MissingImageFileHook
+    from core.tools.ctx import WORKDIR
+
+    subprocess.check_call(["git", "init", "-q", "-b", "main"], cwd=tmp_path)
+    subprocess.check_call(["git", "config", "user.email", "t@t.t"], cwd=tmp_path)
+    subprocess.check_call(["git", "config", "user.name", "t"], cwd=tmp_path)
+
+    docs = tmp_path / "docs"
+    (docs / "images").mkdir(parents=True)
+    (docs / "index.html").write_text("<p>seed</p>", encoding="utf-8")
+    subprocess.check_call(["git", "add", "docs"], cwd=tmp_path)
+    subprocess.check_call(["git", "commit", "-q", "-m", "seed docs"], cwd=tmp_path)
+
+    html = '<img src="/one/images/shared-hero.png">'
+    response = f"```html\n<html><body>{html}</body></html>\n```"
+    ctx = HookContext(response=response, turn=1, agent_id="t", role="r")
+    docs_hook = DocsStaticImageHook()
+    local_hook = MissingImageFileHook()
+
+    tok = WORKDIR.set(tmp_path)
+    try:
+        (docs / "index.html").write_text(html, encoding="utf-8")
+        assert await docs_hook.check(ctx) is not None
+        assert await local_hook.check(ctx) is not None
+
+        (docs / "images" / "shared-hero.png").write_bytes(b"\x89PNG-shared")
+        assert await docs_hook.check(ctx) is None
+        assert await local_hook.check(ctx) is None
+    finally:
+        WORKDIR.reset(tok)
+
+
 async def test_missing_inline_html_fires_when_path_mentioned_but_no_block():
     from core.agents.hooks import MissingInlineHtmlHook
     h = MissingInlineHtmlHook()
