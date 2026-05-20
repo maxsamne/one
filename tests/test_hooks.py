@@ -1,5 +1,7 @@
 """Hooks: HTML lint catches the markdown-leak bug class; clean HTML passes through."""
 
+import subprocess
+
 from core.agents.hooks import HookContext, HtmlLintHook, run_hooks
 
 
@@ -104,11 +106,19 @@ async def test_docs_static_image_hook_rejects_gateway_images_in_docs(tmp_path):
     from core.agents.hooks import DocsStaticImageHook
     from core.tools.ctx import WORKDIR
 
+    subprocess.check_call(["git", "init", "-q", "-b", "main"], cwd=tmp_path)
+    subprocess.check_call(["git", "config", "user.email", "t@t.t"], cwd=tmp_path)
+    subprocess.check_call(["git", "config", "user.name", "t"], cwd=tmp_path)
+
     docs = tmp_path / "docs"
     (docs / "images").mkdir(parents=True)
     (docs / "images" / "hero.png").write_bytes(b"\x89PNG-docs")
     (tmp_path / "generated" / "images" / "tid").mkdir(parents=True)
     (tmp_path / "generated" / "images" / "tid" / "1-hero.png").write_bytes(b"\x89PNG-local")
+    (docs / "legacy.html").write_text('<img src="/images/old_task/legacy.png">', encoding="utf-8")
+    (docs / "index.html").write_text('<img src="/one/images/hero.png">', encoding="utf-8")
+    subprocess.check_call(["git", "add", "docs"], cwd=tmp_path)
+    subprocess.check_call(["git", "commit", "-q", "-m", "seed docs"], cwd=tmp_path)
 
     h = DocsStaticImageHook()
     ctx = HookContext(response="Done", turn=1, agent_id="t", role="r")
@@ -128,6 +138,7 @@ async def test_docs_static_image_hook_rejects_gateway_images_in_docs(tmp_path):
         assert fb is not None
         assert "/images/tid/1-hero.png" in fb
         assert "/one/images/missing.png" in fb
+        assert "legacy.html" not in fb
         assert "docs/images" in fb
     finally:
         WORKDIR.reset(tok)

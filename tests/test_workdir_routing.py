@@ -2,7 +2,9 @@
 serves them from there via the workdir registry."""
 
 import pytest
+import os
 import subprocess
+import time
 from fastapi.testclient import TestClient
 from pathlib import Path
 
@@ -84,6 +86,28 @@ def test_persist_generated_images_copies_to_repo_root(tmp_path, monkeypatch):
 
     copied = repo / "generated" / "images" / "img_task" / "1-hero.png"
     assert copied.read_bytes().endswith(b"stable")
+
+
+def test_prune_generated_images_removes_only_old_task_dirs(tmp_path, monkeypatch):
+    from core.agents import manager
+
+    repo = tmp_path / "repo"
+    old = repo / "generated" / "images" / "old_task"
+    new = repo / "generated" / "images" / "new_task"
+    old.mkdir(parents=True)
+    new.mkdir(parents=True)
+    (old / "1-old.png").write_bytes(b"old")
+    (new / "1-new.png").write_bytes(b"new")
+    monkeypatch.setattr(manager, "REPO_ROOT", repo)
+
+    old_ts = time.time() - 184 * 24 * 60 * 60
+    os.utime(old / "1-old.png", (old_ts, old_ts))
+    os.utime(old, (old_ts, old_ts))
+
+    manager._prune_generated_images(max_age_days=183)
+
+    assert not old.exists()
+    assert (new / "1-new.png").exists()
 
 
 def test_persistent_manager_hides_lifecycle_git_tools():

@@ -12,6 +12,7 @@ The result: zero LLM calls inside manager when mode is unambiguous; one when not
 """
 
 import shutil
+import time
 from contextlib import AsyncExitStack
 from dataclasses import dataclass
 from enum import StrEnum
@@ -125,6 +126,23 @@ def _persist_generated_images(task_id: str, workdir: Path) -> None:
     dest = REPO_ROOT / "generated" / "images" / task_id
     dest.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(src, dest, dirs_exist_ok=True)
+
+
+def _prune_generated_images(max_age_days: int = 183) -> None:
+    """Delete old local preview image directories; durable site images live in docs/."""
+    root = REPO_ROOT / "generated" / "images"
+    if not root.is_dir():
+        return
+    cutoff = time.time() - max_age_days * 24 * 60 * 60
+    for task_dir in root.iterdir():
+        if not task_dir.is_dir():
+            continue
+        try:
+            newest = max((p.stat().st_mtime for p in task_dir.rglob("*") if p.is_file()), default=task_dir.stat().st_mtime)
+        except OSError:
+            continue
+        if newest < cutoff:
+            shutil.rmtree(task_dir, ignore_errors=True)
 
 
 @dataclass(frozen=True)
@@ -248,6 +266,7 @@ async def _resolve_parent_base(parent_task_id: str | None) -> str | None:
     if not parent_task_id:
         return None
     branch = f"task/{parent_task_id}"
+    await worktree.fetch_branch(branch)
     rc, _ = await worktree._git("rev-parse", "--verify", branch)
     if rc == 0:
         return branch
@@ -345,6 +364,7 @@ async def _dispatch(
             success = True
         finally:
             _persist_generated_images(task_id, workdir)
+            _prune_generated_images()
             if workdir_token is not None:
                 WORKDIR.reset(workdir_token)
             if scope_token is not None:

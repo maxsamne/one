@@ -49,6 +49,35 @@ async def _current_branch() -> str:
     return name
 
 
+async def fetch_branch(branch: str) -> None:
+    """Refresh origin/<branch> when a remote exists. Best-effort for local-only repos."""
+    rc, _ = await _git("remote", "get-url", "origin")
+    if rc != 0:
+        return
+    rc, out = await _git("fetch", "origin", f"{branch}:refs/remotes/origin/{branch}")
+    if rc != 0:
+        _log(Category.AGENT, "branch fetch failed", branch=branch, error=out.splitlines()[0] if out else "unknown")
+
+
+async def _fast_forward_local_branch_from_origin(branch: str) -> None:
+    rc, _ = await _git("rev-parse", "--verify", f"origin/{branch}")
+    if rc != 0:
+        return
+    rc, _ = await _git("rev-parse", "--verify", branch)
+    if rc != 0:
+        rc, out = await _git("branch", branch, f"origin/{branch}")
+        if rc != 0:
+            _log(Category.AGENT, "base branch restore failed", branch=branch, error=out)
+            raise RuntimeError(f"could not restore {branch} from origin/{branch}: {out}")
+        return
+    rc, _ = await _git("merge-base", "--is-ancestor", branch, f"origin/{branch}")
+    if rc == 0:
+        rc, out = await _git("branch", "-f", branch, f"origin/{branch}")
+        if rc != 0:
+            _log(Category.AGENT, "base branch fast-forward failed", branch=branch, error=out)
+            raise RuntimeError(f"could not fast-forward {branch} from origin/{branch}: {out}")
+
+
 async def setup(
     task_id: str,
     providers: list[str],
@@ -82,12 +111,10 @@ async def setup(
 
     async with get_ledger().lock(_GIT_RESOURCE, agent_id=f"{task_id}:setup"):
         if reuse_base_branch:
-            rc, _ = await _git("rev-parse", "--verify", base_branch)
+            await _fast_forward_local_branch_from_origin(base_branch)
+            rc, out = await _git("rev-parse", "--verify", base_branch)
             if rc != 0:
-                rc, out = await _git("branch", base_branch, f"origin/{base_branch}")
-                if rc != 0:
-                    _log(Category.AGENT, "base branch restore failed", branch=base_branch, error=out)
-                    raise RuntimeError(f"could not restore {base_branch} from origin/{base_branch}: {out}")
+                raise RuntimeError(f"reuse base branch {base_branch} does not exist: {out}")
         if not reuse_base_branch:
             rc, _ = await _git("rev-parse", "--verify", base_branch)
             if rc != 0:
