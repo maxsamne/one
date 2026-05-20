@@ -60,6 +60,46 @@ async def test_broken_image_hook_fires_on_empty_src_and_passes_on_real_src():
     assert await h.check(ctx(no_html))      is None
 
 
+async def test_missing_image_file_hook_flags_dead_srcs_and_passes_real_ones(tmp_path):
+    from core.agents.hooks import MissingImageFileHook
+    from core.tools.ctx import WORKDIR
+
+    (tmp_path / "docs" / "images").mkdir(parents=True)
+    (tmp_path / "docs" / "images" / "hero.png").write_bytes(b"\x89PNG-real")
+    (tmp_path / "generated" / "images" / "tid").mkdir(parents=True)
+    (tmp_path / "generated" / "images" / "tid" / "1-cover.png").write_bytes(b"\x89PNG-gen")
+
+    h = MissingImageFileHook()
+    ctx = lambda r: HookContext(response=r, turn=1, agent_id="t", role="r")
+
+    real_relative   = '```html\n<html><body><img src="images/hero.png"></body></html>\n```'
+    real_one_prefix = '```html\n<html><body><img src="/one/images/hero.png"></body></html>\n```'
+    real_gen_url    = '```html\n<html><body><img src="/images/tid/1-cover.png"></body></html>\n```'
+    remote_ok       = '```html\n<html><body><img src="https://example.com/x.png"><img src="data:image/png;base64,AAA"></body></html>\n```'
+    remote_case_ok  = '```html\n<html><body><img src="HTTPS://example.com/x.png"><img src="//cdn.example.com/x.png"></body></html>\n```'
+    query_ok        = '```html\n<html><body><img src="images/hero.png?v=1#hero"></body></html>\n```'
+    traversal_bad   = '```html\n<html><body><img src="../outside.png"></body></html>\n```'
+    missing         = '```html\n<html><body><img src="/one/images/nope.png"><img src="images/also-fake.png"></body></html>\n```'
+    no_html         = "Plain answer with no html block."
+    (tmp_path.parent / "outside.png").write_bytes(b"\x89PNG-outside")
+
+    tok = WORKDIR.set(tmp_path)
+    try:
+        assert await h.check(ctx(real_relative))   is None
+        assert await h.check(ctx(real_one_prefix)) is None
+        assert await h.check(ctx(real_gen_url))    is None
+        assert await h.check(ctx(remote_ok))       is None
+        assert await h.check(ctx(remote_case_ok))  is None
+        assert await h.check(ctx(query_ok))        is None
+        assert await h.check(ctx(no_html))         is None
+        assert "../outside.png" in (await h.check(ctx(traversal_bad)) or "")
+        fb = await h.check(ctx(missing))
+        assert fb is not None
+        assert "/one/images/nope.png" in fb and "images/also-fake.png" in fb
+    finally:
+        WORKDIR.reset(tok)
+
+
 async def test_missing_inline_html_fires_when_path_mentioned_but_no_block():
     from core.agents.hooks import MissingInlineHtmlHook
     h = MissingInlineHtmlHook()

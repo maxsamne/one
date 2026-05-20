@@ -4,10 +4,9 @@ Lets the gateway resolve `/images/<task_id>/...` URLs to the worktree where the
 running coder wrote the file, instead of guessing against REPO_ROOT (where
 generated images don't exist because they live inside each task's worktree).
 
-The manager registers on dispatch and unregisters in `finally`. Reads return
-None for unknown task_ids — the gateway falls back to REPO_ROOT for completed
-tasks (though their generated/images won't survive worktree cleanup anyway —
-this is correct for live preview during the run).
+The manager registers on dispatch and unregisters in `finally`. Before unregistering
+it copies generated images into REPO_ROOT/generated/images/<task_id>, so reads return
+None for completed tasks and the gateway falls back to that stable location.
 """
 
 from __future__ import annotations

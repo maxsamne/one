@@ -138,6 +138,7 @@ async def _run(record: TaskRecord) -> None:
     exa_token = EXA_CALL_LOG.set(exa_log)
     usage_log: list[tuple[str, int, int, int]] = []
     usage_token = TASK_USAGE_LOG.set(usage_log)
+    pr_token = PR_URL_CTX.set(None)
     tier = _get_tier(record.tier)
     _log(Category.GATEWAY, "task started", task=record.prompt[:120], tier=record.tier)
     stat_inc("gateway.tasks")
@@ -181,6 +182,7 @@ async def _run(record: TaskRecord) -> None:
         TASK_CTX.reset(task_token)
         EXA_CALL_LOG.reset(exa_token)
         TASK_USAGE_LOG.reset(usage_token)
+        PR_URL_CTX.reset(pr_token)
         elapsed = round(record.finished_at - (record.started_at or record.finished_at), 2)
         ts = text_stats(record.result or "")
         total_in = sum(inp for _, inp, _, _ in usage_log)
@@ -197,6 +199,7 @@ async def _run(record: TaskRecord) -> None:
             words_out=ts.get("words"),
             error=record.error,
             result=record.result,
+            pr_url=record.pr_url,
         )
         # Sentinel: wake up any SSE consumers waiting on this task.
         publish(record.task_id, {"type": "done", "status": record.status,
@@ -444,6 +447,7 @@ class TaskHistoryItem(BaseModel):
     skills: list[str] = []
     graders: list[str] = []
     mode_override: str | None = None
+    pr_url: str | None = None
 
 
 @app.get("/tasks/history", response_model=list[TaskHistoryItem])

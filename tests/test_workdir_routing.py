@@ -62,6 +62,35 @@ def test_workdir_registry_roundtrip(tmp_path):
     assert workdir_registry.get("t1") is None
 
 
+def test_persist_generated_images_copies_to_repo_root(tmp_path, monkeypatch):
+    from core.agents import manager
+
+    workdir = tmp_path / "work"
+    src = workdir / "generated" / "images" / "img_task"
+    src.mkdir(parents=True)
+    (src / "1-hero.png").write_bytes(b"\x89PNG\r\n\x1a\nstable")
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    monkeypatch.setattr(manager, "REPO_ROOT", repo)
+
+    manager._persist_generated_images("img_task", workdir)
+
+    copied = repo / "generated" / "images" / "img_task" / "1-hero.png"
+    assert copied.read_bytes().endswith(b"stable")
+
+
+def test_persistent_manager_hides_lifecycle_git_tools():
+    from core.agents import manager
+
+    names = {tool.name for tool in manager._PERSISTENT_TOOLS}
+    assert {"git_status", "git_diff", "git_add", "git_commit", "git_log"} <= names
+    assert "git_create_branch" not in names
+    assert "git_checkout" not in names
+    assert "git_push" not in names
+    assert "git_create_pr" not in names
+
+
 async def test_resolve_parent_base_returns_none_for_unknown():
     from core.agents.manager import _resolve_parent_base
     assert await _resolve_parent_base(None) is None
