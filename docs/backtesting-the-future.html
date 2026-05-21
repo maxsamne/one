@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Backtesting the Future: Temporal Discipline and Policy Induction in Language Agents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f9f8f5;
+  --surface:#f0efe9;
+  --ink:#1c1b18;
+  --ink-muted:#6b6860;
+  --accent:#2e5e4e;
+  --border:#dddbd4;
+  --red-muted:#a35252;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  padding:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Lora', Georgia, serif;
+  font-size:17px;
+  line-height:1.82;
+}
+article{
+  max-width:700px;
+  margin:0 auto;
+  padding:48px 24px 84px;
+}
+.eyebrow{
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--ink-muted);
+  margin-bottom:12px;
+}
+h1{
+  font-size:34px;
+  line-height:1.18;
+  font-weight:500;
+  margin:0 0 10px 0;
+}
+.dek{
+  font-size:18px;
+  color:var(--ink-muted);
+  margin:0 0 28px 0;
+}
+h2{
+  font-size:21px;
+  line-height:1.35;
+  font-weight:400;
+  margin:2.6em 0 .8em;
+  color:var(--ink);
+}
+h3{
+  font-size:16px;
+  line-height:1.45;
+  font-weight:400;
+  margin:1.6em 0 .5em;
+}
+p{
+  margin:0 0 1em 0;
+}
+.leadline{
+  font-size:19px;
+  line-height:1.65;
+  color:var(--ink);
+  margin:1.6em 0 1.4em;
+}
+.pull{
+  margin:1.8em 0;
+  padding:14px 18px;
+  border-left:2px solid var(--accent);
+  color:var(--ink);
+  background:rgba(46,94,78,.04);
+  font-style:italic;
+}
+.caption{
+  font-size:13px;
+  line-height:1.6;
+  color:var(--ink-muted);
+  font-style:italic;
+  text-align:center;
+  margin-top:10px;
+}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+code{
+  font-family:'JetBrains Mono', monospace;
+  background:var(--surface);
+  padding:.08em .28em;
+  border-radius:4px;
+  font-size:14px;
+}
+ul{
+  margin:.5em 0 1em 1.25em;
+}
+li{
+  margin:.35em 0;
+}
+hr{
+  border:none;
+  border-top:1px solid var(--border);
+  margin:2.6em 0 2em;
+}
+sup{
+  font-size:.72em;
+  vertical-align:super;
+}
+figure{
+  margin:2.2em 0;
+}
+.footnotes{
+  border-top:1px solid var(--border);
+  margin-top:3.2em;
+  padding-top:1.5em;
+}
+.footnotes ol{
+  padding-left:1.3em;
+  margin:0;
+  color:var(--ink-muted);
+  font-size:13px;
+  line-height:1.72;
+}
+.footnotes li{
+  margin:0 0 .65em 0;
+}
+.small{
+  color:var(--ink-muted);
+  font-size:14px;
+}
+</style>
+<style>html{background:var(--bg,#f4f0eb);}body{margin:0;}</style>
+<script>
+addEventListener("load",function(){
+  var s=getComputedStyle(document.body);
+  var img=s.backgroundImage||"none";
+  var col=s.backgroundColor||"";
+  var h=document.documentElement.style;
+  if(img&&img!=="none"){
+    h.backgroundImage=img;
+    h.backgroundSize=s.backgroundSize;
+    h.backgroundRepeat=s.backgroundRepeat;
+    h.backgroundPosition=s.backgroundPosition;
+    h.backgroundAttachment="fixed";
+  }
+  var m=col.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/);
+  var a=m&&m[4]!==undefined?parseFloat(m[4]):1;
+  if(m&&a>=0.99){
+    h.backgroundColor=col;
+  }
+});
+</script>
+</head>
+<body>
+<article>
+  <p class="eyebrow">Technology · Research · May 2026</p>
+  <h1>Backtesting the Future</h1>
+  <p class="dek">Why offline evaluation was the secret engine of traditional machine learning — and how solving the "time travel" problem is unlocking the next era of autonomous agents.</p>
+
+  <figure style="margin: 0 0 2.5em 0;">
+    <img src="/one/images/backtesting-hero.png" alt="Backtesting the Future" style="width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--border);">
+    <p class="caption">Temporal compliance: evaluating language agents requires simulating the exact epistemic state of the past, without the benefit of hindsight.</p>
+  </figure>
+
+  <p>The transition from traditional machine learning to generative AI did something strange to our evaluation loops: it took away our ability to look backward.</p>
+
+  <p>For twenty years, the superpower of machine learning was its absolute predictability under historical replay. If you wanted to build a better credit-scoring algorithm, an algorithmic trading system, or a demand-forecasting model, you did not deploy it blind. You backtested it. You gathered five years of telemetry, replayed the inputs chronologically, compared the model’s outputs to what actually happened, and calculated an exact mathematical loss. This offline feedback loop was the relentless engine of traditional AI progress. It let us fail a million times in the safety of the past so we could succeed once in the live present.</p>
+
+  <p>But when we try to do the same with modern Large Language Models (LLMs) and autonomous agents, the method collapses. The problem is not that these models are too complex or too open-ended. The problem is that they are epistemic time travelers. They have already seen the future.</p>
+
+  <p>Because frontier models are pre-trained on the public internet, they carry a parametric memory that extends up to their training cutoff date. If you ask a 2026 model to simulate a research analyst in 2023 predicting the trajectory of a pharmaceutical company or an election outcome, it cannot help but cheat. The historical events you want it to forecast are already folded into its weights. The model does not predict; it remembers. This lookahead bias creates a deceptive illusion of capability during evaluation, only to result in sudden, catastrophic failure when the agent is deployed on the genuine, unrecorded future.</p>
+
+  <p class="leadline">My view is that the primary hurdle to building truly reliable, high-stakes language agents is not a lack of reasoning capacity, but a lack of temporal discipline. If we can solve the temporal leakage problem—enforcing an absolute "epistemic firewall" between the past and the future—we can bring the massive optimization benefits of backtesting to generative AI. This is the next great frontier: turning the open-ended world of agentic language models into a rigorous, backtestable engine.</p>
+
+  <h2>The problem in one line</h2>
+
+  <p class="pull">In traditional machine learning, we built on top of historical telemetry. In generative AI, we are stranded in the present, evaluating models on live benchmarks that immediately leak into their pre-training distributions.</p>
+
+  <h2>A framework: the three pillars of LLM backtesting</h2>
+
+  <p>To bring backtesting into the agent world, we have to rebuild the offline loop from the ground up. I believe this requires three distinct, intersecting engineering pillars.</p>
+
+  <p><strong>Temporal Containment (The Sandboxed Past).</strong> Programmatically restricting an agent's access to external tools and knowledge during historical replay. If an agent has a web search tool, it cannot search the live, current web. It must interact with a time-capsule mirror—an offline, date-filtered database containing only documents published before the target date.<sup id="ref1"><a href="#fn1">1</a></sup></p>
+
+  <p><strong>Temporal Discipline (Parametric Firewalls).</strong> Training models to suppress their own future parametric knowledge. When a model is told its cutoff is January 2024, it must learn to ignore any post-2024 facts encoded in its weights, rejecting them as source material for its reasoning. This cannot be achieved by simple prompting; it requires explicit, post-training optimization.<sup id="ref2"><a href="#fn2">2</a></sup></p>
+
+  <p><strong>Offline Policy Induction.</strong> Using historical outcomes to optimize agent workflows. Once an agent can be cleanly replayed on past events without cheating, we can use reinforcement learning and strategy compilers to optimize its prompts, tool usage, and decision paths—refining its "policy" based on how well it would have performed back in time.<sup id="ref3"><a href="#fn3">3</a></sup></p>
+
+  <p>Let us look at each of these pillars and the research proving they are possible.</p>
+
+  <figure>
+    <svg viewBox="0 0 520 320" width="100%" style="display:block;max-width:520px;margin:0 auto;overflow:visible">
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L7,3 z" fill="#6b6860"></path>
+        </marker>
+        <marker id="arrow-forbidden" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L7,3 z" fill="#a35252"></path>
+        </marker>
+      </defs>
+      
+      <!-- Time Axis Line -->
+      <line x1="40" y1="260" x2="480" y2="260" stroke="#1c1b18" stroke-width="1.5" marker-end="url(#arrow)"></line>
+      <text x="480" y="278" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="9" fill="#6b6860">TIME →</text>
+      
+      <!-- Cutoff Line (t_ref) -->
+      <line x1="260" y1="40" x2="260" y2="260" stroke="#2e5e4e" stroke-width="1.2" stroke-dasharray="4 4"></line>
+      <rect x="210" y="20" width="100" height="24" rx="3" fill="#2e5e4e" fill-opacity="0.1" stroke="#2e5e4e" stroke-width="1"></rect>
+      <text x="260" y="35" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" fill="#2e5e4e" font-weight="bold">CUTOFF (t_ref)</text>
+      
+      <!-- Left Side: Past (Valid) -->
+      <rect x="60" y="70" width="160" height="60" rx="0" fill="none" stroke="#1c1b18" stroke-width="1"></rect>
+      <text x="140" y="88" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" fill="#6b6860">TEMPORAL CONTAINMENT</text>
+      <text x="140" y="105" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="#1c1b18">Offline Scraped Corpus</text>
+      <text x="140" y="120" text-anchor="middle" font-family="'Lora', serif" font-size="11" fill="#6b6860">t ≤ t_ref</text>
+      
+      <!-- Right Side: Future (Forbidden) -->
+      <rect x="300" y="70" width="160" height="60" rx="0" fill="none" stroke="#a35252" stroke-width="1" stroke-dasharray="3 3"></rect>
+      <text x="380" y="88" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" fill="#a35252">TEMPORAL LEAKAGE</text>
+      <text x="380" y="105" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="#a35252">Pre-training Data / Web</text>
+      <text x="380" y="120" text-anchor="middle" font-family="'Lora', serif" font-size="11" fill="#a35252">t &gt; t_ref</text>
+
+      <!-- Connectors to Agent Decision Loop -->
+      <!-- From Past to Loop -->
+      <path d="M140,130 C140,180 200,180 230,180" fill="none" stroke="#2e5e4e" stroke-width="1.5" marker-end="url(#arrow)"></path>
+      <text x="180" y="165" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" fill="#2e5e4e">Valid Facts</text>
+
+      <!-- From Future to Loop (Blocked) -->
+      <path d="M380,130 C380,180 320,180 290,180" fill="none" stroke="#a35252" stroke-width="1.5" stroke-dasharray="2 2" marker-end="url(#arrow-forbidden)"></path>
+      <!-- Big X to show blocking -->
+      <g transform="translate(335, 160)">
+        <line x1="-6" y1="-6" x2="6" y2="6" stroke="#a35252" stroke-width="2"></line>
+        <line x1="6" y1="-6" x2="-6" y2="6" stroke="#a35252" stroke-width="2"></line>
+      </g>
+      <text x="345" y="152" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8" fill="#a35252">TEMPO Penalty</text>
+
+      <!-- Agent Decision Loop Card -->
+      <rect x="210" y="195" width="100" height="45" rx="0" fill="var(--surface)" stroke="#1c1b18" stroke-width="1.2"></rect>
+      <text x="260" y="213" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" fill="#1c1b18" font-weight="bold">AGENT LOOP</text>
+      <text x="260" y="228" text-anchor="middle" font-family="'Lora', serif" font-size="10" fill="var(--ink-muted)">Backtest Run</text>
+    </svg>
+    <p class="caption">Figure 1 — Information streams during agent backtesting. Strict temporal boundaries block future-knowledge leakage (red path) while routing verified historical sources (green path) into the agent loop.</p>
+  </figure>
+
+  <h2>1. Traditional ML's Superpower: The Luxury of the Offline Loop</h2>
+
+  <p>In traditional machine learning, we took backtesting for granted. If you were building an XGBoost classifier or a deep LSTM network to predict retail inventory demands, your data was static, row-oriented, and perfectly indexable by time. You split your data chronologically—training on 2018–2021, and validating on 2022. There was zero risk that your 2021 training run would accidentally learn about a supply chain disruption in June 2022 because that row literally did not exist in the training set.</p>
+
+  <p>This separation gave traditional ML three enormous advantages:</p>
+
+  <ul>
+    <li><strong>Uncontaminated Local Validation:</strong> You could measure a model’s true out-of-sample generalization. If you made a change to your feature engineering, you immediately knew if it helped or if it was just overfitting.</li>
+    <li><strong>Rapid Iterative Loops:</strong> Since evaluation was purely numerical and parallelized across matrices on a GPU, you could run thousands of experiments per day.</li>
+    <li><strong>Direct Credit Assignment:</strong> The loss function could trace exactly which parameter adjustments or input features reduced prediction error.</li>
+  </ul>
+
+  <p>In the world of LLMs and foundation models, we have traded this clean laboratory for a wild, sprawling jungle. Since modern models are trained on hundreds of billions of tokens scraped from across time, the boundary between "in-sample" and "out-of-sample" has completely dissolved. We try to evaluate an agent's ability to analyze public health policies by giving it a case study from 2024, forgetting that the academic reviews, post-mortem essays, and final outcomes of those policies are already memorized inside its parameters. We are testing a student who has already been handed the answer key.</p>
+
+  <h2>2. The Time Travel Cheat: Why LLMs Can't Help But Look Ahead</h2>
+
+  <p>The financial and forecasting sectors have been the first to hit this wall with bruising force. Over the past two years, researchers have documented a massive gap between the "backtest performance" of LLM trading agents and their "live performance."</p>
+
+  <p>A prominent 2025 study on mutual fund investing, titled <em>"Time Travel is Cheating,"</em> demonstrated this phenomenon cleanly. When researchers evaluated frontier models (like GPT-4o and DeepSeek-V3) on historical market periods prior to their training cutoffs, the models appeared to possess uncanny, market-beating alpha. But when tested in a live, forward-looking arena where "time travel" was impossible, their performance collapsed back to random walk averages.<sup id="ref4"><a href="#fn4">4</a></sup> The models weren't demonstrating superior economic reasoning; they were merely regurgitating the historical price paths, news announcements, and earnings reports they had memorized during pre-training.</p>
+
+  <p>This is lookahead bias on a civilizational scale. A 2026 benchmark named <em>Look-Ahead-Bench</em> formalized this, evaluating thirteen prominent models on financial tasks across different historical periods.<sup id="ref5"><a href="#fn5">5</a></sup> They found that model accuracy was heavily correlated with when the historical event occurred relative to the model's training date. Try to evaluate an agent on data from 2021, and a 2026 model will score exceptionally high. Try to evaluate it on data from late 2025, and its performance drops off a cliff. The apparent "intelligence" of the agent is, in large part, an artifact of temporal leakage.</p>
+
+  <p>The obvious response is to simply use older models whose cutoffs predate our historical test period. If we want to backtest a trading agent on 2021 data, why not just use a model trained in 2020? But this is a self-defeating compromise. A 2020 language model lacks the core reasoning capabilities, instruction-following, and tool-use maturity of a 2026 frontier model. We would be testing a dumber agent on clean data, rather than our best agent on realistic data. To advance the field, we must find a way to make our most capable models respect the boundaries of time.</p>
+
+  <h2>3. The Mechanics of the Epistemic Firewall</h2>
+
+  <p>How do we build a real epistemic time machine? It requires converting both the external environment and the model's internal parameters into time-aware systems.</p>
+
+  <p>First, we must control the agent’s external inputs. The forecasting firm FutureSearch pioneered a robust approach to this. To backtest an agent from the perspective of June 2025, they do not let the agent run open web searches. Instead, they capture a massive, offline corpus of the internet as it existed in June 2025—scoping tens of thousands of URLs, filings, and news feeds—and index it in a private database.<sup id="ref6"><a href="#fn6">6</a></sup> When the agent searches, its queries are routed to this static, historical corpus. To the agent, it feels like searching the live web; to the evaluation harness, it is a strictly contained sandbox. No future facts can slip through the interface.</p>
+
+  <p>But the harder problem is the model’s internal parametric memory. How do we prevent the model from using its own memory of what happened after the cutoff?</p>
+
+  <p>This is where a breakthrough research paper from May 2026, introducing **TEMPO (Temporal Enforcement via Mode-separated Policy Optimization)**, offers a concrete path forward.<sup id="ref7"><a href="#fn7">7</a></sup> Rather than trying to "unlearn" or erase knowledge from a model—which is incredibly difficult and ruins general reasoning—TEMPO trains the model in *temporal discipline*. </p>
+
+  <p>TEMPO uses Group Relative Policy Optimization (GRPO) to align the model’s reasoning using a dual-mode reward structure. When the model is given a prompt with a specified historical cutoff $t_{\text{ref}}$ (e.g., "Your cutoff is December 2023. Answer the following..."), it is evaluated on both task performance and temporal leakage. A specialized leakage-detector model audits the agent’s generated rationales for any "future facts"—such as referencing mergers, political events, or product launches that occurred after $t_{\text{ref}}$. </p>
+
+  <p>The TEMPO reward system places an absolute, lexicographical priority on compliance. First, a **leakage mode** reward drives the probability of future-fact usage to zero. Only after the model achieves perfect temporal compliance does the **performance mode** reward kick in to optimize the accuracy of its reasoning. Through this training pipeline, the model discovers valid, historical reasoning strategies, learning to actively suppress its post-cutoff memory when prompted with an earlier date. On rigorous forecasting benchmarks, TEMPO was shown to reduce future-knowledge leakage from 13% to under 3.7%, while actually improving pre-cutoff prediction accuracy by 6–13% because the model was forced to find genuine causal relationships rather than relying on memorized historical outcomes.</p>
+
+  <h2>4. Policy Induction: Compiling Experience Back in Time</h2>
+
+  <p>Once we have an epistemic firewall in place—where an agent can be cleanly replayed on historical intervals without lookahead cheating—we unlock a breathtaking possibility: **back-in-time reinforcement learning and policy induction**.</p>
+
+  <p>This is where agent design shifts from an ad-hoc art of manual prompting to a systematic engineering discipline. If we can run an agent through hundreds of historical episodes (e.g., replaying stock earnings calls, clinical trial designs, or geopolitical crises), we can treat the entire agent configuration as an optimizable "policy."</p>
+
+  <p>We can leverage frameworks like **DYSTIL (Dynamic Strategy Induction with LLMs)**, which dynamically queries an LLM to induce high-level, symbolic strategies from successful traces, and then compiling and internalizing those strategies into the agent's policy through proximal policy optimization.<sup id="ref8"><a href="#fn8">8</a></sup> By looking at what worked and what failed across a hundred historical episodes, the system can automatically induce optimal prompt guidelines, search heuristics, and tool-routing patterns.</p>
+
+  <p>Furthermore, we can perform fine-grained credit assignment on multi-step reasoning. Algorithms like **OREO (Offline Reasoning Optimization)** train an explicit value function alongside the agent’s language policy by optimizing a soft Bellman Equation over offline historical trajectories.<sup id="ref9"><a href="#fn9">9</a></sup> If an agent is researching a company's financial health back in 2022, OREO can look at the eventual 2023 outcome and backpropagate a "back-in-time" reinforcement signal. It can pinpoint exactly which step in the agent's 2022 research loop—perhaps a failure to cross-reference a specific regulatory filing—led to the poor downstream prediction. </p>
+
+  <p>By coupling this with off-policy algorithms like **OAPL (Optimal Advantage-based Policy Optimization with Lagged Inference)**, developers can train agent policies asynchronously on massive libraries of logged historical runs, making training incredibly compute-efficient.<sup id="ref10"><a href="#fn10">10</a></sup> We can literally "train" our agents on the lessons of history, refining their decision-making parameters before they ever make a single move in the live world.</p>
+
+  <h2>5. Where the Historical Mirror Breaks: The Limits of Replay</h2>
+
+  <p>If this essay ended here, it would sound like a clean, deterministic triumph. But we must be intellectually honest about the points where the analogy to traditional machine learning breaks down. Backtesting language agents faces three severe, structural constraints that did not exist for traditional models.</p>
+
+  <h3>The Butterfly Effect of Interactive Agency</h3>
+  <p>Traditional ML backtesting was a "read-only" simulation. A prediction model outputs a number, we record the error, and we move to the next row. The model's prediction does not alter the historical environment.</p>
+  <p>But autonomous agents are designed to be "write-active." They send emails, negotiate prices, submit pull requests, or execute trades. The moment an agent acts, it changes the environment. If you backtest a trading agent on 2022 market data, and it decides to sell a massive block of shares, a simple static replay of 2022 market prices is no longer valid. The agent’s action would have moved the market. Replaying history statically assumes the world is a movie; in reality, agency turns the world into a video game. Unless we build incredibly high-fidelity simulators—which themselves introduce massive modeling assumptions and biases—interactive backtesting will remain an approximation, highly vulnerable to the "sim-to-real" gap.</p>
+
+  <h3>The Staggering Computational Cost</h3>
+  <p>Traditional backtesting is beautiful because it is cheap. You can run ten thousand epochs of a neural network over millions of historical transactions in a few minutes because the math is simple, parallelized matrix multiplication.</p>
+  <p>Language agents are computational monsters. Replaying a single agent through a multi-day research task requires hundreds of sequential LLM generation steps, tool calls, search queries, and document parses. Running a backtest over a representative suite of a thousand historical scenarios, across multiple model iterations, is a staggering financial and temporal expense. It requires a level of compute and orchestration that only well-capitalized enterprises can afford. Until inference costs fall by another order of magnitude, agent backtesting will remain a luxury, not a default developer workflow.</p>
+
+  <h3>The Risk of Past-Overfitting</h3>
+  <p>In quantitative finance, "backtest overfitting" is a known sin: if you test enough trading strategies against the past, you will eventually find one that performs spectacularly by pure coincidence, but fails immediately in production. </p>
+  <p>With language agents, this risk is magnified. Because agents have immense degrees of freedom—millions of possible prompt variations, tool combinations, and reasoning paths—they can easily overfit to the specific historical narratives present in your test suite. An agent optimized to forecast the 2021 market might learn highly specific, narrative-driven heuristics ("distrust supply chain reports during a pandemic") that are completely useless, or even harmful, during a 2026 banking liquidity squeeze. To combat this, we have to implement rigorous statistical guards, such as the Probability of Backtest Overfitting (PBO) and Rademacher complexity corrections, to ensure our induced policies are capturing generalizable reasoning rather than historical coincidence.<sup id="ref11"><a href="#fn11">11</a></sup></p>
+
+  <h2>What backtesting is really about</h2>
+
+  <p>Despite these hard constraints, I believe that building backtestable architectures is the single most important design choice we can make for the future of AI. </p>
+
+  <p>Why? Because it changes our relationship with autonomous software. Right now, we deploy LLMs and agents with a sense of nervous hope. We run them through twenty manual test cases, look at their clean formatting, and hope they don't hallucinate or make a ruinous decision when confronted with a novel situation. This is not engineering; it is vibes-based deployment.</p>
+
+  <p>By enforcing temporal discipline—through containment firewalls, date-aware policy optimization, and offline corpus sandboxes—we can finally turn agent development into an empirical science. We can say to an enterprise, "We replayed this research assistant on 500 historical credit decisions from 2022 to 2025 under strict, leak-free conditions, and it outperformed human analysts by 14% while maintaining a 0% temporal leakage rate." That is a claim you can audit. That is a claim that earns trust.</p>
+
+  <p>Traditional machine learning conquered the world because it was grounded in the absolute reality of out-of-sample data. Generative AI has spent its early years living in a dreamlike state, unmoored from temporal constraints, hallucinating predictions with the benefit of retroactive memory.</p>
+
+  <p>It is time to wake up. By building the epistemic time machine, we can give our agents the discipline to respect the past—and in doing so, we might finally give them the capacity to navigate the future.</p>
+
+  <section class="footnotes">
+    <ol>
+      <li id="fn1">For a detailed explanation of capturing historical web corpuses for agent search sandboxing, see Stockfisher/FutureSearch research, <a href="https://futuresearch.ai/backtesting-forecasts-that-use-llms/">“Backtesting Forecasts That Use LLMs”</a> (2025). <a href="#ref1">↩</a></li>
+      <li id="fn2">Yuval Paleka et al., <a href="https://arxiv.org/html/2605.18843">“TEMPO: Temporal Enforcement via Mode-Separated Policy Optimization for Trustworthy LLM Backtesting”</a> (May 2026). TEMPO enforces temporal discipline during GRPO training via mode-separated rewards to prevent lookahead leakage. <a href="#ref2">↩</a></li>
+      <li id="fn3">See research on compiling and optimizing agent strategies using textual feedback, such as <a href="https://openreview.net/pdf?id=1ABhAZCoGr">DYSTIL</a> (2025), which compiles high-level symbolic strategies back into parametric policies. <a href="#ref3">↩</a></li>
+      <li id="fn4">Zihan Zhao and colleagues, <a href="https://arxiv.org/html/2505.11065v1">“Time Travel is Cheating: Going Live with DeepFund for Real-Time Fund Investment Benchmarking”</a> (2025). This paper highlights how LLM financial agents "time travel" during historical testing due to pre-training lookahead. <a href="#ref4">↩</a></li>
+      <li id="fn5">Li et al., <a href="https://ar5iv.labs.arxiv.org/html/2601.13770">“Look-Ahead-Bench: a Standardized Benchmark of Look-ahead Bias in Point-in-Time LLMs for Finance”</a> (Jan 2026). A benchmark measuring how point-in-time constraints (using Time Machine GPT and DatedGPT models) impact financial prediction accuracy. <a href="#ref5">↩</a></li>
+      <li id="fn6">See FutureSearch’s technical methodology on routing agent queries to time-controlled database mirrors to isolate parametric and retrieval states: <a href="https://futuresearch.ai/backtesting-forecasts-that-use-llms/">FutureSearch Backtesting Playbook</a> (2025). <a href="#ref6">↩</a></li>
+      <li id="fn7">Again, see <a href="https://arxiv.org/html/2605.18843">Paleka et al. (2026)</a> on the GRPO mode-separated training pipeline. <a href="#ref7">↩</a></li>
+      <li id="fn8">Siddharth Verma et al., <a href="https://openreview.net/pdf?id=1ABhAZCoGr">“Strategy Induction with LLMs for Reinforcement Learning (DYSTIL)”</a> (2025). Shows how high-level symbolic guidance can be dynamically compiled into parameterized networks. <a href="#ref8">↩</a></li>
+      <li id="fn9">Yifan Wang et al., <a href="https://aclanthology.org/2025.findings-acl.464.pdf">“Offline Reinforcement Learning for LLM Multi-step Reasoning (OREO)”</a> (Findings of ACL 2025). OREO uses soft Q-learning to perform step-level credit assignment on offline multi-step reasoning. <a href="#ref9">↩</a></li>
+      <li id="fn10">Alexander Chen and colleagues, <a href="https://arxiv.org/abs/2602.19362">“Optimal Advantage-based Policy Optimization with Lagged Inference (OAPL)”</a> (Feb 2026). Explores the benefits of off-policy reinforcement learning for asynchronous post-training on historical logs. <a href="#ref10">↩</a></li>
+      <li id="fn11">For a discussion of the statistical challenges of backtest overfitting and the use of Rademacher Anti-Serum in LLM agent evaluation, see Marcos Paleologo, <a href="https://aifinhub.io/articles/backtest-overfitting-llm-strategies-pbo-explained/">“Backtest Overfitting in LLM Trading Strategies”</a> (2026). <a href="#ref11">↩</a></li>
+    </ol>
+  </section>
+
+  <p class="small">A note on tone: the point is not that backtesting is a silver bullet, nor that agents will ever perfectly simulate historical chaos. It is that if we do not build systems that can be rigorously evaluated against the boundaries of time, we will never build systems capable of earned trust.</p>
+</article>
+</body>
+</html>
