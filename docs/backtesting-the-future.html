@@ -14,7 +14,6 @@
   --ink-muted:#6b6860;
   --accent:#2e5e4e;
   --border:#dddbd4;
-  --red-muted:#a35252;
 }
 *{box-sizing:border-box}
 html,body{
@@ -200,7 +199,7 @@ addEventListener("load",function(){
           <path d="M0,0 L0,6 L7,3 z" fill="#6b6860"></path>
         </marker>
         <marker id="arrow-forbidden" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-          <path d="M0,0 L0,6 L7,3 z" fill="#a35252"></path>
+          <path d="M0,0 L0,6 L7,3 z" fill="var(--ink-muted)" fill-opacity="0.5"></path>
         </marker>
       </defs>
       
@@ -220,10 +219,10 @@ addEventListener("load",function(){
       <text x="140" y="120" text-anchor="middle" font-family="'Lora', serif" font-size="11" fill="#6b6860">t ≤ t_ref</text>
       
       <!-- Right Side: Future (Forbidden) -->
-      <rect x="300" y="70" width="160" height="60" rx="0" fill="none" stroke="#a35252" stroke-width="1" stroke-dasharray="3 3"></rect>
-      <text x="380" y="88" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" fill="#a35252">TEMPORAL LEAKAGE</text>
-      <text x="380" y="105" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="#a35252">Pre-training Data / Web</text>
-      <text x="380" y="120" text-anchor="middle" font-family="'Lora', serif" font-size="11" fill="#a35252">t &gt; t_ref</text>
+      <rect x="300" y="70" width="160" height="60" rx="0" fill="none" stroke="var(--ink-muted)" stroke-opacity="0.5" stroke-width="1" stroke-dasharray="3 3"></rect>
+      <text x="380" y="88" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" fill="var(--ink-muted)" opacity="0.6">TEMPORAL LEAKAGE</text>
+      <text x="380" y="105" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="var(--ink-muted)" opacity="0.6">Pre-training Data / Web</text>
+      <text x="380" y="120" text-anchor="middle" font-family="'Lora', serif" font-size="11" fill="var(--ink-muted)" opacity="0.6">t &gt; t_ref</text>
 
       <!-- Connectors to Agent Decision Loop -->
       <!-- From Past to Loop -->
@@ -231,20 +230,20 @@ addEventListener("load",function(){
       <text x="180" y="165" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" fill="#2e5e4e">Valid Facts</text>
 
       <!-- From Future to Loop (Blocked) -->
-      <path d="M380,130 C380,180 320,180 290,180" fill="none" stroke="#a35252" stroke-width="1.5" stroke-dasharray="2 2" marker-end="url(#arrow-forbidden)"></path>
+      <path d="M380,130 C380,180 320,180 290,180" fill="none" stroke="var(--ink-muted)" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="2 2" marker-end="url(#arrow-forbidden)"></path>
       <!-- Big X to show blocking -->
-      <g transform="translate(335, 160)">
-        <line x1="-6" y1="-6" x2="6" y2="6" stroke="#a35252" stroke-width="2"></line>
-        <line x1="6" y1="-6" x2="-6" y2="6" stroke="#a35252" stroke-width="2"></line>
+      <g transform="translate(335, 160)" opacity="0.6">
+        <line x1="-6" y1="-6" x2="6" y2="6" stroke="var(--ink-muted)" stroke-width="2"></line>
+        <line x1="6" y1="-6" x2="-6" y2="6" stroke="var(--ink-muted)" stroke-width="2"></line>
       </g>
-      <text x="345" y="152" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8" fill="#a35252">TEMPO Penalty</text>
+      <text x="345" y="152" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8" fill="var(--ink-muted)" opacity="0.6">TEMPO Penalty</text>
 
       <!-- Agent Decision Loop Card -->
       <rect x="210" y="195" width="100" height="45" rx="0" fill="var(--surface)" stroke="#1c1b18" stroke-width="1.2"></rect>
       <text x="260" y="213" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" fill="#1c1b18" font-weight="bold">AGENT LOOP</text>
       <text x="260" y="228" text-anchor="middle" font-family="'Lora', serif" font-size="10" fill="var(--ink-muted)">Backtest Run</text>
     </svg>
-    <p class="caption">Figure 1 — Information streams during agent backtesting. Strict temporal boundaries block future-knowledge leakage (red path) while routing verified historical sources (green path) into the agent loop.</p>
+    <p class="caption">Figure 1 — Information streams during agent backtesting. Strict temporal boundaries block future-knowledge leakage (dashed grey path) while routing verified historical sources (green path) into the agent loop.</p>
   </figure>
 
   <h2>The Luxury of the Offline Loop</h2>
@@ -291,7 +290,7 @@ addEventListener("load",function(){
 
   <p>This is where agent design shifts from an ad-hoc art of manual prompting to a systematic engineering discipline. If we can run an agent through hundreds of historical episodes (e.g., replaying stock earnings calls, clinical trial designs, or geopolitical crises), we can treat the entire agent configuration as an optimizable "policy."</p>
 
-  <p>We can leverage frameworks like <strong>DYSTIL (Dynamic Strategy Induction with LLMs)</strong>, which dynamically queries an LLM to induce high-level, symbolic strategies from successful traces, and then compiling and internalizing those strategies into the agent's policy through proximal policy optimization.<sup id="ref8"><a href="#fn8">8</a></sup> By looking at what worked and what failed across a hundred historical episodes, the system can automatically induce optimal prompt guidelines, search heuristics, and tool-routing patterns.</p>
+  <p>We can utilize frameworks like <strong>DYSTIL (Dynamic Strategy Induction with LLMs)</strong>, which dynamically queries an LLM to induce high-level, symbolic strategies from successful traces, and then compiling and internalizing those strategies into the agent's policy through proximal policy optimization.<sup id="ref8"><a href="#fn8">8</a></sup> By looking at what worked and what failed across a hundred historical episodes, the system can automatically induce optimal prompt guidelines, search heuristics, and tool-routing patterns.</p>
 
   <p>Furthermore, we can perform fine-grained credit assignment on multi-step reasoning. Algorithms like <strong>OREO (Offline Reasoning Optimization)</strong> train an explicit value function alongside the agent’s language policy by optimizing a soft Bellman Equation over offline historical trajectories.<sup id="ref9"><a href="#fn9">9</a></sup> If an agent is researching a company's financial health back in 2022, OREO can look at the eventual 2023 outcome and backpropagate a "back-in-time" reinforcement signal. It can pinpoint exactly which step in the agent's 2022 research loop—perhaps a failure to cross-reference a specific regulatory filing—led to the poor downstream prediction. </p>
 
