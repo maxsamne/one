@@ -135,7 +135,6 @@ figure{
   font-size:14px;
 }
 </style>
-<style>html{background:var(--bg,#f4f0eb);}body{margin:0;}</style>
 <script>
 addEventListener("load",function(){
   var s=getComputedStyle(document.body);
@@ -248,7 +247,7 @@ addEventListener("load",function(){
     <p class="caption">Figure 1 — Information streams during agent backtesting. Strict temporal boundaries block future-knowledge leakage (red path) while routing verified historical sources (green path) into the agent loop.</p>
   </figure>
 
-  <h2>1. Traditional ML's Superpower: The Luxury of the Offline Loop</h2>
+  <h2>The Luxury of the Offline Loop</h2>
 
   <p>In traditional machine learning, we took backtesting for granted. If you were building an XGBoost classifier or a deep LSTM network to predict retail inventory demands, your data was static, row-oriented, and perfectly indexable by time. You split your data chronologically—training on 2018–2021, and validating on 2022. There was zero risk that your 2021 training run would accidentally learn about a supply chain disruption in June 2022 because that row literally did not exist in the training set.</p>
 
@@ -262,7 +261,7 @@ addEventListener("load",function(){
 
   <p>In the world of LLMs and foundation models, we have traded this clean laboratory for a wild, sprawling jungle. Since modern models are trained on hundreds of billions of tokens scraped from across time, the boundary between "in-sample" and "out-of-sample" has completely dissolved. We try to evaluate an agent's ability to analyze public health policies by giving it a case study from 2024, forgetting that the academic reviews, post-mortem essays, and final outcomes of those policies are already memorized inside its parameters. We are testing a student who has already been handed the answer key.</p>
 
-  <h2>2. The Time Travel Cheat: Why LLMs Can't Help But Look Ahead</h2>
+  <h2>Why LLMs Can't Help But Look Ahead</h2>
 
   <p>The financial and forecasting sectors have been the first to hit this wall with bruising force. Over the past two years, researchers have documented a massive gap between the "backtest performance" of LLM trading agents and their "live performance."</p>
 
@@ -272,7 +271,7 @@ addEventListener("load",function(){
 
   <p>The obvious response is to simply use older models whose cutoffs predate our historical test period. If we want to backtest a trading agent on 2021 data, why not just use a model trained in 2020? But this is a self-defeating compromise. A 2020 language model lacks the core reasoning capabilities, instruction-following, and tool-use maturity of a 2026 frontier model. We would be testing a dumber agent on clean data, rather than our best agent on realistic data. To advance the field, we must find a way to make our most capable models respect the boundaries of time.</p>
 
-  <h2>3. The Mechanics of the Epistemic Firewall</h2>
+  <h2>The Mechanics of the Epistemic Firewall</h2>
 
   <p>How do we build a real epistemic time machine? It requires converting both the external environment and the model's internal parameters into time-aware systems.</p>
 
@@ -280,25 +279,25 @@ addEventListener("load",function(){
 
   <p>But the harder problem is the model’s internal parametric memory. How do we prevent the model from using its own memory of what happened after the cutoff?</p>
 
-  <p>This is where a breakthrough research paper from May 2026, introducing **TEMPO (Temporal Enforcement via Mode-separated Policy Optimization)**, offers a concrete path forward.<sup id="ref7"><a href="#fn7">7</a></sup> Rather than trying to "unlearn" or erase knowledge from a model—which is incredibly difficult and ruins general reasoning—TEMPO trains the model in *temporal discipline*. </p>
+  <p>This is where a breakthrough research paper from May 2026, introducing <strong>TEMPO (Temporal Enforcement via Mode-separated Policy Optimization)</strong>, offers a concrete path forward.<sup id="ref7"><a href="#fn7">7</a></sup> Rather than trying to "unlearn" or erase knowledge from a model—which is incredibly difficult and ruins general reasoning—TEMPO trains the model in <em>temporal discipline</em>. </p>
 
   <p>TEMPO uses Group Relative Policy Optimization (GRPO) to align the model’s reasoning using a dual-mode reward structure. When the model is given a prompt with a specified historical cutoff $t_{\text{ref}}$ (e.g., "Your cutoff is December 2023. Answer the following..."), it is evaluated on both task performance and temporal leakage. A specialized leakage-detector model audits the agent’s generated rationales for any "future facts"—such as referencing mergers, political events, or product launches that occurred after $t_{\text{ref}}$. </p>
 
-  <p>The TEMPO reward system places an absolute, lexicographical priority on compliance. First, a **leakage mode** reward drives the probability of future-fact usage to zero. Only after the model achieves perfect temporal compliance does the **performance mode** reward kick in to optimize the accuracy of its reasoning. Through this training pipeline, the model discovers valid, historical reasoning strategies, learning to actively suppress its post-cutoff memory when prompted with an earlier date. On rigorous forecasting benchmarks, TEMPO was shown to reduce future-knowledge leakage from 13% to under 3.7%, while actually improving pre-cutoff prediction accuracy by 6–13% because the model was forced to find genuine causal relationships rather than relying on memorized historical outcomes.</p>
+  <p>The TEMPO reward system places an absolute, lexicographical priority on compliance. First, a <strong>leakage mode</strong> reward drives the probability of future-fact usage to zero. Only after the model achieves perfect temporal compliance does the <strong>performance mode</strong> reward kick in to optimize the accuracy of its reasoning. Through this training pipeline, the model discovers valid, historical reasoning strategies, learning to actively suppress its post-cutoff memory when prompted with an earlier date. On rigorous forecasting benchmarks, TEMPO was shown to reduce future-knowledge leakage from 13% to under 3.7%, while actually improving pre-cutoff prediction accuracy by 6–13% because the model was forced to find genuine causal relationships rather than relying on memorized historical outcomes.</p>
 
-  <h2>4. Policy Induction: Compiling Experience Back in Time</h2>
+  <h2>Compiling Experience Back in Time</h2>
 
-  <p>Once we have an epistemic firewall in place—where an agent can be cleanly replayed on historical intervals without lookahead cheating—we unlock a breathtaking possibility: **back-in-time reinforcement learning and policy induction**.</p>
+  <p>Once we have an epistemic firewall in place—where an agent can be cleanly replayed on historical intervals without lookahead cheating—we unlock a breathtaking possibility: <strong>back-in-time reinforcement learning and policy induction</strong>.</p>
 
   <p>This is where agent design shifts from an ad-hoc art of manual prompting to a systematic engineering discipline. If we can run an agent through hundreds of historical episodes (e.g., replaying stock earnings calls, clinical trial designs, or geopolitical crises), we can treat the entire agent configuration as an optimizable "policy."</p>
 
-  <p>We can leverage frameworks like **DYSTIL (Dynamic Strategy Induction with LLMs)**, which dynamically queries an LLM to induce high-level, symbolic strategies from successful traces, and then compiling and internalizing those strategies into the agent's policy through proximal policy optimization.<sup id="ref8"><a href="#fn8">8</a></sup> By looking at what worked and what failed across a hundred historical episodes, the system can automatically induce optimal prompt guidelines, search heuristics, and tool-routing patterns.</p>
+  <p>We can leverage frameworks like <strong>DYSTIL (Dynamic Strategy Induction with LLMs)</strong>, which dynamically queries an LLM to induce high-level, symbolic strategies from successful traces, and then compiling and internalizing those strategies into the agent's policy through proximal policy optimization.<sup id="ref8"><a href="#fn8">8</a></sup> By looking at what worked and what failed across a hundred historical episodes, the system can automatically induce optimal prompt guidelines, search heuristics, and tool-routing patterns.</p>
 
-  <p>Furthermore, we can perform fine-grained credit assignment on multi-step reasoning. Algorithms like **OREO (Offline Reasoning Optimization)** train an explicit value function alongside the agent’s language policy by optimizing a soft Bellman Equation over offline historical trajectories.<sup id="ref9"><a href="#fn9">9</a></sup> If an agent is researching a company's financial health back in 2022, OREO can look at the eventual 2023 outcome and backpropagate a "back-in-time" reinforcement signal. It can pinpoint exactly which step in the agent's 2022 research loop—perhaps a failure to cross-reference a specific regulatory filing—led to the poor downstream prediction. </p>
+  <p>Furthermore, we can perform fine-grained credit assignment on multi-step reasoning. Algorithms like <strong>OREO (Offline Reasoning Optimization)</strong> train an explicit value function alongside the agent’s language policy by optimizing a soft Bellman Equation over offline historical trajectories.<sup id="ref9"><a href="#fn9">9</a></sup> If an agent is researching a company's financial health back in 2022, OREO can look at the eventual 2023 outcome and backpropagate a "back-in-time" reinforcement signal. It can pinpoint exactly which step in the agent's 2022 research loop—perhaps a failure to cross-reference a specific regulatory filing—led to the poor downstream prediction. </p>
 
-  <p>By coupling this with off-policy algorithms like **OAPL (Optimal Advantage-based Policy Optimization with Lagged Inference)**, developers can train agent policies asynchronously on massive libraries of logged historical runs, making training incredibly compute-efficient.<sup id="ref10"><a href="#fn10">10</a></sup> We can literally "train" our agents on the lessons of history, refining their decision-making parameters before they ever make a single move in the live world.</p>
+  <p>By coupling this with off-policy algorithms like <strong>OAPL (Optimal Advantage-based Policy Optimization with Lagged Inference)</strong>, developers can train agent policies asynchronously on massive libraries of logged historical runs, making training incredibly compute-efficient.<sup id="ref10"><a href="#fn10">10</a></sup> We can literally "train" our agents on the lessons of history, refining their decision-making parameters before they ever make a single move in the live world.</p>
 
-  <h2>5. Where the Historical Mirror Breaks: The Limits of Replay</h2>
+  <h2>Where the Historical Mirror Breaks</h2>
 
   <p>If this essay ended here, it would sound like a clean, deterministic triumph. But we must be intellectually honest about the points where the analogy to traditional machine learning breaks down. Backtesting language agents faces three severe, structural constraints that did not exist for traditional models.</p>
 
