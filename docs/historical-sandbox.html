@@ -112,7 +112,7 @@ li{margin:.35em 0}
   <p class="dek">Why backtesting could become the missing discipline of the agent era — if we train models to respect time, not just search it.</p>
 
   <figure style="margin-top:0">
-    <img src="/one/images/historical-sandbox-card.png" alt="Archival-style editorial illustration of an early rocket or experimental aircraft test with subtle engineering overlays and warm parchment tones." style="width:100%;height:auto;border:1px solid var(--border);display:block;">
+    <img src="/one/images/historical-sandbox-card.svg" alt="Archival-style editorial illustration of an early rocket or experimental aircraft test with subtle engineering overlays and warm parchment tones." style="width:100%;height:auto;border:1px solid var(--border);display:block;">
     <p class="caption">You test against the past so the future is allowed to be expensive.</p>
   </figure>
 
@@ -164,31 +164,31 @@ li{margin:.35em 0}
       <rect x="210" y="20" width="100" height="24" rx="3" fill="#2e5e4e" fill-opacity="0.1" stroke="#2e5e4e" stroke-width="1"></rect>
       <text x="260" y="35" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" fill="#2e5e4e" font-weight="bold">CUTOFF (t_ref)</text>
 
-      <rect x="60" y="70" width="160" height="60" fill="none" stroke="#1c1b18" stroke-width="1"></rect>
+      <rect x="60" y="70" width="160" height="60" rx="0" fill="none" stroke="#1c1b18" stroke-width="1"></rect>
       <text x="140" y="88" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" fill="#6b6860">TEMPORAL CONTAINMENT</text>
-      <text x="140" y="105" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="#1c1b18">Frozen corpus</text>
+      <text x="140" y="105" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="#1c1b18">Offline Scraped Corpus</text>
       <text x="140" y="120" text-anchor="middle" font-family="'Lora', serif" font-size="11" fill="#6b6860">t ≤ t_ref</text>
 
-      <rect x="300" y="70" width="160" height="60" fill="none" stroke="#6b6860" stroke-opacity="0.5" stroke-width="1" stroke-dasharray="3 3"></rect>
-      <text x="380" y="88" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" fill="#6b6860" opacity="0.6">TEMPORAL LEAKAGE</text>
-      <text x="380" y="105" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="#6b6860" opacity="0.6">weights / updated web</text>
-      <text x="380" y="120" text-anchor="middle" font-family="'Lora', serif" font-size="11" fill="#6b6860" opacity="0.6">t &gt; t_ref</text>
+      <rect x="300" y="70" width="160" height="60" rx="0" fill="none" stroke="#6b6860" stroke-width="1" stroke-dasharray="3 3" stroke-opacity="0.5"></rect>
+      <text x="380" y="88" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" fill="#6b6860" opacity="0.55">TEMPORAL LEAKAGE</text>
+      <text x="380" y="105" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="#6b6860" opacity="0.55">Pre-training Data / Web</text>
+      <text x="380" y="120" text-anchor="middle" font-family="'Lora', serif" font-size="11" fill="#6b6860" opacity="0.55">t &gt; t_ref</text>
 
       <path d="M140,130 C140,180 200,180 230,180" fill="none" stroke="#2e5e4e" stroke-width="1.5" marker-end="url(#arrowT)"></path>
-      <text x="180" y="165" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" fill="#2e5e4e">Valid facts</text>
+      <text x="180" y="165" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" fill="#2e5e4e">Valid Facts</text>
 
-      <path d="M380,130 C380,180 320,180 290,180" fill="none" stroke="#6b6860" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="2 2" marker-end="url(#arrowT)"></path>
-      <g transform="translate(335, 160)" opacity="0.6">
+      <path d="M380,130 C380,180 320,180 290,180" fill="none" stroke="#6b6860" stroke-width="1.4" stroke-dasharray="2 2" stroke-opacity="0.4" marker-end="url(#arrowT)"></path>
+      <g transform="translate(335, 160)" opacity="0.55">
         <line x1="-6" y1="-6" x2="6" y2="6" stroke="#6b6860" stroke-width="2"></line>
         <line x1="6" y1="-6" x2="-6" y2="6" stroke="#6b6860" stroke-width="2"></line>
       </g>
-      <text x="345" y="152" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8" fill="#6b6860" opacity="0.6">audit gate</text>
+      <text x="345" y="152" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8" fill="#6b6860" opacity="0.6">TEMPO Penalty</text>
 
-      <rect x="210" y="195" width="100" height="45" fill="var(--surface)" stroke="#1c1b18" stroke-width="1.2"></rect>
+      <rect x="210" y="195" width="100" height="45" rx="0" fill="var(--surface)" stroke="#1c1b18" stroke-width="1.2"></rect>
       <text x="260" y="213" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" fill="#1c1b18" font-weight="bold">AGENT LOOP</text>
-      <text x="260" y="228" text-anchor="middle" font-family="'Lora', serif" font-size="10" fill="var(--ink-muted)">backtest run</text>
+      <text x="260" y="228" text-anchor="middle" font-family="'Lora', serif" font-size="10" fill="var(--ink-muted)">Backtest Run</text>
     </svg>
-    <p class="caption">A credible retrospective run needs a real cutoff, not a polite instruction.</p>
+    <p class="caption">The containment picture is simple: admissible evidence flows in from the left of the cutoff; memorized or retrieved future facts have to be blocked before they touch the run.</p>
   </figure>
 
   <h2>Why this could actually compound</h2>
@@ -211,44 +211,23 @@ li{margin:.35em 0}
   <p>At that point, the training story becomes much richer than “more RL on general chat data.” You can induce better research policies from historical traces. You can penalize leakage at the claim level. You can reward evidence coverage, calibration, abstention, and decision quality. You can even separate the problem into layers: one model proposes, another audits temporal admissibility, a third evaluates outcome quality. That is much closer to how serious ML systems were improved in practice: not by admiring a capability, but by instrumenting a loop.</p>
 
   <figure>
-    <svg viewBox="0 0 520 250" width="100%" style="display:block;max-width:520px;margin:0 auto;overflow:visible">
-      <defs>
-        <marker id="arrowA" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-          <path d="M0,0 L0,6 L7,3 z" fill="#6b6860"></path>
-        </marker>
-      </defs>
-      <rect x="20" y="96" width="104" height="48" fill="none" stroke="#1c1b18" stroke-width="1.2"></rect>
-      <text x="72" y="115" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6860">HISTORICAL TASK</text>
-      <text x="72" y="132" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="#1c1b18">question at t₀</text>
+    <svg viewBox="0 0 520 240" width="100%" style="display:block;max-width:520px;margin:0 auto;overflow:visible">
+      <line x1="54" y1="188" x2="484" y2="188" stroke="#1c1b18" stroke-width="1"></line>
+      <line x1="54" y1="48" x2="54" y2="188" stroke="#1c1b18" stroke-width="1"></line>
+      <line x1="236" y1="48" x2="236" y2="188" stroke="#6b6860" stroke-dasharray="4 4" stroke-width="1"></line>
+      <text x="236" y="36" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6860">CUTOFF t₀</text>
+      <text x="36" y="55" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6860">surprise</text>
+      <text x="484" y="207" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6860">time →</text>
 
-      <rect x="154" y="70" width="112" height="100" fill="#2e5e4e" fill-opacity="0.06" stroke="#2e5e4e" stroke-width="1.1"></rect>
-      <text x="210" y="91" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6860">POINT-IN-TIME AGENT</text>
-      <text x="210" y="114" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="#1c1b18">frozen tools</text>
-      <text x="210" y="132" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="#1c1b18">archived corpus</text>
-      <text x="210" y="150" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="#1c1b18">trace + citations</text>
+      <path d="M54 168 C118 168, 182 165, 236 162 C290 160, 356 157, 484 152" fill="none" stroke="#6b6860" stroke-width="1.3" stroke-dasharray="4 3"></path>
+      <path d="M54 168 C118 168, 182 165, 236 162 C264 154, 285 102, 320 94 C366 82, 426 78, 484 74" fill="none" stroke="#1c1b18" stroke-width="2"></path>
+      <path d="M236 162 C264 154, 285 102, 320 94 C366 82, 426 78, 484 74 L484 152 C356 157, 290 160, 236 162 Z" fill="#2e5e4e" fill-opacity="0.08"></path>
 
-      <rect x="296" y="56" width="96" height="58" fill="none" stroke="#1c1b18" stroke-width="1.2"></rect>
-      <text x="344" y="77" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6860">CLAIM AUDIT</text>
-      <text x="344" y="94" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="#1c1b18">future fact?</text>
-
-      <rect x="296" y="132" width="96" height="58" fill="none" stroke="#1c1b18" stroke-width="1.2"></rect>
-      <text x="344" y="153" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6860">OUTCOME SCORE</text>
-      <text x="344" y="170" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="#1c1b18">right by t₁?</text>
-
-      <rect x="424" y="96" width="76" height="48" fill="none" stroke="#1c1b18" stroke-width="1.2"></rect>
-      <text x="462" y="115" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6860">UPDATE</text>
-      <text x="462" y="132" text-anchor="middle" font-family="'Lora', serif" font-size="12" fill="#1c1b18">policy</text>
-
-      <line x1="124" y1="120" x2="154" y2="120" stroke="#6b6860" stroke-width="1.2" marker-end="url(#arrowA)"></line>
-      <line x1="266" y1="98" x2="296" y2="85" stroke="#6b6860" stroke-width="1.2" marker-end="url(#arrowA)"></line>
-      <line x1="266" y1="142" x2="296" y2="161" stroke="#6b6860" stroke-width="1.2" marker-end="url(#arrowA)"></line>
-      <line x1="392" y1="85" x2="424" y2="108" stroke="#6b6860" stroke-width="1.2" marker-end="url(#arrowA)"></line>
-      <line x1="392" y1="161" x2="424" y2="132" stroke="#6b6860" stroke-width="1.2" marker-end="url(#arrowA)"></line>
-      <path d="M462 146 C462 198, 250 215, 210 178" fill="none" stroke="#6b6860" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#arrowA)"></path>
-
-      <text x="258" y="232" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6860">hard leakage gate first, optimization second</text>
+      <text x="476" y="149" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6860">leaky model</text>
+      <text x="476" y="70" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="10" fill="#1c1b18">clean point-in-time model</text>
+      <text x="330" y="123" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#2e5e4e">audit gap</text>
     </svg>
-    <p class="caption">A serious backtest loop for agents looks less like a benchmark and more like a training pipeline.</p>
+    <p class="caption">A clean model should become more surprised after the cutoff. If it stays comfortable, it probably knows too much.</p>
   </figure>
 
   <h2>Where the analogy breaks</h2>
