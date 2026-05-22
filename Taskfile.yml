@@ -6,6 +6,7 @@ tasks:
     env:
       OLLAMA_NUM_PARALLEL: "1"
       DEBUG: "true"
+      AGENT_TRANSCRIPTS: "1"
     cmd: uv run uvicorn core.gateway.server:app --host 127.0.0.1 --port 5500 --reload --reload-dir src
 
   serve:prod:

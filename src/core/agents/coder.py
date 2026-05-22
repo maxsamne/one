@@ -16,7 +16,7 @@ from core.log import Category
 from core.log import log as _log
 from core.log import stat_inc, transcript_save
 from core.tools.board import BOARD_POST_TOOL
-from core.tools.ctx import READ_CTX, TOOL_LOG, WORKDIR
+from core.tools.ctx import PENDING_MULTIMODAL, READ_CTX, TOOL_LOG, WORKDIR
 from core.tools.fs import FS_TOOLS
 from core.tools.git import GIT_TOOLS, git_create_branch
 from core.tools.shell import SHELL_TOOLS
@@ -24,6 +24,7 @@ from core.tools.image_gen import GENERATE_IMAGE_TOOL
 from core.tools.skill_tool import LOAD_SKILL_TOOL
 from core.tools.subagent import SPAWN_TOOL
 from core.tools.todo import TODO_KEY, TODO_TOOL, all_complete, clear as clear_todos
+from core.tools.visual_refs import LOAD_WEBSITE_IMAGE_REFS_TOOL
 from core.tools.web import make_web_search_tool
 
 from core.debug import trace as _dtrace
@@ -37,6 +38,7 @@ _INSTRUCTIONS_BASE = """\
 - If the task requires current data, facts, or external information — call web_search first.
 - If a task requires extensive data gathering before producing output (e.g. 3+ web searches, large file reads, broad codebase discovery), delegate the research/gathering phase to a conversational sub-agent first — have it collect and return a concise summary, then synthesise the output yourself. This keeps your context lean for generation.
 - Before producing any visual or design-led output (HTML artifact, image-rich response, dashboard, briefing, article, page), scan the skill index above. If any skill looks relevant (e.g. `artifact-design`, `morning-brief`), call `load_skill(name)` BEFORE generating — those skills carry templates, palette, image-embedding syntax, and component patterns that the cheap-tier model otherwise misses.
+- If a task asks you to match the visual style of an existing website/article, or to create a new article cover that fits previous articles, call `load_website_image_refs` BEFORE `generate_image`. This loads actual reference images only when needed, instead of spending image tokens on every task.
 - When you emit image URLs returned by `generate_image` in a plain-text/markdown response (no HTML wrapper), ALWAYS use markdown image syntax `![alt](/images/<task>/<file>.png)` — never bare paths. Bare paths render as literal text and the user sees broken output. Inside an HTML block use `<img src="...">` instead.
 - FATAL errors: stop and report clearly — do not retry.
 - RETRYABLE errors: retry the operation (e.g. call read_file first, then edit_file).
@@ -109,13 +111,17 @@ async def run(
     up where the parent left off. Compaction kicks in naturally if context fills.
     """
 
-    effective_tools = list(tools or (FS_TOOLS + SHELL_TOOLS + GIT_TOOLS)) + [TODO_TOOL, BOARD_POST_TOOL, LOAD_SKILL_TOOL, GENERATE_IMAGE_TOOL]
+    effective_tools = _dedupe_tools(
+        list(tools or (FS_TOOLS + SHELL_TOOLS + GIT_TOOLS))
+        + [TODO_TOOL, BOARD_POST_TOOL, LOAD_SKILL_TOOL, GENERATE_IMAGE_TOOL, LOAD_WEBSITE_IMAGE_REFS_TOOL]
+    )
     if web_tool := make_web_search_tool():
         effective_tools.append(web_tool)
     # Only top-level coders can spawn sub-agents (SUBAGENT_DEPTH=0). Sub-agents
     # cannot themselves spawn — keeps trees shallow and predictable for v1.
     if SUBAGENT_DEPTH.get() == 0:
         effective_tools.append(SPAWN_TOOL)
+    effective_tools = _dedupe_tools(effective_tools)
     effective_instructions = "\n\n---\n\n".join(filter(None, [instructions, tools_prompt(effective_tools)]))
     effective_agent_id = agent_id or current_task_id() or "default"
 
@@ -134,6 +140,7 @@ async def run(
     clear_todos()
     reads_token = READ_CTX.set(set())
     log_token = TOOL_LOG.set([])
+    pending_images_token = PENDING_MULTIMODAL.set([])
     role_token = ROLE_CTX.set(role)
     agent_id_token = AGENT_ID_CTX.set(effective_agent_id)
     spawn_token = SPAWN_CTX.set(SpawnContext(
@@ -238,6 +245,7 @@ async def run(
     finally:
         READ_CTX.reset(reads_token)
         TOOL_LOG.reset(log_token)
+        PENDING_MULTIMODAL.reset(pending_images_token)
         TODO_KEY.reset(todo_token)
         ROLE_CTX.reset(role_token)
         AGENT_ID_CTX.reset(agent_id_token)
@@ -270,6 +278,17 @@ def _format_board_update(board, task_id: str, role: str, since_seq: int) -> str:
         for r in open_reqs:
             lines.append(f"[seq={r['seq']}, from {r['from_role']}] {r['payload']}")
     return "\n".join(lines)
+
+
+def _dedupe_tools(tools: list[Tool]) -> list[Tool]:
+    seen: set[str] = set()
+    out: list[Tool] = []
+    for tool in tools:
+        if tool.name in seen:
+            continue
+        seen.add(tool.name)
+        out.append(tool)
+    return out
 
 
 

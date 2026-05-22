@@ -403,6 +403,16 @@ def task_pr_url(task_id: str) -> str | None:
     return row[0] if row and row[0] else None
 
 
+def task_parent_id(task_id: str) -> str | None:
+    """Return the parent task id for a follow-up task, if one exists."""
+    try:
+        with _lock:
+            row = _get_con().execute("SELECT parent_task_id FROM tasks WHERE task_id = ?", [task_id]).fetchone()
+    except Exception:
+        return None
+    return row[0] if row and row[0] else None
+
+
 def tasks_mark_orphaned_cancelled() -> int:
     """On gateway startup, any row still showing 'queued' or 'running' is from a
     previous process that died without finalising. They can't possibly still be

@@ -5,6 +5,8 @@ from google.genai import types
 
 from core.ai_client.interface import AiClient, EmbeddingClient, _execute_tools
 from core.ai_client.models import ImageContent, ThinkingLevel, Tool
+from core.debug import trace as _dtrace
+from core.tools.ctx import pop_pending_multimodal
 from core import transcripts
 
 
@@ -142,6 +144,16 @@ class GeminiClient(AiClient):
                 for part in candidate.content.parts
                 if getattr(part, "function_call", None)
             ]
+            _dtrace(
+                "gemini.iter",
+                model=self.model_name, provider=self.provider,
+                prompt_tokens=iter_in, completion_tokens=iter_out,
+                cached_tokens=iter_cached,
+                iter=i + 1,
+                content_items=len(contents),
+                tool_calls=[fc.name for fc in fn_calls],
+                images=len(images) if i == 0 else 0,
+            )
             if not fn_calls:
                 return response.text or "", input_tokens, completion_tokens, cached_tokens
 
@@ -153,6 +165,13 @@ class GeminiClient(AiClient):
                 if fc.name in tool_map
             ]
             contents = [*contents, candidate.content, types.Content(parts=fn_response_parts, role="user")]
+            pending_images = pop_pending_multimodal()
+            if pending_images:
+                ref_contents = _user_contents(
+                    "Use these loaded website images as visual references for the next step.",
+                    pending_images,
+                )
+                contents.extend(ref_contents if isinstance(ref_contents, list) else [ref_contents])
 
         raise RuntimeError(f"Tool loop exceeded {_MAX_TURNS} turns")
 

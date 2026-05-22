@@ -31,6 +31,7 @@ from core.tools.image_gen import GENERATE_IMAGE_TOOL
 from core.tools.shell import SHELL_TOOLS
 from core.tools.skill_tool import LOAD_SKILL_TOOL
 from core.tools.todo import TODO_TOOL
+from core.tools.visual_refs import LOAD_WEBSITE_IMAGE_REFS_TOOL
 from core.tools.web import make_web_search_tool
 
 _TMP_DIR = REPO_ROOT / "generated" / "tmp"
@@ -40,13 +41,13 @@ _READ_ONLY_TOOL_NAMES = frozenset({
     "read_file", "grep_file", "list_dir",
     "git_status", "git_diff", "git_log",
     "web_search", "calculate", "months_between",
-    "todo_write", "board_post", "load_skill",
+    "todo_write", "board_post", "load_skill", "load_website_image_refs",
 })
 
 _CONVERSATIONAL_TOOL_NAMES = frozenset({
     "read_file", "write_file", "edit_file", "grep_file", "list_dir", "delete_file",
     "calculate", "months_between",
-    "todo_write", "board_post", "load_skill", "web_search", "generate_image",
+    "todo_write", "board_post", "load_skill", "web_search", "generate_image", "load_website_image_refs",
 })
 
 
@@ -108,7 +109,7 @@ Keep your scope tight — your parent delegated this for a reason. Do not wander
 
 def _base_tool_set() -> list:
     base = list(FS_TOOLS) + list(SHELL_TOOLS) + list(GIT_TOOLS) + list(CALC_TOOLS) + [
-        TODO_TOOL, BOARD_POST_TOOL, LOAD_SKILL_TOOL, GENERATE_IMAGE_TOOL,
+        TODO_TOOL, BOARD_POST_TOOL, LOAD_SKILL_TOOL, GENERATE_IMAGE_TOOL, LOAD_WEBSITE_IMAGE_REFS_TOOL,
     ]
     if web := make_web_search_tool():
         base.append(web)

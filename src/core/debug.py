@@ -27,6 +27,18 @@ def _get_log_file():
 def trace(tag: str, **fields: object) -> None:
     if not ENABLED:
         return
+    try:
+        from core.agents.agent_ctx import AGENT_ID_CTX
+        from core.agents.task_ctx import current_task_id
+        task_id = current_task_id()
+        agent_id = AGENT_ID_CTX.get()
+    except Exception:
+        task_id = None
+        agent_id = None
+    if task_id and "task_id" not in fields:
+        fields["task_id"] = task_id
+    if agent_id and "agent" not in fields:
+        fields["agent"] = agent_id
 
     # Stdout: truncated for readability
     parts = " ".join(f"{k}={_fmt(v, 300)}" for k, v in fields.items())

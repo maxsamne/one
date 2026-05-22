@@ -28,3 +28,19 @@ async def test_read_file_range_header_and_slice(tmp_path):
     first, _, body = out.partition("\n")
     assert first == "[b.txt · lines 3-5 of 10]"
     assert body == "3\n4\n5\n"
+
+
+async def test_read_file_expands_tiny_ranges_in_large_files(tmp_path):
+    f = tmp_path / "large.txt"
+    f.write_text("\n".join(str(i) for i in range(1, 101)) + "\n")
+    tok = WORKDIR.set(tmp_path)
+    try:
+        out = await read_file("large.txt", start_line=3, end_line=5)
+    finally:
+        WORKDIR.reset(tok)
+    header, _, rest = out.partition("\n")
+    note, _, body = rest.partition("\n")
+    assert header == "[large.txt · lines 3-52 of 100]"
+    assert note == "[read_file expanded requested lines 3-5 to 3-52; minimum targeted read is 50 lines]"
+    assert body.startswith("3\n4\n5\n")
+    assert body.endswith("52\n")

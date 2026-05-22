@@ -108,6 +108,7 @@ Heuristics:
 - Complex architecture, hard math, deep analysis → high + the strongest option.
 - Sub-agents in read_only mode are usually lookups → bias cheap.
 - Sub-agents in worktree mode are usually real coding → bias stronger.
+- Default-tier long-form article writing, essays, editorial drafts, and tasks using the article-writer skill → prefer the OpenAI `gpt-5.4` option with medium thinking. Use Gemini for article work only when unusually long-context synthesis or multimodal reference handling is the dominant need.
 - If the task mentions an "artifact", "report", "dashboard", "page", "infographic", "interactive", or "visualization" — the deliverable is a structured HTML document with multiple compliance rules (HTML wrapping, image embedding, no markdown leaks). Lean to at least `low` thinking (never `minimal`) and prefer a mid-tier model option.
 
 You MUST pick an option from the list verbatim. Do not invent provider/model names.\

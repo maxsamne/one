@@ -11,6 +11,7 @@ from pathlib import Path
 from core.agents import workdir_registry
 from core.agents.task_ctx import TASK_CTX, TIER_CTX, TaskContext
 from core.ai_client.models import ImageContent
+from core.gateway import server as gateway_server
 from core.gateway.server import app
 from core.tools.ctx import WORKDIR
 from core.tools.image_gen import generate_image
@@ -60,6 +61,62 @@ def test_gateway_image_route_serves_from_registry(tmp_path):
         assert r.status_code == 404
     finally:
         workdir_registry.unregister("gw_test")
+
+
+def test_artifact_docs_image_route_serves_task_branch_docs_assets(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _run(["git", "init", "-q", "-b", "main"], repo)
+    _run(["git", "config", "user.email", "t@t.t"], repo)
+    _run(["git", "config", "user.name", "t"], repo)
+    (repo / "README.md").write_text("seed\n", encoding="utf-8")
+    _run(["git", "add", "README.md"], repo)
+    _run(["git", "commit", "-q", "-m", "seed"], repo)
+
+    _run(["git", "checkout", "-q", "-b", "task/docs_task"], repo)
+    docs_img = repo / "docs" / "images" / "hero.png"
+    docs_img.parent.mkdir(parents=True)
+    docs_img.write_bytes(b"\x89PNG\r\n\x1a\nbranch-docs-image")
+    _run(["git", "add", "docs/images/hero.png"], repo)
+    _run(["git", "commit", "-q", "-m", "add docs image"], repo)
+    _run(["git", "checkout", "-q", "main"], repo)
+
+    monkeypatch.setattr(gateway_server, "_REPO_ROOT", repo)
+
+    client = TestClient(app)
+    r = client.get("/artifact-docs/docs_task/images/hero.png")
+    assert r.status_code == 200
+    assert r.content.endswith(b"branch-docs-image")
+
+    assert client.get("/artifact-docs/docs_task/images/../hero.png").status_code == 404
+    assert client.get("/one/images/hero.png").status_code == 404
+
+
+def test_artifact_docs_image_route_serves_parent_task_branch_docs_assets(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _run(["git", "init", "-q", "-b", "main"], repo)
+    _run(["git", "config", "user.email", "t@t.t"], repo)
+    _run(["git", "config", "user.name", "t"], repo)
+    (repo / "README.md").write_text("seed\n", encoding="utf-8")
+    _run(["git", "add", "README.md"], repo)
+    _run(["git", "commit", "-q", "-m", "seed"], repo)
+
+    _run(["git", "checkout", "-q", "-b", "task/parent_task"], repo)
+    docs_img = repo / "docs" / "images" / "hero.png"
+    docs_img.parent.mkdir(parents=True)
+    docs_img.write_bytes(b"\x89PNG\r\n\x1a\nparent-branch-docs-image")
+    _run(["git", "add", "docs/images/hero.png"], repo)
+    _run(["git", "commit", "-q", "-m", "add parent docs image"], repo)
+    _run(["git", "checkout", "-q", "main"], repo)
+
+    monkeypatch.setattr(gateway_server, "_REPO_ROOT", repo)
+    monkeypatch.setattr(gateway_server, "task_parent_id", lambda task_id: "parent_task" if task_id == "child_task" else None)
+
+    client = TestClient(app)
+    r = client.get("/artifact-docs/child_task/images/hero.png")
+    assert r.status_code == 200
+    assert r.content.endswith(b"parent-branch-docs-image")
 
 
 def test_workdir_registry_roundtrip(tmp_path):
