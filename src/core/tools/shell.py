@@ -1,15 +1,37 @@
 """Shell tool — run bash commands with working directory and timeout."""
 
 import asyncio
+import re
 from pathlib import Path
 
 from core.ai_client.models import Tool
 from core.tools.ctx import WORKDIR
+from core.tools.fs import PROTECTED_PATH_FILES, PROTECTED_PATH_PARTS
 
 _DEFAULT_TIMEOUT = 60
+_DESTRUCTIVE_COMMAND_RE = re.compile(r"\b(?:rm|rmdir|unlink|git\s+clean)\b|(?:\bfind\b.*\s-delete\b)")
+
+
+def _targets_protected_path(command: str) -> bool:
+    if re.search(r"\.db(?:\b|$)", command):
+        return True
+    return any(re.search(rf"(^|[^\w.-]){re.escape(name)}([^\w.-]|$)", command) for name in PROTECTED_PATH_FILES) or any(
+        re.search(rf"(^|[^\w.-]){re.escape(part)}(?:/|[^\w.-]|$)", command) for part in PROTECTED_PATH_PARTS
+    )
+
+
+def _check_command(command: str) -> str | None:
+    if _DESTRUCTIVE_COMMAND_RE.search(command) and _targets_protected_path(command):
+        return (
+            "FATAL: destructive shell command targets a protected runtime path; "
+            "use filesystem tools for file deletion"
+        )
+    return None
 
 
 async def run_command(command: str, workdir: str | None = None, timeout: int = _DEFAULT_TIMEOUT) -> str:
+    if err := _check_command(command):
+        return err
     base = WORKDIR.get()
     if workdir:
         target = (Path(workdir) if Path(workdir).is_absolute() else base / workdir).resolve()

@@ -19,8 +19,8 @@ from core.tools.ctx import READ_CTX, WORKDIR, log_call
 
 _MAX_BYTES = 10 * 1024 * 1024  # 10 MB
 _MIN_TARGETED_READ_LINES = 50
-_DENIED_WRITE_PARTS = frozenset({".git", ".worktrees", ".venv", "node_modules", "__pycache__"})
-_DENIED_WRITE_FILES = frozenset({".agent.db", ".librarian.db"})
+PROTECTED_PATH_PARTS = frozenset({".git", ".worktrees", ".venv", "node_modules", "__pycache__"})
+PROTECTED_PATH_FILES = frozenset({".agent.db", ".librarian.db"})
 
 
 def _rel(path: str) -> Path:
@@ -38,7 +38,7 @@ def _rel(path: str) -> Path:
 def _check_write(p: Path) -> str | None:
     """Return a FATAL error string if p is a protected runtime path."""
     rel = p.resolve().relative_to(WORKDIR.get().resolve())
-    if any(part in _DENIED_WRITE_PARTS for part in rel.parts) or rel.name in _DENIED_WRITE_FILES:
+    if any(part in PROTECTED_PATH_PARTS for part in rel.parts) or rel.name in PROTECTED_PATH_FILES:
         return f"FATAL: writing to '{rel}' is not allowed — protected runtime path"
     return None
 
