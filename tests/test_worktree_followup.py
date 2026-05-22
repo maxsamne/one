@@ -185,3 +185,22 @@ async def test_reuse_base_branch_reports_branch_mismatch(repo):
         assert results["fakeprov"].startswith("branch-mismatch: expected task/parent, got accidental")
     finally:
         await worktree.cleanup(wts)
+
+
+async def test_pr_title_prefers_first_real_commit_subject(repo):
+    _run(["git", "checkout", "-q", "-b", "task/title"], repo)
+    (repo / "a.txt").write_text("a\n")
+    _run(["git", "add", "a.txt"], repo)
+    _run(["git", "commit", "-q", "-m", "Merge openai into task/title"], repo)
+    (repo / "b.txt").write_text("b\n")
+    _run(["git", "add", "b.txt"], repo)
+    _run(["git", "commit", "-q", "-m", "Refine article cover and title"], repo)
+    (repo / "c.txt").write_text("c\n")
+    _run(["git", "add", "c.txt"], repo)
+    _run(["git", "commit", "-q", "-m", "Remove duplicate article heading"], repo)
+
+    assert await worktree._pr_title_from_commits(
+        "task/title",
+        "main",
+        "Okay, this is good, but please regenerate the cover image",
+    ) == "Refine article cover and title"
