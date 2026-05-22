@@ -6,9 +6,9 @@ from openai import AsyncOpenAI
 
 from core.ai_client.interface import AiClient, EmbeddingClient, _execute_tools
 from core.ai_client.models import ImageContent, ThinkingLevel, Tool
+from core.debug import trace as _dtrace
+from core.tools.ctx import pop_pending_multimodal
 from core import transcripts
-from core.log import Category
-from core.log import log as _log
 
 
 def _cached(usage: Any) -> int:
@@ -93,8 +93,16 @@ class GptClient(AiClient):
             inp = resp.usage.input_tokens if resp.usage else 0
             out = resp.usage.output_tokens if resp.usage else 0
             cached = _cached(resp.usage)
-            _log(Category.AGENT, "gpt iter", ui=False, model=self.model_name,
-                 iter=0, input_tokens=inp, cached_tokens=cached, output_tokens=out)
+            _dtrace(
+                "gpt.iter",
+                model=self.model_name, provider=self.provider,
+                prompt_tokens=inp, completion_tokens=out,
+                cached_tokens=cached,
+                iter=1,
+                input_list_len=1,
+                tool_calls=[],
+                images=len(images),
+            )
             return resp.output_text or "", inp, out, cached
 
         tool_map = {t.name: t for t in tools}
@@ -103,16 +111,31 @@ class GptClient(AiClient):
         input_tokens = resp.usage.input_tokens if resp.usage else 0
         completion_tokens = resp.usage.output_tokens if resp.usage else 0
         cached_total = _cached(resp.usage)
-        _log(Category.AGENT, "gpt iter", ui=False, model=self.model_name,
-             iter=0, input_tokens=input_tokens, cached_tokens=cached_total, output_tokens=completion_tokens)
 
         for i in range(_MAX_TURNS):
             fn_calls = [item for item in resp.output if getattr(item, "type", None) == "function_call"]
+            _dtrace(
+                "gpt.iter",
+                model=self.model_name, provider=self.provider,
+                prompt_tokens=resp.usage.input_tokens if resp.usage else 0,
+                completion_tokens=resp.usage.output_tokens if resp.usage else 0,
+                cached_tokens=_cached(resp.usage),
+                iter=i + 1,
+                input_list_len=len(input_list),
+                tool_calls=[fc.name for fc in fn_calls],
+                images=len(images) if i == 0 else 0,
+            )
             if not fn_calls:
-                _log(Category.AGENT, "gpt loop done", ui=False, model=self.model_name,
-                     iterations=i + 1, input_tokens=input_tokens, cached_tokens=cached_total,
-                     output_tokens=completion_tokens,
-                     cache_hit_pct=round(100 * cached_total / input_tokens, 1) if input_tokens else 0.0)
+                _dtrace(
+                    "gpt.loop_done",
+                    model=self.model_name,
+                    provider=self.provider,
+                    iterations=i + 1,
+                    input_tokens=input_tokens,
+                    cached_tokens=cached_total,
+                    output_tokens=completion_tokens,
+                    cache_hit_pct=round(100 * cached_total / input_tokens, 1) if input_tokens else 0.0,
+                )
                 return resp.output_text or "", input_tokens, completion_tokens, cached_total
 
             input_list.extend(resp.output)
@@ -120,6 +143,9 @@ class GptClient(AiClient):
             results = await _execute_tools(tool_map, calls)
             for fc, result in zip(fn_calls, results):
                 input_list.append({"type": "function_call_output", "call_id": fc.call_id, "output": result})
+            pending_images = pop_pending_multimodal()
+            if pending_images:
+                input_list.extend(_user_input("Use these loaded website images as visual references for the next step.", pending_images))
 
             resp = await self._client.responses.create(**base, input=input_list, instructions=instructions)
             iter_input = resp.usage.input_tokens if resp.usage else 0
@@ -131,9 +157,6 @@ class GptClient(AiClient):
             transcripts.dump(model=self.model_name, iteration=i + 1,
                              instructions=instructions, input_payload=input_list, output=resp.output,
                              usage={"input": iter_input, "cached": iter_cached, "output": iter_output})
-            _log(Category.AGENT, "gpt iter", ui=False, model=self.model_name,
-                 iter=i + 1, input_tokens=iter_input, cached_tokens=iter_cached, output_tokens=iter_output,
-                 input_list_len=len(input_list), tool_calls=len(fn_calls))
 
         raise RuntimeError(f"Tool loop exceeded {_MAX_TURNS} turns")
 

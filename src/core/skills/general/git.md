@@ -21,11 +21,16 @@ Rules:
 - If the change needs more context, add a blank line then a short body paragraph
 - One logical change per commit — don't bundle unrelated edits
 
-## Branch naming
+## Branch and PR ownership
 
 `<type>/<short-slug>` — e.g. `fix/diagram-overflow`, `feat/writing-index`, `improve/homepage-design`
 
-Never commit directly to `main`. Always branch, then open a PR.
+Never commit directly to `main`. In normal managed task runs, the manager has already
+created the task branch and will push/open/update the PR after you finish. In those
+runs, do not create branches, check out branches, push, or open PRs yourself.
+
+Only use branch/push/PR tools when they are explicitly available in your tool list
+and the task asks you to manage git lifecycle yourself.
 
 ## PR titles
 
@@ -33,7 +38,6 @@ Same rules as commit messages — feature-level, imperative, ≤ 72 chars.
 
 ## Workflow
 
-1. `git_create_branch` with a descriptive slug
-2. Make all changes
-3. `git_add` → `git_commit` → `git_push`
-4. `git_create_pr` with a clear title and a brief body summarising what changed and why
+1. Make all changes on the current task branch
+2. `git_add` → `git_commit`
+3. Let the manager push and open/update the PR

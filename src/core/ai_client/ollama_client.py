@@ -7,6 +7,7 @@ from ollama import AsyncClient
 from core.ai_client.interface import AiClient, EmbeddingClient, _execute_tools
 from core.ai_client.models import EmbeddingModel, ImageContent, ThinkingLevel, Tool
 from core.debug import trace as _dtrace
+from core.tools.ctx import pop_pending_multimodal
 from core import transcripts
 
 logger = logging.getLogger(__name__)
@@ -114,6 +115,18 @@ class OllamaClient(AiClient):
             transcripts.dump(model=self.model_name, iteration=inner_turn, instructions=instructions,
                              input_payload=messages, output=msg,
                              usage={"input": response.prompt_eval_count or 0, "output": response.eval_count or 0})
+            tool_call_names = [tc.function.name for tc in msg.tool_calls] if msg.tool_calls else []
+            _dtrace(
+                "ollama.iter",
+                model=self.model_name, provider=self.provider,
+                prompt_tokens=response.prompt_eval_count or 0,
+                completion_tokens=response.eval_count or 0,
+                cached_tokens=0,
+                iter=inner_turn + 1,
+                messages_len=len(messages),
+                tool_calls=tool_call_names,
+                images=len(images) if inner_turn == 0 else 0,
+            )
 
             if not msg.tool_calls:
                 if msg.content:
@@ -137,6 +150,14 @@ class OllamaClient(AiClient):
             for result in await _execute_tools(tool_map, calls):
                 _dtrace("ollama.tool_result", result=result)
                 messages.append({"role": "tool", "content": result})
+            pending_images = pop_pending_multimodal()
+            if pending_images:
+                import base64 as _b64
+                messages.append({
+                    "role": "user",
+                    "content": "Use these loaded website images as visual references for the next step.",
+                    "images": [_b64.b64encode(img.data).decode("ascii") for img in pending_images],
+                })
 
         raise RuntimeError(f"Tool loop exceeded {_MAX_TURNS} turns")  # pragma: no cover
 

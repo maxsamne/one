@@ -7,6 +7,8 @@ from pydantic import ValidationError
 
 from core.ai_client.interface import AiClient, _execute_tools
 from core.ai_client.models import THINKING_BUDGETS, ImageContent, ThinkingLevel, Tool
+from core.debug import trace as _dtrace
+from core.tools.ctx import pop_pending_multimodal
 from core import transcripts
 
 
@@ -80,6 +82,18 @@ class ClaudeClient(AiClient):
                              usage={"input": resp.usage.input_tokens, "output": resp.usage.output_tokens,
                                     "cache_read": cache_read,
                                     "cache_create": getattr(resp.usage, "cache_creation_input_tokens", 0) or 0})
+            _dtrace(
+                "claude.iter",
+                model=self.model_name, provider=self.provider,
+                prompt_tokens=resp.usage.input_tokens,
+                completion_tokens=resp.usage.output_tokens,
+                cached_tokens=cache_read,
+                cache_create_tokens=getattr(resp.usage, "cache_creation_input_tokens", 0) or 0,
+                iter=1,
+                messages_len=len(messages),
+                tool_calls=[],
+                images=len(images),
+            )
             text_blocks = [b for b in resp.content if b.type == "text"]
             return text_blocks[0].text if text_blocks else "", resp.usage.input_tokens, resp.usage.output_tokens, cache_read
 
@@ -99,16 +113,34 @@ class ClaudeClient(AiClient):
                              usage={"input": resp.usage.input_tokens, "output": resp.usage.output_tokens,
                                     "cache_read": iter_cached,
                                     "cache_create": getattr(resp.usage, "cache_creation_input_tokens", 0) or 0})
+            use_blocks = [b for b in resp.content if b.type == "tool_use"] if resp.stop_reason == "tool_use" else []
+            _dtrace(
+                "claude.iter",
+                model=self.model_name, provider=self.provider,
+                prompt_tokens=resp.usage.input_tokens,
+                completion_tokens=resp.usage.output_tokens,
+                cached_tokens=iter_cached,
+                cache_create_tokens=getattr(resp.usage, "cache_creation_input_tokens", 0) or 0,
+                iter=iteration + 1,
+                messages_len=len(messages),
+                tool_calls=[b.name for b in use_blocks],
+                images=len(images) if iteration == 0 else 0,
+            )
             iteration += 1
 
             if resp.stop_reason == "tool_use":
-                use_blocks = [b for b in resp.content if b.type == "tool_use"]
                 results = await _execute_tools(tool_map, [(b.name, dict(b.input)) for b in use_blocks])
                 messages.append({"role": "assistant", "content": resp.content})
                 messages.append({"role": "user", "content": [
                     {"type": "tool_result", "tool_use_id": b.id, "content": r}
                     for b, r in zip(use_blocks, results)
                 ]})
+                pending_images = pop_pending_multimodal()
+                if pending_images:
+                    messages.append({
+                        "role": "user",
+                        "content": _user_content("Use these loaded website images as visual references for the next step.", pending_images),
+                    })
             else:
                 text_blocks = [b for b in resp.content if b.type == "text"]
                 return text_blocks[0].text if text_blocks else "", input_tokens, completion_tokens, cached_tokens

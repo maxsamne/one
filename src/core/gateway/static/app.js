@@ -386,11 +386,18 @@ function injectIframeScript(html) {
   return html + _IFRAME_RESIZE_SCRIPT;
 }
 
+function rewriteGithubPagesImagePaths(html, taskId) {
+  if (!taskId) return html;
+  const assetBase = `/artifact-docs/${encodeURIComponent(taskId)}/images/`;
+  return html.replaceAll("/one/images/", assetBase);
+}
+
 async function renderHtmlBlocks(container, taskId) {
   const blocks = container.querySelectorAll("pre code.language-html, pre code.hljs.language-html");
   for (const code of blocks) {
     const html = code.textContent;
     if (!html.trim()) continue;
+    const previewHtml = rewriteGithubPagesImagePaths(html, taskId);
     const wrap = document.createElement("div");
     wrap.className = "html-artifact";
 
@@ -402,18 +409,18 @@ async function renderHtmlBlocks(container, taskId) {
     iframe.className = "html-artifact-frame";
     iframe.setAttribute("sandbox", "allow-scripts allow-popups allow-forms");
     iframe.name = `one-iframe-${++_iframeSeq}`;  // identifier for postMessage routing
-    iframe.srcdoc = injectIframeScript(html);
+    iframe.srcdoc = injectIframeScript(previewHtml);
 
     wrap.appendChild(header);
     wrap.appendChild(iframe);
     code.closest("pre").replaceWith(wrap);
 
-    // Persist server-side; non-blocking. Save the ORIGINAL html, not the injected version.
+    // Persist server-side; non-blocking. Save the local-preview HTML, not the injected version.
     const slug = deriveArtifactSlug(html);
     fetch("/artifacts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ task_id: taskId, content: html, slug }),
+      body: JSON.stringify({ task_id: taskId, content: previewHtml, slug }),
     })
       .then((r) => (r.ok ? r.json() : null))
       .then((res) => {
@@ -436,10 +443,11 @@ async function finalizeCard(card, taskId, donePayload) {
   let result = "";
   let elapsed = "?";
   let error = "";
+  let rec = null;
   try {
     const r = await fetch(`/tasks/${encodeURIComponent(taskId)}`);
     if (r.ok) {
-      const rec = await r.json();
+      rec = await r.json();
       result = rec.result || "";
       elapsed = rec.elapsed_s ?? "?";
       error = rec.error || "";
@@ -474,7 +482,7 @@ async function finalizeCard(card, taskId, donePayload) {
   }
 
   const prEl = card.querySelector(".pr-link");
-  const prUrl = rec.pr_url;
+  const prUrl = rec?.pr_url;
   if (prEl && prUrl) {
     prEl.innerHTML = `<span class="pr-label">PR</span><a href="${escapeHtml(prUrl)}" target="_blank" rel="noopener">${escapeHtml(prUrl.replace("https://github.com/", ""))}</a>`;
   }
@@ -1677,8 +1685,14 @@ function addHistoricalCard(rec) {
       </div>
       <h2 class="task-title">${escapeHtml(rec.prompt)}</h2>
     </div>
+    <div class="pr-link"></div>
     <div class="result" aria-label="Result"></div>
   `;
+  const prEl = card.querySelector(".pr-link");
+  if (prEl && rec.pr_url) {
+    const prUrl = rec.pr_url;
+    prEl.innerHTML = `<span class="pr-label">PR</span><a href="${escapeHtml(prUrl)}" target="_blank" rel="noopener">${escapeHtml(prUrl.replace("https://github.com/", ""))}</a>`;
+  }
   const out = card.querySelector(".result");
   const text = ok ? (rec.result || "") : (rec.result || rec.status);
   out.classList.toggle("error", !ok);

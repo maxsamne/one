@@ -27,6 +27,24 @@ WORKDIR: ContextVar[Path] = ContextVar("WORKDIR", default=REPO_ROOT)
 # infrastructure files — they get a FATAL error and must reconsider.
 WRITE_SCOPE: ContextVar[frozenset[str] | None] = ContextVar("WRITE_SCOPE", default=None)
 
+# Provider-specific payloads loaded dynamically by tools during a provider tool
+# loop. Provider clients pop these after tool execution and attach them once to
+# the next model request.
+PENDING_MULTIMODAL: ContextVar[list] = ContextVar("PENDING_MULTIMODAL", default=[])
+
+
+def queue_multimodal(items: list) -> None:
+    if not items:
+        return
+    PENDING_MULTIMODAL.set([*PENDING_MULTIMODAL.get([]), *items])
+
+
+def pop_pending_multimodal() -> list:
+    items = PENDING_MULTIMODAL.get([])
+    if items:
+        PENDING_MULTIMODAL.set([])
+    return items
+
 
 def log_call(tool: str, args: dict, result: str) -> None:
     entry = TOOL_LOG.get(None)

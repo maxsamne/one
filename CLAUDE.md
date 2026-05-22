@@ -120,6 +120,7 @@ All paths relative to `WORKDIR` (ContextVar, defaults to repo root — overridde
 **Calc:** `calculate` (safe AST math, supports `^`), `months_between` (ISO dates or `"today"`)
 **Todo:** `todo_write` / `todo_read` — per-agent task tracking (keyed by `TODO_KEY` ContextVar)
 **Web:** `make_web_search_tool()` — returns `Tool | None`; `None` if `EXA_API_KEY` unset
+**Visual refs:** `load_website_image_refs(max_images?, from_task_id?)` — opt-in multimodal reference loader for article/site visual style matching. Scans `docs/*.html`, resolves `/one/images/foo.png` to `docs/images/foo.png` (or optionally `task/<from_task_id>`), and attaches the selected images once to the next provider iteration.
 **Board:** `board_post(kind, payload, target_role?, responded_to_seq?)` — append entries to the session board (see Session Board below). `task_id` and `role` come from context.
 **Sub-agents:** `spawn_subagent(description, prompt, edit_mode)` — top-level coders can delegate bounded work to fresh-context sub-agents (see Sub-agents below).
 
@@ -162,6 +163,11 @@ Two image sources merge into the coder's turn-0 multimodal payload:
 - **Task uploads** — `POST /task` accepts `images: list[str]` of data URIs (`data:image/png;base64,...`). Gateway parses, validates (max 8, max 10 MB each), stores in `TASK_IMAGES_CTX`. UI does drag-drop / file-picker → base64 client-side.
 
 Manager merges them as `user_images + skill_images` (user-uploads first — more task-specific, model attends more). Coder attaches the union to **turn 0 only** — model internalises everything once and iterates text-only via conversation history (cheap). All three cloud providers (Claude, OpenAI, Gemini) implement multimodal in their `_text_complete`. Ollama accepts the `images` param too but only vision-capable local models (qwen3-vl, llava) actually use them.
+
+**Dynamic website visual references:**
+- `load_website_image_refs` is available to coders and sub-agents but should be used only when the task asks to match an existing site/article style, create a cover image in the same visual family, or critique whether an image fits the site.
+- The tool is deterministic and opt-in: it scans website HTML, resolves local committed image paths, queues the images in `PENDING_IMAGES`, and provider clients attach them once on the next internal tool-loop request.
+- This keeps ordinary tasks cheap while making follow-on article/image work benefit from prior article visuals. It does not change `generate_image`; the model sees the references, then writes a better prompt or critique.
 
 ---
 

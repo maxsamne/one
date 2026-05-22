@@ -3,6 +3,9 @@
 import asyncio
 import contextlib
 import json
+import mimetypes
+import re
+import subprocess
 import time
 import traceback
 from pathlib import Path
@@ -12,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from core.agents import workdir_registry
@@ -27,7 +30,7 @@ from core.ai_client import AiClient, EmbeddingModel, ImageContent, ModelProvider
 from core.ai_client.fallback_client import is_unavailable
 from core.events import publish, subscribe, unsubscribe
 from core.gateway.tasks import TaskRecord, TaskStatus, get, list_all, register
-from core.log import Category, recent, task_id_exists, tasks_history, tasks_insert, tasks_mark_orphaned_cancelled, tasks_update
+from core.log import Category, recent, task_id_exists, task_parent_id, tasks_history, tasks_insert, tasks_mark_orphaned_cancelled, tasks_update
 from core.log import log as _log
 from core.log import stat_inc
 from core.scheduler import runner as scheduler_runner
@@ -138,6 +141,7 @@ async def _run(record: TaskRecord) -> None:
     exa_token = EXA_CALL_LOG.set(exa_log)
     usage_log: list[tuple[str, int, int, int]] = []
     usage_token = TASK_USAGE_LOG.set(usage_log)
+    pr_token = PR_URL_CTX.set(None)
     tier = _get_tier(record.tier)
     _log(Category.GATEWAY, "task started", task=record.prompt[:120], tier=record.tier)
     stat_inc("gateway.tasks")
@@ -181,6 +185,7 @@ async def _run(record: TaskRecord) -> None:
         TASK_CTX.reset(task_token)
         EXA_CALL_LOG.reset(exa_token)
         TASK_USAGE_LOG.reset(usage_token)
+        PR_URL_CTX.reset(pr_token)
         elapsed = round(record.finished_at - (record.started_at or record.finished_at), 2)
         ts = text_stats(record.result or "")
         total_in = sum(inp for _, inp, _, _ in usage_log)
@@ -197,6 +202,7 @@ async def _run(record: TaskRecord) -> None:
             words_out=ts.get("words"),
             error=record.error,
             result=record.result,
+            pr_url=record.pr_url,
         )
         # Sentinel: wake up any SSE consumers waiting on this task.
         publish(record.task_id, {"type": "done", "status": record.status,
@@ -444,6 +450,7 @@ class TaskHistoryItem(BaseModel):
     skills: list[str] = []
     graders: list[str] = []
     mode_override: str | None = None
+    pr_url: str | None = None
 
 
 @app.get("/tasks/history", response_model=list[TaskHistoryItem])
@@ -696,7 +703,8 @@ class ArtifactResponse(BaseModel):
     path: str
 
 
-_SLUG_RE = __import__("re").compile(r"[^a-z0-9-]+")
+_SLUG_RE = re.compile(r"[^a-z0-9-]+")
+_TASK_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 
 # Inject before </head> so the standalone /artifacts/ view doesn't show a
 # split background when the body has max-width / min-height / a gradient.
@@ -758,6 +766,17 @@ async def save_artifact(req: ArtifactRequest) -> ArtifactResponse:
 _IMAGES_DIR = _REPO_ROOT / "generated" / "images"
 
 
+def _safe_child(parent: Path, child: Path) -> Path | None:
+    try:
+        resolved = child.resolve(strict=True)
+    except FileNotFoundError:
+        return None
+    parent_resolved = parent.resolve()
+    if parent_resolved in resolved.parents or resolved.parent == parent_resolved:
+        return resolved
+    return None
+
+
 @app.get("/images/{task_id}/{filename}")
 async def _serve_image(task_id: str, filename: str):
     # Per-task generated images live in the running coder's worktree (registered
@@ -769,13 +788,60 @@ async def _serve_image(task_id: str, filename: str):
         candidates.append(live / "generated" / "images" / task_id / filename)
     candidates.append(_IMAGES_DIR / task_id / filename)
     for p in candidates:
-        try:
-            resolved = p.resolve(strict=True)
-        except FileNotFoundError:
-            continue
-        parent = p.parent.resolve()
-        if parent in resolved.parents or resolved.parent == parent:
+        resolved = _safe_child(p.parent, p)
+        if resolved:
             return FileResponse(resolved)
+    raise HTTPException(status_code=404, detail="image not found")
+
+
+@app.get("/artifact-docs/{task_id}/images/{filename:path}")
+async def _serve_artifact_docs_image(task_id: str, filename: str):
+    """Serve committed docs images for local artifact previews.
+
+    GitHub Pages pages correctly use `/one/images/...`, but the local gateway
+    does not host the site at `/one/`. The UI rewrites only preview copies to
+    this task-scoped route so docs HTML can remain deployment-correct.
+    """
+    if not _TASK_ID_RE.fullmatch(task_id):
+        raise HTTPException(status_code=404, detail="image not found")
+    rel = Path(filename)
+    if rel.is_absolute() or ".." in rel.parts or not filename:
+        raise HTTPException(status_code=404, detail="image not found")
+
+    live = workdir_registry.get(task_id)
+    candidates = []
+    if live:
+        candidates.append(live / "docs" / "images" / rel)
+
+    for p in candidates:
+        resolved = _safe_child(p.parent, p)
+        if resolved:
+            return FileResponse(resolved)
+
+    git_path = f"docs/images/{filename}"
+    media_type = mimetypes.guess_type(filename)[0] or "application/octet-stream"
+    refs = [task_id]
+    parent_id = task_parent_id(task_id)
+    if parent_id and parent_id not in refs:
+        refs.append(parent_id)
+    for ref_task_id in refs:
+        try:
+            proc = subprocess.run(
+                ["git", "-C", str(_REPO_ROOT), "show", f"task/{ref_task_id}:{git_path}"],
+                check=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+            )
+        except OSError:
+            proc = None
+        if proc and proc.returncode == 0:
+            return Response(content=proc.stdout, media_type=media_type)
+
+    repo_path = _REPO_ROOT / "docs" / "images" / rel
+    resolved = _safe_child(repo_path.parent, repo_path)
+    if resolved:
+        return FileResponse(resolved)
+
     raise HTTPException(status_code=404, detail="image not found")
 
 

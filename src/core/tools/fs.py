@@ -18,6 +18,7 @@ from core.text import text_stats
 from core.tools.ctx import READ_CTX, WORKDIR, WRITE_SCOPE, log_call
 
 _MAX_BYTES = 10 * 1024 * 1024  # 10 MB
+_MIN_TARGETED_READ_LINES = 50
 
 
 def _rel(path: str) -> Path:
@@ -71,21 +72,47 @@ async def read_file(
     total = len(lines)
 
     if start_line is not None or end_line is not None:
-        lo = max(0, (start_line or 1) - 1)
-        hi = min(total, end_line or total)
+        requested_lo = max(0, (start_line or 1) - 1)
+        requested_hi = min(total, end_line or total)
+        lo = requested_lo
+        hi = requested_hi
+        expanded = False
+        if total >= _MIN_TARGETED_READ_LINES and hi > lo and hi - lo < _MIN_TARGETED_READ_LINES:
+            hi = min(total, lo + _MIN_TARGETED_READ_LINES)
+            if hi - lo < _MIN_TARGETED_READ_LINES:
+                lo = max(0, hi - _MIN_TARGETED_READ_LINES)
+            expanded = lo != requested_lo or hi != requested_hi
         body = "".join(lines[lo:hi])
         header = f"[{path} · lines {lo+1}-{hi} of {total}]\n"
+        if expanded:
+            header += (
+                f"[read_file expanded requested lines {requested_lo+1}-{requested_hi} "
+                f"to {lo+1}-{hi}; minimum targeted read is {_MIN_TARGETED_READ_LINES} lines]\n"
+            )
         suffix = f" (lines {lo+1}–{hi} of {total})"
     else:
         body = "".join(lines)
         header = f"[{path} · {total} lines]\n"
         suffix = ""
+        lo = hi = None
+        expanded = False
 
     reads = READ_CTX.get(None)
     if reads is not None:
         reads.add(str(p))
     s = text_stats(body)
-    log_call("read_file", {"path": path, "start_line": start_line, "end_line": end_line}, f"OK: {s['words']} words / {s['tokens']} tokens{suffix}")
+    log_call(
+        "read_file",
+        {
+            "path": path,
+            "start_line": start_line,
+            "end_line": end_line,
+            "served_start_line": lo + 1 if lo is not None else None,
+            "served_end_line": hi,
+            "expanded": expanded,
+        },
+        f"OK: {s['words']} words / {s['tokens']} tokens{suffix}",
+    )
     return header + body
 
 
@@ -263,7 +290,8 @@ READ_FILE = Tool(
     name="read_file",
     description=(
         "Read a file's contents. Optionally specify start_line and end_line (1-based) "
-        "to read only a range — useful for large files. Must be called before edit_file."
+        "to read only a range — useful for large files. Very small bounded ranges may "
+        "be expanded to provide enough surrounding context. Must be called before edit_file."
     ),
     parameters={
         "type": "object",

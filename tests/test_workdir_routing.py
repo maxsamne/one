@@ -2,11 +2,16 @@
 serves them from there via the workdir registry."""
 
 import pytest
+import os
+import subprocess
+import time
 from fastapi.testclient import TestClient
+from pathlib import Path
 
 from core.agents import workdir_registry
 from core.agents.task_ctx import TASK_CTX, TIER_CTX, TaskContext
 from core.ai_client.models import ImageContent
+from core.gateway import server as gateway_server
 from core.gateway.server import app
 from core.tools.ctx import WORKDIR
 from core.tools.image_gen import generate_image
@@ -18,6 +23,10 @@ class _FakeImageClient:
 
     async def generate(self, prompt: str, size: str) -> ImageContent:
         return ImageContent(mime="image/png", data=b"\x89PNG\r\n\x1a\nfake-bytes")
+
+
+def _run(cmd: list[str], cwd: Path) -> str:
+    return subprocess.check_output(cmd, cwd=str(cwd), stderr=subprocess.STDOUT).decode().strip()
 
 
 async def test_generate_image_writes_into_workdir(tmp_path, monkeypatch):
@@ -54,12 +63,187 @@ def test_gateway_image_route_serves_from_registry(tmp_path):
         workdir_registry.unregister("gw_test")
 
 
+def test_artifact_docs_image_route_serves_task_branch_docs_assets(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _run(["git", "init", "-q", "-b", "main"], repo)
+    _run(["git", "config", "user.email", "t@t.t"], repo)
+    _run(["git", "config", "user.name", "t"], repo)
+    (repo / "README.md").write_text("seed\n", encoding="utf-8")
+    _run(["git", "add", "README.md"], repo)
+    _run(["git", "commit", "-q", "-m", "seed"], repo)
+
+    _run(["git", "checkout", "-q", "-b", "task/docs_task"], repo)
+    docs_img = repo / "docs" / "images" / "hero.png"
+    docs_img.parent.mkdir(parents=True)
+    docs_img.write_bytes(b"\x89PNG\r\n\x1a\nbranch-docs-image")
+    _run(["git", "add", "docs/images/hero.png"], repo)
+    _run(["git", "commit", "-q", "-m", "add docs image"], repo)
+    _run(["git", "checkout", "-q", "main"], repo)
+
+    monkeypatch.setattr(gateway_server, "_REPO_ROOT", repo)
+
+    client = TestClient(app)
+    r = client.get("/artifact-docs/docs_task/images/hero.png")
+    assert r.status_code == 200
+    assert r.content.endswith(b"branch-docs-image")
+
+    assert client.get("/artifact-docs/docs_task/images/../hero.png").status_code == 404
+    assert client.get("/one/images/hero.png").status_code == 404
+
+
+def test_artifact_docs_image_route_serves_parent_task_branch_docs_assets(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _run(["git", "init", "-q", "-b", "main"], repo)
+    _run(["git", "config", "user.email", "t@t.t"], repo)
+    _run(["git", "config", "user.name", "t"], repo)
+    (repo / "README.md").write_text("seed\n", encoding="utf-8")
+    _run(["git", "add", "README.md"], repo)
+    _run(["git", "commit", "-q", "-m", "seed"], repo)
+
+    _run(["git", "checkout", "-q", "-b", "task/parent_task"], repo)
+    docs_img = repo / "docs" / "images" / "hero.png"
+    docs_img.parent.mkdir(parents=True)
+    docs_img.write_bytes(b"\x89PNG\r\n\x1a\nparent-branch-docs-image")
+    _run(["git", "add", "docs/images/hero.png"], repo)
+    _run(["git", "commit", "-q", "-m", "add parent docs image"], repo)
+    _run(["git", "checkout", "-q", "main"], repo)
+
+    monkeypatch.setattr(gateway_server, "_REPO_ROOT", repo)
+    monkeypatch.setattr(gateway_server, "task_parent_id", lambda task_id: "parent_task" if task_id == "child_task" else None)
+
+    client = TestClient(app)
+    r = client.get("/artifact-docs/child_task/images/hero.png")
+    assert r.status_code == 200
+    assert r.content.endswith(b"parent-branch-docs-image")
+
+
 def test_workdir_registry_roundtrip(tmp_path):
     assert workdir_registry.get("nope") is None
     workdir_registry.register("t1", tmp_path)
     assert workdir_registry.get("t1") == tmp_path
     workdir_registry.unregister("t1")
     assert workdir_registry.get("t1") is None
+
+
+def test_persist_generated_images_copies_to_repo_root(tmp_path, monkeypatch):
+    from core.agents import manager
+
+    workdir = tmp_path / "work"
+    src = workdir / "generated" / "images" / "img_task"
+    src.mkdir(parents=True)
+    (src / "1-hero.png").write_bytes(b"\x89PNG\r\n\x1a\nstable")
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    monkeypatch.setattr(manager, "REPO_ROOT", repo)
+
+    manager._persist_generated_images("img_task", workdir)
+
+    copied = repo / "generated" / "images" / "img_task" / "1-hero.png"
+    assert copied.read_bytes().endswith(b"stable")
+
+
+def test_prune_generated_images_removes_only_old_task_dirs(tmp_path, monkeypatch):
+    from core.agents import manager
+
+    repo = tmp_path / "repo"
+    old = repo / "generated" / "images" / "old_task"
+    new = repo / "generated" / "images" / "new_task"
+    old.mkdir(parents=True)
+    new.mkdir(parents=True)
+    (old / "1-old.png").write_bytes(b"old")
+    (new / "1-new.png").write_bytes(b"new")
+    monkeypatch.setattr(manager, "REPO_ROOT", repo)
+
+    old_ts = time.time() - 184 * 24 * 60 * 60
+    os.utime(old / "1-old.png", (old_ts, old_ts))
+    os.utime(old, (old_ts, old_ts))
+
+    manager._prune_generated_images(max_age_days=183)
+
+    assert not old.exists()
+    assert (new / "1-new.png").exists()
+
+
+def test_persistent_manager_hides_lifecycle_git_tools():
+    from core.agents import manager
+
+    names = {tool.name for tool in manager._PERSISTENT_TOOLS}
+    assert {"git_status", "git_diff", "git_add", "git_commit", "git_log"} <= names
+    assert "git_create_branch" not in names
+    assert "git_checkout" not in names
+    assert "git_push" not in names
+    assert "git_create_pr" not in names
+
+
+async def test_persistent_run_serves_generated_image_after_cleanup(tmp_path, monkeypatch):
+    from core.agents import manager, worktree
+    from core.ai_client.models import ThinkingLevel
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _run(["git", "init", "-q", "-b", "main"], repo)
+    _run(["git", "config", "user.email", "t@t.t"], repo)
+    _run(["git", "config", "user.name", "t"], repo)
+    (repo / ".gitignore").write_text("generated/images/\n.worktrees/\n", encoding="utf-8")
+    _run(["git", "add", ".gitignore"], repo)
+    _run(["git", "commit", "-q", "-m", "seed"], repo)
+
+    monkeypatch.setattr(manager, "REPO_ROOT", repo)
+    monkeypatch.setattr(worktree, "REPO_ROOT", repo)
+    monkeypatch.setattr(worktree, "WORKTREE_DIR", repo / ".worktrees")
+    monkeypatch.setattr(worktree, "AUTO_OPEN_PR", False)
+    monkeypatch.setattr("core.gateway.server._IMAGES_DIR", repo / "generated" / "images")
+    monkeypatch.setattr("core.tools.image_gen.image_client_for_tier", lambda tier: _FakeImageClient())
+
+    captured: dict[str, str] = {}
+
+    class _ImageGeneratingClient:
+        model_name = "fake-model"
+        provider = "fake"
+
+        async def complete(self, prompt, *, instructions=None, thinking=None, extra_tools=(), images=None, response_model=None):
+            tool = next(t for t in extra_tools if t.name == "generate_image")
+            url = await tool.fn("stable local preview image")
+            captured["url"] = url
+            return f'```html\n<html><body><img src="{url}" alt="hero"></body></html>\n```'
+
+    async def fake_route(task: str, pre_loaded_paths: list[str]):
+        return _ImageGeneratingClient(), ThinkingLevel.MINIMAL, "fakeprov"
+
+    monkeypatch.setattr(manager, "_route", fake_route)
+
+    task_tok = TASK_CTX.set(TaskContext(task_id="img_e2e", prompt="make persistent image artifact"))
+    tier_tok = TIER_CTX.set("cheap")
+    try:
+        plan = manager._Plan(
+            pre_loaded_paths=[],
+            skill_bodies="",
+            skill_index="",
+            images=[],
+            n_skill_images=0,
+            n_user_images=0,
+            date_ctx="",
+        )
+        await manager._dispatch(
+            "make persistent image artifact",
+            manager.TaskMode.PERSISTENT,
+            plan,
+            extra_tools=None,
+        )
+    finally:
+        TIER_CTX.reset(tier_tok)
+        TASK_CTX.reset(task_tok)
+
+    assert captured["url"].startswith("/images/img_e2e/")
+    assert not (repo / ".worktrees" / "img_e2e-fakeprov").exists()
+
+    client = TestClient(app)
+    r = client.get(captured["url"])
+    assert r.status_code == 200
+    assert r.content.startswith(b"\x89PNG")
 
 
 async def test_resolve_parent_base_returns_none_for_unknown():

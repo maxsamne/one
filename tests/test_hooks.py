@@ -1,5 +1,7 @@
 """Hooks: HTML lint catches the markdown-leak bug class; clean HTML passes through."""
 
+import subprocess
+
 from core.agents.hooks import HookContext, HtmlLintHook, run_hooks
 
 
@@ -58,6 +60,121 @@ async def test_broken_image_hook_fires_on_empty_src_and_passes_on_real_src():
     assert await h.check(ctx(broken_space)) is not None
     assert await h.check(ctx(good))         is None
     assert await h.check(ctx(no_html))      is None
+
+
+async def test_missing_image_file_hook_flags_dead_srcs_and_passes_real_ones(tmp_path):
+    from core.agents.hooks import MissingImageFileHook
+    from core.tools.ctx import WORKDIR
+
+    (tmp_path / "docs" / "images").mkdir(parents=True)
+    (tmp_path / "docs" / "images" / "hero.png").write_bytes(b"\x89PNG-real")
+    (tmp_path / "generated" / "images" / "tid").mkdir(parents=True)
+    (tmp_path / "generated" / "images" / "tid" / "1-cover.png").write_bytes(b"\x89PNG-gen")
+
+    h = MissingImageFileHook()
+    ctx = lambda r: HookContext(response=r, turn=1, agent_id="t", role="r")
+
+    real_relative   = '```html\n<html><body><img src="images/hero.png"></body></html>\n```'
+    real_one_prefix = '```html\n<html><body><img src="/one/images/hero.png"></body></html>\n```'
+    real_gen_url    = '```html\n<html><body><img src="/images/tid/1-cover.png"></body></html>\n```'
+    remote_ok       = '```html\n<html><body><img src="https://example.com/x.png"><img src="data:image/png;base64,AAA"></body></html>\n```'
+    remote_case_ok  = '```html\n<html><body><img src="HTTPS://example.com/x.png"><img src="//cdn.example.com/x.png"></body></html>\n```'
+    query_ok        = '```html\n<html><body><img src="images/hero.png?v=1#hero"></body></html>\n```'
+    traversal_bad   = '```html\n<html><body><img src="../outside.png"></body></html>\n```'
+    missing         = '```html\n<html><body><img src="/one/images/nope.png"><img src="images/also-fake.png"></body></html>\n```'
+    no_html         = "Plain answer with no html block."
+    (tmp_path.parent / "outside.png").write_bytes(b"\x89PNG-outside")
+
+    tok = WORKDIR.set(tmp_path)
+    try:
+        assert await h.check(ctx(real_relative))   is None
+        assert await h.check(ctx(real_one_prefix)) is None
+        assert await h.check(ctx(real_gen_url))    is None
+        assert await h.check(ctx(remote_ok))       is None
+        assert await h.check(ctx(remote_case_ok))  is None
+        assert await h.check(ctx(query_ok))        is None
+        assert await h.check(ctx(no_html))         is None
+        assert "../outside.png" in (await h.check(ctx(traversal_bad)) or "")
+        fb = await h.check(ctx(missing))
+        assert fb is not None
+        assert "/one/images/nope.png" in fb and "images/also-fake.png" in fb
+    finally:
+        WORKDIR.reset(tok)
+
+
+async def test_docs_static_image_hook_rejects_gateway_images_in_docs(tmp_path):
+    from core.agents.hooks import DocsStaticImageHook
+    from core.tools.ctx import WORKDIR
+
+    subprocess.check_call(["git", "init", "-q", "-b", "main"], cwd=tmp_path)
+    subprocess.check_call(["git", "config", "user.email", "t@t.t"], cwd=tmp_path)
+    subprocess.check_call(["git", "config", "user.name", "t"], cwd=tmp_path)
+
+    docs = tmp_path / "docs"
+    (docs / "images").mkdir(parents=True)
+    (docs / "images" / "hero.png").write_bytes(b"\x89PNG-docs")
+    (tmp_path / "generated" / "images" / "tid").mkdir(parents=True)
+    (tmp_path / "generated" / "images" / "tid" / "1-hero.png").write_bytes(b"\x89PNG-local")
+    (docs / "legacy.html").write_text('<img src="/images/old_task/legacy.png">', encoding="utf-8")
+    (docs / "index.html").write_text('<img src="/one/images/hero.png">', encoding="utf-8")
+    subprocess.check_call(["git", "add", "docs"], cwd=tmp_path)
+    subprocess.check_call(["git", "commit", "-q", "-m", "seed docs"], cwd=tmp_path)
+
+    h = DocsStaticImageHook()
+    ctx = HookContext(response="Done", turn=1, agent_id="t", role="r")
+    tok = WORKDIR.set(tmp_path)
+    try:
+        (docs / "index.html").write_text(
+            '<img src="/one/images/hero.png"><div style="background-image:url(images/hero.png)"></div>',
+            encoding="utf-8",
+        )
+        assert await h.check(ctx) is None
+
+        (docs / "index.html").write_text(
+            '<img src="/images/tid/1-hero.png"><img src="/one/images/missing.png">',
+            encoding="utf-8",
+        )
+        fb = await h.check(ctx)
+        assert fb is not None
+        assert "/images/tid/1-hero.png" in fb
+        assert "/one/images/missing.png" in fb
+        assert "legacy.html" not in fb
+        assert "docs/images" in fb
+    finally:
+        WORKDIR.reset(tok)
+
+
+async def test_docs_image_path_satisfies_local_and_pages_hooks(tmp_path):
+    from core.agents.hooks import DocsStaticImageHook, MissingImageFileHook
+    from core.tools.ctx import WORKDIR
+
+    subprocess.check_call(["git", "init", "-q", "-b", "main"], cwd=tmp_path)
+    subprocess.check_call(["git", "config", "user.email", "t@t.t"], cwd=tmp_path)
+    subprocess.check_call(["git", "config", "user.name", "t"], cwd=tmp_path)
+
+    docs = tmp_path / "docs"
+    (docs / "images").mkdir(parents=True)
+    (docs / "index.html").write_text("<p>seed</p>", encoding="utf-8")
+    subprocess.check_call(["git", "add", "docs"], cwd=tmp_path)
+    subprocess.check_call(["git", "commit", "-q", "-m", "seed docs"], cwd=tmp_path)
+
+    html = '<img src="/one/images/shared-hero.png">'
+    response = f"```html\n<html><body>{html}</body></html>\n```"
+    ctx = HookContext(response=response, turn=1, agent_id="t", role="r")
+    docs_hook = DocsStaticImageHook()
+    local_hook = MissingImageFileHook()
+
+    tok = WORKDIR.set(tmp_path)
+    try:
+        (docs / "index.html").write_text(html, encoding="utf-8")
+        assert await docs_hook.check(ctx) is not None
+        assert await local_hook.check(ctx) is not None
+
+        (docs / "images" / "shared-hero.png").write_bytes(b"\x89PNG-shared")
+        assert await docs_hook.check(ctx) is None
+        assert await local_hook.check(ctx) is None
+    finally:
+        WORKDIR.reset(tok)
 
 
 async def test_missing_inline_html_fires_when_path_mentioned_but_no_block():

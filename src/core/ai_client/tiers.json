@@ -45,11 +45,11 @@
     "coder":   {"provider": "gemini", "model": "gemini-3.5-flash"},
     "image_gen": {"provider": "openai", "model": "gpt-image-2"},
     "options": [
-      {"provider": "gemini", "model": "gemini-3.5-flash", "desc": "Strongly preferred default — fast, very long context, strong at writing, research, design, multimodal, conversational reasoning, and most agentic work. Pick this unless the task is heavy traditional software engineering.",
+      {"provider": "gemini", "model": "gemini-3.5-flash", "desc": "Strongly preferred default for fast long-context research, design, multimodal, conversational reasoning, and most agentic work. Do not prefer for long-form article writing on the default tier unless unusually long context or multimodal reference handling is the dominant need.",
        "fallback": {"provider": "openai", "model": "gpt-5.4-mini"}},
       {"provider": "claude", "model": "claude-sonnet-4-6",      "desc": "Pick ONLY for traditional software-engineering tasks (complex refactors, multi-file code edits, debugging, framework-aware codegen) where state-of-the-art code editing matters more than speed or context length.",
        "fallback": {"provider": "openai", "model": "gpt-5.4"}},
-      {"provider": "openai", "model": "gpt-5.4",                "desc": "General-purpose fallback. Pick only if Gemini is unsuitable and the task isn't specifically a code-editing job.",
+      {"provider": "openai", "model": "gpt-5.4",                "desc": "Preferred default-tier choice for long-form article writing, essays, editorial drafts, article-writer skill tasks, and careful prose shaping. Also use as the general-purpose fallback when Gemini is unsuitable and the task isn't specifically a code-editing job.",
        "fallback": {"provider": "claude", "model": "claude-sonnet-4-6"}}
     ],
     "fallback": {
