@@ -14,10 +14,11 @@ the work deviates — wrong heading hierarchy, missing sections, abandoned secti
 templates, voice that doesn't match the skill's stated tone.
 
 ### tone_and_voice (weight: 1)
-Plain, confident, non-corporate. No hedging ("perhaps", "it could be argued"),
+Plain, confident, non-corporate, and specific. No hedging ("perhaps", "it could be argued"),
 no buzzwords ("leverage", "synergize"), no LLM-flavoured filler ("In conclusion,
-this is a fascinating topic..."). Sentences should sound like a thoughtful person
-talking, not a marketing department writing.
+this is a fascinating topic..."). Avoid cliché, inflated, generic, or cringe phrasing;
+do not use hype lines like "the next big unlock", "revolutionary", or "game-changing".
+Sentences should sound like a thoughtful person talking, not a marketing department writing.
 First-person perspective is fine, but "I" must not dominate sentence openings.
 If more than 3 consecutive sentences start with "I", or more than ~25% of sentences
 in a paragraph begin with "I", flag it — vary the opening with a noun phrase,
