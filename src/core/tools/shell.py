@@ -9,7 +9,12 @@ from core.tools.ctx import WORKDIR
 from core.tools.fs import PROTECTED_PATH_FILES, PROTECTED_PATH_PARTS
 
 _DEFAULT_TIMEOUT = 60
-_DESTRUCTIVE_COMMAND_RE = re.compile(r"\b(?:rm|rmdir|unlink|git\s+clean)\b|(?:\bfind\b.*\s-delete\b)")
+_SHELL_DELETE_RE = re.compile(r"\b(?:rm|rmdir|unlink|git\s+clean)\b|(?:\bfind\b.*\s-delete\b)")
+_PROTECTED_MUTATION_RE = re.compile(
+    r"\b(?:mv|truncate|dd|chmod|chown|python\d*|python|node|ruby|perl)\b"
+    r"|(?:^|[;&|]\s*)\s*:"
+    r"|(?:^|[^<>])>{1,2}(?!>)"
+)
 
 
 def _targets_protected_path(command: str) -> bool:
@@ -21,10 +26,15 @@ def _targets_protected_path(command: str) -> bool:
 
 
 def _check_command(command: str) -> str | None:
-    if _DESTRUCTIVE_COMMAND_RE.search(command) and _targets_protected_path(command):
+    if _SHELL_DELETE_RE.search(command):
         return (
-            "FATAL: destructive shell command targets a protected runtime path; "
-            "use filesystem tools for file deletion"
+            "FATAL: shell deletion commands are disabled. Use delete_file for normal files; "
+            "protected runtime paths like .git/, node_modules/, and local .db files must stay intact."
+        )
+    if _PROTECTED_MUTATION_RE.search(command) and _targets_protected_path(command):
+        return (
+            "FATAL: shell command appears to modify a protected runtime path. "
+            "Please avoid changing .git/, dependency caches, or local .db files."
         )
     return None
 
@@ -62,7 +72,8 @@ SHELL = Tool(
     name="run_command",
     description=(
         "Run a bash command. Use workdir to set the working directory relative to repo root. "
-        "Prefer specific commands over broad ones. Avoid interactive commands."
+        "Prefer specific commands over broad ones. Avoid interactive commands. "
+        "Do not use shell deletion commands; use delete_file for normal file deletion."
     ),
     parameters={
         "type": "object",
