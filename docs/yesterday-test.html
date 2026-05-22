@@ -15,8 +15,6 @@
       --accent: #8a5a35;
       --accent-soft: #cda77d;
       --border: #e3d7c6;
-      --shadow-soft: 0 16px 36px rgba(69, 45, 24, 0.08);
-      --grid: rgba(153, 126, 93, 0.09);
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -26,29 +24,10 @@
       padding: 0;
       min-height: 100%;
       background-color: var(--bg);
-      background-image:
-        linear-gradient(var(--grid) 1px, transparent 1px),
-        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
-        radial-gradient(circle at top left, rgba(205, 167, 125, 0.18), transparent 34%),
-        radial-gradient(circle at bottom right, rgba(138, 90, 53, 0.08), transparent 30%);
-      background-size: 24px 24px, 24px 24px, auto, auto;
-      background-position: center top, center top, top left, bottom right;
       color: var(--ink);
       font-family: 'Lora', Georgia, serif;
       font-size: 17px;
       line-height: 1.82;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background:
-        linear-gradient(to bottom, rgba(247, 242, 232, 0.12), rgba(247, 242, 232, 0.4)),
-        radial-gradient(circle at 20% 12%, rgba(255,255,255,0.4), transparent 22%),
-        radial-gradient(circle at 76% 24%, rgba(205, 167, 125, 0.14), transparent 20%);
-      mix-blend-mode: multiply;
     }
 
     nav {
@@ -118,7 +97,6 @@
       padding: 18px;
       border: 1px solid var(--border);
       background: rgba(255, 251, 244, 0.58);
-      box-shadow: var(--shadow-soft);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
     }
@@ -230,7 +208,6 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 6px;
-      box-shadow: var(--shadow-soft);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
@@ -412,7 +389,7 @@
 </head>
 <body>
   <nav>
-    <span class="wordmark" aria-label="Home"></span>
+    <span class="wordmark" aria-label="Home">Maximilian Samne</span>
     <ul>
       <li><a href="/one/writing">Writing</a></li>
       <li><a href="/one/work">Work</a></li>
