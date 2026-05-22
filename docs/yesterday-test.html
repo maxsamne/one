@@ -272,10 +272,6 @@
 <body>
   <nav>
     <span class="wordmark" aria-label="Home"></span>
-    <ul>
-      <li><a href="/one/writing" class="active">Writing</a></li>
-      <li><a href="/one/work">Work</a></li>
-    </ul>
   </nav>
 
   <article>
@@ -291,9 +287,9 @@
 
     <p class="leadline">My view is that backtesting can become as important for agentic AI as it was for traditional ML, but only if we treat it as a training and systems problem, not a prompting trick. The unlock is a <em>point-in-time stack</em>: a frozen environment, a leakage auditor, and an offline policy-improvement loop built on historical traces.</p>
 
-    <p>If the answer is no, then a lot of current evaluation is theater. A model that appears brilliant on a 2023 company analysis may simply be leaking 2024 facts from its weights, from retrieval, or from the environment around it. It is not forecasting. It is recollecting.</p>
+    <p>If the answer is no, then a lot of current evaluation is weaker than it looks. A model that appears brilliant on a 2023 company analysis may simply be leaking 2024 facts from its weights, from retrieval, or from the environment around it. In that case, it is not really forecasting; it is partly recollecting.</p>
 
-    <p>We are evaluating the agents of tomorrow using systems that let them cheat with the facts of today.</p>
+    <p>Too often, we are evaluating forward-looking agents in environments that quietly expose later facts.</p>
 
     <h2>The familiar part</h2>
 
@@ -361,11 +357,11 @@
 
     <p>Once an agent can be run inside a clean historical sandbox, the next step is obvious: optimize the whole policy against many historical episodes.</p>
 
-    <p>This is where the comparison to traditional ML becomes strongest. The point of backtesting is not merely to score a model. It is to create an optimization surface. For tool-using agents, that surface includes prompt structure, decomposition strategy, search depth, citation habits, stopping rules, and eventually parts of the model itself.</p>
+    <p>This is where the comparison to traditional ML becomes strongest. The point of backtesting is not merely to score a model. It is to create an optimization surface. For agents working over changing public knowledge, that surface includes prompt structure, decomposition strategy, search depth, source selection, citation habits, stopping rules, and eventually parts of the model itself.</p>
 
-    <p>OREO is relevant here because it shows how offline reinforcement learning can assign credit inside long reasoning traces rather than only at the end.<sup id="ref8"><a href="#fn8">8</a></sup> DYSTIL is relevant for a different reason: it turns successful and unsuccessful trajectories into textual strategies, then folds those strategies back into the policy-improvement loop.<sup id="ref9"><a href="#fn9">9</a></sup> Neither paper solves temporal leakage on its own. What they do show is that once you have a trustworthy replay buffer, agent behavior stops looking mystical. It starts looking trainable.</p>
+    <p>OREO is relevant here because it shows how offline reinforcement learning can assign credit inside long reasoning traces rather than only at the end.<sup id="ref8"><a href="#fn8">8</a></sup> DYSTIL is relevant for a different reason: it turns successful and unsuccessful trajectories into textual strategies, then folds those strategies back into the policy-improvement loop.<sup id="ref9"><a href="#fn9">9</a></sup> Neither paper solves temporal leakage on its own. What they do suggest is that once you have a trustworthy replay buffer, agent behavior becomes easier to analyze, compare, and improve systematically.</p>
 
-    <p>That matters for deep-research systems in particular. Imagine a historical dataset of unresolved questions: companies before earnings shocks, clinical programs before readouts, policy debates before court decisions, acquisition rumors before confirmation. A research agent works the case using only contemporaneous materials. Its trace is stored. Later, once the outcome is known, you can score not just the final answer but the intermediate work:</p>
+    <p>That matters most for deep-research systems operating in domains where the world keeps moving and where clean evaluation is harder than it is in code. Imagine a historical dataset of unresolved questions: companies before earnings shocks, clinical programs before readouts, policy debates before court decisions, acquisition rumors before confirmation, macro debates before inflation turns, or regulatory choices before their second-order effects become obvious. A research agent works the case using only contemporaneous materials. Its trace is stored. Later, once the outcome is known, you can score not just the final answer but the intermediate work:</p>
 
     <ul>
       <li>Did it retrieve the decisive documents?</li>
@@ -374,7 +370,7 @@
       <li>Which reasoning steps correlated with better ex-post judgment?</li>
     </ul>
 
-    <p>At that point, the training story becomes much richer than “more RL on general chat data.” You can induce better research policies from historical traces. You can penalize leakage at the claim level. You can reward evidence coverage, calibration, abstention, and decision quality. You can even separate the problem into layers: one model proposes, another audits temporal admissibility, a third evaluates outcome quality. That is much closer to how serious ML systems were improved in practice: not by admiring a capability, but by instrumenting a loop.</p>
+    <p>At that point, the training story becomes much richer than “more RL on general chat data.” You can induce better research policies from historical traces. You can penalize leakage at the claim level. You can reward evidence coverage, calibration, abstention, and decision quality. You can even separate the problem into layers: one model proposes, another audits temporal admissibility, a third evaluates outcome quality. The important shift is not that this makes agent research easy. It is that it makes a harder class of knowledge work more amenable to the kind of iteration that software agents already enjoy in code environments.</p>
 
     <figure>
       <svg viewBox="0 0 520 240" width="100%" style="display:block;max-width:520px;margin:0 auto;overflow:visible">
@@ -400,21 +396,27 @@
 
     <p>This is not a magic bridge from classical ML to autonomous agents.</p>
 
-    <p>First, many agents are not passive predictors. They intervene. A trading agent moves markets. A negotiation agent changes counterpart behavior. A coding agent alters the codebase it is later evaluated against. Historical replay is therefore truest for read-heavy systems and roughest for write-heavy ones.</p>
+    <p>First, many agents are not passive predictors. They intervene. A trading agent moves markets. A negotiation agent changes counterpart behavior. A coding agent alters the codebase it is later evaluated against. Historical replay is therefore truest for read-heavy systems and roughest for write-heavy ones. That is another reason this matters so much for research, analysis, and advisory tasks: these are exactly the areas where people expect LLMs to help with judgments about the world, yet where the time dependence of knowledge makes clean testing unusually difficult.</p>
 
     <p>Second, the compute bill is ugly. A tabular model can be backtested over millions of rows quickly. A deep-research agent may need dozens of searches, hundreds of tool calls, and long traces for a single case. That makes rigorous replay expensive enough that teams will be tempted to cut corners precisely where leakage is easiest.</p>
 
     <p>Third, tool use is not monotone. One recent forecasting study found that date-filtered web search improved average Brier Skill Score overall, but hurt performance in 6 of 50 model-checkpoint conditions.<sup id="ref10"><a href="#fn10">10</a></sup> That matters because it means the policy you are optimizing is not “always search more.” It is when to search, when to stop, and when to trust what the model already knows.</p>
 
-    <p>So the right claim is not that backtesting will make LLM agents easy. It is that it will make them falsifiable. That is a lower bar than perfection, but a much higher bar than most of the field currently clears.</p>
+    <p>So the right claim is not that backtesting will make LLM agents easy. It is that it will make them testable in a way many current agent evaluations are not. That is still a meaningful shift, especially for systems meant to search, synthesize, and decide under changing real-world conditions.</p>
 
     <h2>What this would change</h2>
 
-    <p>If we get this right, the main gain is not aesthetic. It is epistemic. We would stop shipping agents on vibes.</p>
+    <p>If this works, the main gain is practical: teams could improve research and decision-support agents against something firmer than anecdote, cherry-picked demos, or one-off benchmark wins.</p>
 
-    <p>A team could say: this research agent was replayed on 600 historical cases, under a point-in-time stack, with claim-level leakage auditing, and the current policy improved retrieval coverage, calibration, and final decision quality relative to the previous policy. That is the kind of sentence people in mature ML ecosystems got used to saying. In generative AI, it still sounds unusually disciplined.</p>
+    <p>A team could say: this research agent was replayed on 600 historical cases, under a point-in-time stack, with claim-level leakage auditing, and the new policy improved retrieval coverage, calibration, and final decision quality relative to the previous one. That is a more useful sentence than “the agent felt smarter,” because it points to a process that can be repeated, challenged, and improved.</p>
 
-    <p>That is why I think backtesting matters so much. Not because the past is a perfect proxy for the future. It is not. But because the ability to repeatedly confront a system with a world it is not allowed to already know is still the cleanest route we have from impressive behavior to earned trust.</p>
+    <p>This is especially important outside software engineering. In code, it is often much easier to construct a replayable environment: old repositories can be restored, tests can be rerun, and tool use can be scored against a relatively stable ground truth. The harder frontier is work that depends on the state of public knowledge at a given moment: assessing a company before the market reprices it, reasoning about an economic policy before its effects are visible, or analyzing a political decision before later events reveal which concerns mattered most.</p>
+
+    <p>Those are exactly the domains where people keep expecting LLMs to become genuinely useful, and exactly the domains where current evaluation is weakest. Turning off web search is not enough, because the model may still know too much from training. Leaving web search on is not enough, because today’s web contains clues, edits, and summaries that were not available at the time. The result is a gap: we want to optimize policies for serious real-world research, but we often lack a clean way to tell whether the system is reasoning from contemporaneous evidence or from accidental hindsight.</p>
+
+    <p>That is why a trustworthy replay setting could matter so much. It would not just help with generic tool-use policy optimization, important though that is. It would make it easier to optimize for a harder and more consequential class of behavior: when to search, what sources to trust, how to frame a case, when to branch into alternatives, when to stop, and when to abstain in domains where the world itself keeps changing underneath the model. My guess is that this is one of the clearest paths by which LLMs could improve outside the code-heavy settings that currently dominate agent evaluation.</p>
+
+    <p>The past will never be a perfect stand-in for the future, and a backtest will never settle questions of judgment on its own. But for research-heavy agents especially, the ability to evaluate a system inside a world it was not allowed to already know seems like a necessary step toward building trust in applications with real consequences. If agents are going to help with company analysis, policy research, economic interpretation, or other forms of evolving knowledge work, then point-in-time replay may be less a nice evaluation trick than a basic piece of the infrastructure.</p>
 
     <section class="footnotes">
       <ol>
