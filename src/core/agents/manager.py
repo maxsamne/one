@@ -33,7 +33,7 @@ from core.log import task_pr_url
 from core.log import transcript_load
 from core.prompt import date_context
 from core.tools.calc import CALC_TOOLS
-from core.tools.ctx import REPO_ROOT, WORKDIR, WRITE_SCOPE
+from core.tools.ctx import REPO_ROOT, WORKDIR
 from core.tools.fs import FS_TOOLS
 from core.tools.git import GIT_ADD, GIT_COMMIT, GIT_DIFF, GIT_LOG, GIT_STATUS
 from core.tools.shell import SHELL_TOOLS
@@ -292,7 +292,7 @@ async def _dispatch(
     worktrees: list[worktree.Worktree] = []
     merge_results: dict[str, str] = {}
     reuse_parent_branch = False
-    workdir_token = scope_token = None
+    workdir_token = None
     workdir: Path | None = None
 
     async with AsyncExitStack() as branch_stack:
@@ -303,10 +303,9 @@ async def _dispatch(
             tools = list(_CONVERSATIONAL_TOOLS) + list(extra_tools or [])
             instructions = _build_instructions(_CONVERSATIONAL_BASE, plan.skill_bodies, plan.skill_index, plan.date_ctx)
             base_branch = starting_ref = ""
-            write_scope: frozenset[str] | None = None
             _log(Category.AGENT, "conversational dispatch",
                  provider=provider, model=ai.model_name, thinking=str(thinking),
-                 tmp=str(workdir.relative_to(REPO_ROOT)))
+                 tmp=str(workdir.relative_to(REPO_ROOT)), write_scope="workdir")
         else:
             parent_base = await _resolve_parent_base(parent_task_id)
             # Single-provider follow-up: extend the parent's task branch directly
@@ -332,13 +331,12 @@ async def _dispatch(
             git_skill = skills.join_bodies(["general/git.md"])
             persistent_bodies = "\n\n---\n\n".join(filter(None, [_MANAGED_GIT_INSTRUCTIONS, git_skill, plan.skill_bodies]))
             instructions = _build_instructions(_PERSISTENT_BASE, persistent_bodies, plan.skill_index, plan.date_ctx)
-            write_scope = frozenset({"generated/", "knowledge/", "docs/"})
             _log(Category.AGENT, "dispatching",
-                 provider=provider, model=ai.model_name, thinking=str(thinking))
+                 provider=provider, model=ai.model_name, thinking=str(thinking),
+                 write_scope="repo_worktree")
 
         assert workdir is not None
         workdir_token = WORKDIR.set(workdir)
-        scope_token = WRITE_SCOPE.set(write_scope) if write_scope else None
         workdir_registry.register(task_id, workdir)
         success = False
         extra_hooks, hook_retries = _build_extra_hooks()
@@ -367,8 +365,6 @@ async def _dispatch(
             _prune_generated_images()
             if workdir_token is not None:
                 WORKDIR.reset(workdir_token)
-            if scope_token is not None:
-                WRITE_SCOPE.reset(scope_token)
             workdir_registry.unregister(task_id)
             if worktrees:
                 await worktree.cleanup(worktrees)

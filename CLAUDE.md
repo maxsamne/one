@@ -39,9 +39,11 @@ Agents write to:
 - `generated/` — raw task output; date-stamped; may be pruned or promoted
 - `docs/` — GitHub Pages website; only when the task explicitly targets the site
 - `src/core/` — **only** when the task explicitly modifies engine infrastructure
+- `tests/` and repo config files — **only** when the task explicitly modifies repo code, tooling, or agent behavior
 - `apps/` — **only** when the task explicitly targets an existing app
 
 Agents **never** write to `src/core/` speculatively or as a side-effect of a non-engine task.
+Persistent agents run in isolated git worktrees and may edit repo source when the task explicitly asks for code/config changes. The filesystem write tools still block protected runtime paths such as `.git/`, `.worktrees/`, `.venv/`, `node_modules/`, `__pycache__/`, `.agent.db`, and `.librarian.db`. Shell remains a powerful worktree-scoped tool, so use specific commands rather than broad destructive ones.
 
 ## AI client
 
