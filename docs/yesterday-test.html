@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>The Yesterday Test — Maximilian Samne</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #f7f5ef;
@@ -37,6 +37,7 @@
       min-height: 100vh;
     }
 
+    /* NAV BAR STYLE (match Silicon Sociology; no top-right squares) */
     nav {
       max-width: 1200px;
       margin: 0 auto;
@@ -59,6 +60,34 @@
 
     nav .wordmark:hover { opacity: 0.8; }
 
+    nav ul {
+      display: flex;
+      align-items: center;
+      list-style: none;
+      gap: 16px;
+      background: rgba(255, 253, 248, 0.6);
+      padding: 6px 18px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    nav ul li { display: flex; align-items: center; }
+
+    nav ul li a {
+      color: var(--ink-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      transition: color 0.15s;
+      padding: 4px 8px;
+    }
+
+    nav ul li a:hover, nav ul li a.active { color: var(--ink); }
+
+    /* ARTICLE WRAPPER */
     article {
       max-width: 700px;
       margin: 40px auto 120px;
@@ -141,16 +170,15 @@
       padding-left: 18px;
     }
 
-    .note {
+    .pull {
       margin: 1.8em 0;
       padding: 16px 20px;
-      border-left: 3px solid var(--accent);
+      border-left: 3px solid var(--accent-dark);
       color: var(--ink);
       background: rgba(127, 184, 157, 0.08);
+      font-style: italic;
       border-radius: 0 4px 4px 0;
     }
-
-    .note p:last-child { margin-bottom: 0; }
 
     .caption {
       font-size: 13px;
@@ -186,11 +214,21 @@
     ul { margin: .5em 0 1.2em 1.25em; }
     li { margin: .4em 0; }
 
-    sup { font-size: .72em; vertical-align: super; line-height: 0; }
-    sup a { border: none; padding: 0 2px; }
-
     figure { margin: 2.2em 0; }
 
+    /* Manuscript callouts */
+    .note {
+      margin: 1.8em 0;
+      padding: 16px 20px;
+      border-left: 3px solid var(--accent);
+      color: var(--ink);
+      background: rgba(127, 184, 157, 0.08);
+      border-radius: 0 4px 4px 0;
+    }
+
+    .note p:last-child { margin-bottom: 0; }
+
+    /* Footnotes */
     .footnotes {
       border-top: 1px solid var(--border);
       margin-top: 3.5em;
@@ -202,10 +240,12 @@
       margin: 0;
       color: var(--ink-muted);
       font-size: 13px;
-      line-height: 1.72;
+      line-height: 1.7;
     }
 
-    .footnotes li { margin: 0 0 .65em 0; }
+    .footnotes li { margin: 0 0 .8em 0; }
+
+    .footnotes a { border: none; }
 
     .footer-link {
       max-width: 700px;
@@ -218,15 +258,8 @@
 
     .footer-link a { border-bottom: none; padding-bottom: 0; }
 
-    .pull {
-      margin: 1.8em 0;
-      padding: 16px 20px;
-      border-left: 3px solid var(--accent-dark);
-      color: var(--ink);
-      background: rgba(127, 184, 157, 0.08);
-      font-style: italic;
-      border-radius: 0 4px 4px 0;
-    }
+    sup { font-size: .72em; vertical-align: super; line-height: 0; }
+    sup a { border: none; padding: 0 2px; }
 
     @media (prefers-reduced-motion: reduce) {
       a { transition: none; }
@@ -239,6 +272,10 @@
 <body>
   <nav>
     <span class="wordmark" aria-label="Home"></span>
+    <ul>
+      <li><a href="/one/writing" class="active">Writing</a></li>
+      <li><a href="/one/work">Work</a></li>
+    </ul>
   </nav>
 
   <article>
