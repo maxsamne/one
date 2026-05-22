@@ -182,3 +182,71 @@ async def test_load_website_image_refs_query_can_find_named_docs_image_without_h
 
     assert "docs/images/silicon-sociology-cover.png" in result
     assert len(queued) == 1
+
+
+async def test_load_website_image_refs_query_can_find_main_image_from_old_followup_worktree(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _run(["git", "init", "-q", "-b", "main"], repo)
+    _run(["git", "config", "user.email", "t@t.t"], repo)
+    _run(["git", "config", "user.name", "t"], repo)
+    (repo / "README.md").write_text("seed\n", encoding="utf-8")
+    _run(["git", "add", "README.md"], repo)
+    _run(["git", "commit", "-q", "-m", "seed"], repo)
+
+    _run(["git", "checkout", "-q", "-b", "task/old"], repo)
+    old_images = repo / "docs" / "images"
+    old_images.mkdir(parents=True)
+    (old_images / "historical-sandbox-card.png").write_bytes(_tiny_png())
+    (repo / "docs" / "historical-sandbox.html").write_text(
+        '<img src="/one/images/historical-sandbox-card.png" alt="warm editorial card">',
+        encoding="utf-8",
+    )
+    _run(["git", "add", "docs"], repo)
+    _run(["git", "commit", "-q", "-m", "add old article image"], repo)
+
+    _run(["git", "checkout", "-q", "main"], repo)
+    main_images = repo / "docs" / "images"
+    main_images.mkdir(parents=True)
+    (main_images / "silicon-sociology-cover.png").write_bytes(_tiny_png())
+    (repo / "docs" / "index.html").write_text(
+        '<h1>Silicon Sociology</h1><img src="/one/images/silicon-sociology-cover.png" alt="Silicon Sociology cover">',
+        encoding="utf-8",
+    )
+    _run(["git", "add", "docs"], repo)
+    _run(["git", "commit", "-q", "-m", "add canonical silicon image"], repo)
+
+    workdir = tmp_path / "old-worktree"
+    _run(["git", "worktree", "add", "-q", str(workdir), "task/old"], repo)
+
+    monkeypatch.setattr("core.tools.visual_refs.REPO_ROOT", repo)
+    workdir_tok = WORKDIR.set(workdir)
+    pending_tok = PENDING_MULTIMODAL.set([])
+    try:
+        result = await load_website_image_refs(
+            query="Silicon Sociology writing card style editorial warm parchment monochrome",
+            max_images=1,
+        )
+        queued = PENDING_MULTIMODAL.get()
+    finally:
+        PENDING_MULTIMODAL.reset(pending_tok)
+        WORKDIR.reset(workdir_tok)
+
+    assert "main:docs/images/silicon-sociology-cover.png" in result
+    assert "historical-sandbox-card" not in result
+    assert len(queued) == 1
+
+    workdir_tok = WORKDIR.set(workdir)
+    pending_tok = PENDING_MULTIMODAL.set([])
+    try:
+        result = await load_website_image_refs(
+            paths=["/one/images/silicon-sociology-cover.png"],
+            max_images=1,
+        )
+        queued = PENDING_MULTIMODAL.get()
+    finally:
+        PENDING_MULTIMODAL.reset(pending_tok)
+        WORKDIR.reset(workdir_tok)
+
+    assert "main:docs/images/silicon-sociology-cover.png" in result
+    assert len(queued) == 1
