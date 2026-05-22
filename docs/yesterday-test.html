@@ -470,9 +470,9 @@
 
       <p class="leadline">My view is that backtesting can become as important for agentic AI as it was for traditional ML, but only if we treat it as a training and systems problem, not a prompting trick. The unlock is a <em>point-in-time stack</em>: a frozen environment, a leakage auditor, and an offline policy-improvement loop built on historical traces.</p>
 
-      <p>If the answer is no, then a lot of current evaluation is theater. A model that appears brilliant on a 2023 company analysis may simply be leaking 2024 facts from its weights, from retrieval, or from the environment around it. It is not forecasting. It is recollecting.</p>
+      <p>If the answer is no, then a lot of current evaluation is less informative than it looks. A model that appears brilliant on a 2023 company analysis may simply be leaking 2024 facts from its weights, from retrieval, or from the environment around it. In that case, it is not really forecasting; it is partly recollecting.</p>
 
-      <p>We are evaluating the agents of tomorrow using systems that let them cheat with the facts of today.</p>
+      <p>Too often, we are evaluating forward-looking agents in environments that quietly expose later facts.</p>
 
       <h2>The familiar part</h2>
 
@@ -543,7 +543,7 @@
 
       <p>This is where the comparison to traditional ML becomes strongest. The point of backtesting is not merely to score a model. It is to create an optimization surface. For tool-using agents, that surface includes prompt structure, decomposition strategy, search depth, citation habits, stopping rules, and eventually parts of the model itself.</p>
 
-      <p>OREO is relevant here because it shows how offline reinforcement learning can assign credit inside long reasoning traces rather than only at the end.<sup id="ref8"><a href="#fn8">8</a></sup> DYSTIL is relevant for a different reason: it turns successful and unsuccessful trajectories into textual strategies, then folds those strategies back into the policy-improvement loop.<sup id="ref9"><a href="#fn9">9</a></sup> Neither paper solves temporal leakage on its own. What they do show is that once you have a trustworthy replay buffer, agent behavior stops looking mystical. It starts looking trainable.</p>
+      <p>OREO is relevant here because it shows how offline reinforcement learning can assign credit inside long reasoning traces rather than only at the end.<sup id="ref8"><a href="#fn8">8</a></sup> DYSTIL is relevant for a different reason: it turns successful and unsuccessful trajectories into textual strategies, then folds those strategies back into the policy-improvement loop.<sup id="ref9"><a href="#fn9">9</a></sup> Neither paper solves temporal leakage on its own. What they do suggest is that once you have a trustworthy replay buffer, agent behavior becomes easier to analyze, compare, and improve systematically.</p>
 
       <p>That matters for deep-research systems in particular. Imagine a historical dataset of unresolved questions: companies before earnings shocks, clinical programs before readouts, policy debates before court decisions, acquisition rumors before confirmation. A research agent works the case using only contemporaneous materials. Its trace is stored. Later, once the outcome is known, you can score not just the final answer but the intermediate work:</p>
 
@@ -554,7 +554,7 @@
         <li>Which reasoning steps correlated with better ex-post judgment?</li>
       </ul>
 
-      <p>At that point, the training story becomes much richer than “more RL on general chat data.” You can induce better research policies from historical traces. You can penalize leakage at the claim level. You can reward evidence coverage, calibration, abstention, and decision quality. You can even separate the problem into layers: one model proposes, another audits temporal admissibility, a third evaluates outcome quality. That is much closer to how serious ML systems were improved in practice: not by admiring a capability, but by instrumenting a loop.</p>
+      <p>At that point, the training story becomes much richer than “more RL on general chat data.” You can induce better research policies from historical traces. You can penalize leakage at the claim level. You can reward evidence coverage, calibration, abstention, and decision quality. You can even separate the problem into layers: one model proposes, another audits temporal admissibility, a third evaluates outcome quality. That starts to look less like prompt craft and more like the kind of measured systems iteration that made earlier ML workflows dependable.</p>
 
       <figure>
         <svg viewBox="0 0 520 240" width="100%" style="display:block;max-width:520px;margin:0 auto;overflow:visible">
@@ -586,15 +586,17 @@
 
       <p>Third, tool use is not monotone. One recent forecasting study found that date-filtered web search improved average Brier Skill Score overall, but hurt performance in 6 of 50 model-checkpoint conditions.<sup id="ref10"><a href="#fn10">10</a></sup> That matters because it means the policy you are optimizing is not “always search more.” It is when to search, when to stop, and when to trust what the model already knows.</p>
 
-      <p>So the right claim is not that backtesting will make LLM agents easy. It is that it will make them falsifiable. That is a lower bar than perfection, but a much higher bar than most of the field currently clears.</p>
+      <p>So the right claim is not that backtesting will make LLM agents easy. It is that it will make them testable in a way many current agent evaluations are not. That is still a meaningful shift, especially for systems meant to search, synthesize, and decide under changing real-world conditions.</p>
 
       <h2>What this would change</h2>
 
-      <p>If we get this right, the main gain is not aesthetic. It is epistemic. We would stop shipping agents on vibes.</p>
+      <p>If this works, the main gain is practical: teams could improve agent policies against something firmer than anecdote, cherry-picked demos, or one-off benchmark wins.</p>
 
-      <p>A team could say: this research agent was replayed on 600 historical cases, under a point-in-time stack, with claim-level leakage auditing, and the current policy improved retrieval coverage, calibration, and final decision quality relative to the previous policy. That is the kind of sentence people in mature ML ecosystems got used to saying. In generative AI, it still sounds unusually disciplined.</p>
+      <p>A team could say: this research agent was replayed on 600 historical cases, under a point-in-time stack, with claim-level leakage auditing, and the new policy improved retrieval coverage, calibration, and final decision quality relative to the previous one. That is a more useful sentence than “the agent felt smarter,” because it points to a process that can be repeated, challenged, and improved.</p>
 
-      <p>That is why I think backtesting matters so much. Not because the past is a perfect proxy for the future. It is not. But because the ability to repeatedly confront a system with a world it is not allowed to already know is still the cleanest route we have from impressive behavior to earned trust.</p>
+      <p>That matters because some of the most promising work in LLMs now is policy optimization for long tool-using loops: when to search, what to read, how to branch, when to stop, and when to abstain. Without a trustworthy replay setting, those choices are hard to optimize except by live deployment or by proxy tasks that miss the real difficulty. With one, you could run many more iterations offline, learn from historical traces, and get closer to the kind of disciplined improvement cycle that earlier ML teams took for granted.</p>
+
+      <p>The past will never be a perfect stand-in for the future, and a backtest will never capture every way an agent changes the world when it acts in it. But for research-heavy agents especially, the ability to evaluate a system inside a world it was not allowed to already know seems like one of the clearest ways to make progress on the training-cutoff problem rather than merely route around it. If agents are going to rely on live retrieval and web search, then building a serious way to replay that behavior under historical constraints could end up being one of the most useful pieces of infrastructure in the stack.</p>
 
       <section class="footnotes">
         <ol>
