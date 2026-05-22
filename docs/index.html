@@ -494,10 +494,12 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
       padding: 30px 40px 10px;
       margin: 0 auto;
       width: 100%;
-      max-width: 420px;
+      max-width: 720px;
     }
 
     /* 3D Leaning Book Card */
@@ -846,6 +848,19 @@
     <section class="shelf-section">
       <div class="shelf-wrapper">
         <!-- 3D Leaning Book -->
+        <div class="book-card" onclick="window.location.href='/one/historical-sandbox';" style="cursor: pointer;">
+          <div class="book-header">
+            <span class="book-chapter">Essay / II</span>
+            <h3 class="book-title">The Historical Sandbox</h3>
+          </div>
+          <div class="book-cover-container">
+            <img class="book-cover" src="/one/images/historical-sandbox-card.png" alt="Archival-style rocket test illustration for The Historical Sandbox">
+          </div>
+          <div class="book-footer">
+            <span>by M. Samne</span>
+            <span>MAY 2026</span>
+          </div>
+        </div>
         <div class="book-card" onclick="window.location.href='/one/silicon-sociology';" style="cursor: pointer;">
           <div class="book-header">
             <span class="book-chapter">Essay / I</span>
@@ -862,7 +877,7 @@
         <!-- Overlapping Glass Shelf Pocket -->
         <div class="book-glass-pocket"></div>
       </div>
-      <a href="/one/silicon-sociology" class="shelf-caption-link">Read this essay (I)</a>
+      <a href="/one/historical-sandbox" class="shelf-caption-link">Read the latest essay (II)</a>
     </section>
 
     <!-- FOOTER FEATURE CARD COLUMNS -->
@@ -872,8 +887,8 @@
         <p class="feature-text">Working at the intersection of AI and venture capital. Investing in high-conviction founders building the cognitive layers of tomorrow's platforms.</p>
       </div>
       <div class="feature-card">
-        <h4 class="feature-title">Silicon Sociology</h4>
-        <p class="feature-text">My latest essay analyzing why AI is evolving to look like us, and why the resemblance runs deepest at the seams. <a href="/one/silicon-sociology">Read the full piece</a>.</p>
+        <h4 class="feature-title">The Historical Sandbox</h4>
+        <p class="feature-text">A new essay on why backtesting was a core unlock for machine learning, and what it would take to make that discipline work for agents. <a href="/one/historical-sandbox">Read the full piece</a>.</p>
       </div>
       <div class="feature-card">
         <h4 class="feature-title">Venture Network</h4>
@@ -884,7 +899,7 @@
 
   <!-- FLOATING ACTION DOWNLOAD PILL - Sharp edges -->
   <div class="floating-pill-container">
-    <a href="/one/silicon-sociology" class="floating-pill">
+    <a href="/one/historical-sandbox" class="floating-pill">
       <span class="pill-icon">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 5v14M19 12l-7 7-7-7"/>
