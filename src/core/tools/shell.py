@@ -12,7 +12,7 @@ _DEFAULT_TIMEOUT = 60
 _SHELL_DELETE_RE = re.compile(r"\b(?:rm|rmdir|unlink|git\s+clean)\b|(?:\bfind\b.*\s-delete\b)")
 _PROTECTED_MUTATION_RE = re.compile(
     r"\b(?:mv|truncate|dd|chmod|chown|python\d*|python|node|ruby|perl)\b"
-    r"|(?:^|[;&|]\s*)\s*:"
+    r"|(?:^|[;&|])\s*:"
     r"|(?:^|[^<>])>{1,2}(?!>)"
 )
 

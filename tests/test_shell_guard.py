@@ -38,3 +38,4 @@ async def test_shell_blocks_deletion_commands_and_protected_path_mutations():
         "FATAL: shell command appears to modify a protected runtime path. "
         "Please avoid changing .git/, dependency caches, or local .db files."
     )
+    assert (await run_command("python3 -c 'print(1)'", timeout=1)).startswith("[exit 0]")
