@@ -57,6 +57,8 @@ Write outputs to the correct location — never pollute src/ with generated cont
 - Generated scripts / one-off code → generated/scripts/<name>.py
 - Generated apps (new, built from scratch) → generated/apps/<platform>/<name>/
 - Core engine changes → src/core/<module>/ — ONLY when the task explicitly modifies infrastructure
+- Tests for repo code changes → tests/<name>.py
+- Repo configuration changes → the existing config file (e.g. pyproject.toml, Taskfile.yml) — ONLY when explicitly requested
 - Existing app changes → apps/<platform>/<name>/ — ONLY when the task explicitly targets an existing app
 
 ## Workflow

@@ -21,12 +21,6 @@ TOOL_LOG: ContextVar[list[dict]] = ContextVar("TOOL_LOG")
 # coders override it to point at their own git worktree.
 WORKDIR: ContextVar[Path] = ContextVar("WORKDIR", default=REPO_ROOT)
 
-# Allowed write path prefixes relative to WORKDIR. None = unrestricted (used in
-# conversational mode where WORKDIR is already a sandboxed tmp dir). Persistent
-# tasks set this to {"generated/", "knowledge/"} so agents can't silently overwrite
-# infrastructure files — they get a FATAL error and must reconsider.
-WRITE_SCOPE: ContextVar[frozenset[str] | None] = ContextVar("WRITE_SCOPE", default=None)
-
 # Provider-specific payloads loaded dynamically by tools during a provider tool
 # loop. Provider clients pop these after tool execution and attach them once to
 # the next model request.

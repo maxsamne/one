@@ -15,10 +15,12 @@ def _diff_stats(old: str, new: str) -> str:
 
 from core.ai_client.models import Tool
 from core.text import text_stats
-from core.tools.ctx import READ_CTX, WORKDIR, WRITE_SCOPE, log_call
+from core.tools.ctx import READ_CTX, WORKDIR, log_call
 
 _MAX_BYTES = 10 * 1024 * 1024  # 10 MB
 _MIN_TARGETED_READ_LINES = 50
+_DENIED_WRITE_PARTS = frozenset({".git", ".worktrees", ".venv", "node_modules", "__pycache__"})
+_DENIED_WRITE_FILES = frozenset({".agent.db", ".librarian.db"})
 
 
 def _rel(path: str) -> Path:
@@ -34,14 +36,10 @@ def _rel(path: str) -> Path:
 
 
 def _check_write(p: Path) -> str | None:
-    """Return a FATAL error string if p is outside the allowed write scope, else None."""
-    scope = WRITE_SCOPE.get()
-    if scope is None:
-        return None
+    """Return a FATAL error string if p is a protected runtime path."""
     rel = p.resolve().relative_to(WORKDIR.get().resolve())
-    if not any(str(rel).startswith(prefix) for prefix in scope):
-        allowed = ", ".join(sorted(scope))
-        return f"FATAL: writing to '{rel}' is not allowed — permitted paths: {allowed}"
+    if any(part in _DENIED_WRITE_PARTS for part in rel.parts) or rel.name in _DENIED_WRITE_FILES:
+        return f"FATAL: writing to '{rel}' is not allowed — protected runtime path"
     return None
 
 
