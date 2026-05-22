@@ -3,14 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>The Timebound Sandbox — Maximilian Samne</title>
+  <title>The Yesterday Test — Maximilian Samne</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #f7f2e8;
-      --surface: rgba(255, 251, 244, 0.82);
-      --surface-strong: #fffaf2;
+      --surface: rgba(255, 251, 244, 0.84);
       --ink: #2a241f;
       --ink-muted: #75685b;
       --accent: #8a5a35;
@@ -92,11 +91,6 @@
       -webkit-backdrop-filter: blur(8px);
     }
 
-    nav ul li {
-      display: flex;
-      align-items: center;
-    }
-
     nav ul li a {
       color: var(--ink-muted);
       text-decoration: none;
@@ -107,8 +101,7 @@
       padding: 4px 8px;
     }
 
-    nav ul li a:hover,
-    nav ul li a.active {
+    nav ul li a:hover {
       color: var(--ink);
     }
 
@@ -132,7 +125,7 @@
 
     .cover-panel {
       position: relative;
-      min-height: 240px;
+      min-height: 260px;
       border: 1px solid rgba(138, 90, 53, 0.3);
       background:
         radial-gradient(circle at 18% 18%, rgba(255, 246, 231, 0.96), transparent 28%),
@@ -140,7 +133,7 @@
       overflow: hidden;
       padding: 30px 34px;
       display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
+      grid-template-columns: 1.2fr 0.8fr;
       gap: 24px;
       align-items: end;
     }
@@ -164,15 +157,12 @@
       position: relative;
       z-index: 1;
       align-self: center;
-      max-width: 420px;
+      max-width: 470px;
     }
 
     .cover-kicker,
     .diagram-label,
-    .eyebrow,
-    .meta,
     .caption,
-    .stat,
     .footer-link {
       font-family: 'JetBrains Mono', monospace;
     }
@@ -191,19 +181,19 @@
 
     .cover-title {
       margin: 0;
-      font-size: clamp(44px, 7vw, 72px);
+      font-size: clamp(46px, 7vw, 76px);
       line-height: 0.92;
       font-weight: 500;
       letter-spacing: -0.03em;
-      max-width: 7ch;
+      max-width: 8ch;
     }
 
     .cover-subtitle {
-      margin: 16px 0 0;
+      margin: 18px 0 0;
       color: var(--ink-muted);
-      font-size: 17px;
-      max-width: 38ch;
-      line-height: 1.65;
+      font-size: 18px;
+      max-width: 40ch;
+      line-height: 1.62;
     }
 
     .cover-diagram {
@@ -236,7 +226,7 @@
     article {
       max-width: 700px;
       margin: 0 auto;
-      padding: 48px 24px 84px;
+      padding: 8px 24px 84px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 6px;
@@ -245,33 +235,11 @@
       -webkit-backdrop-filter: blur(12px);
     }
 
-    .eyebrow {
-      display: inline-block;
-      font-size: 11px;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--ink-muted);
-      margin-bottom: 16px;
-      background: rgba(255, 250, 242, 0.84);
-      padding: 4px 10px;
-      border-radius: 4px;
-      border: 1px solid var(--border);
-    }
-
-    h1 {
-      font-size: clamp(28px, 5vw, 40px);
-      line-height: 1.14;
-      font-weight: 500;
-      margin: 12px 0 16px;
-      letter-spacing: -0.015em;
-    }
-
-    .dek {
-      font-size: 19px;
-      color: var(--ink-muted);
-      line-height: 1.52;
-      margin: 0 0 34px;
-      font-style: italic;
+    .article-start {
+      width: 84px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(138, 90, 53, 0.65), transparent);
+      margin: 20px auto 28px;
     }
 
     h2 {
@@ -359,36 +327,6 @@
       margin: 2.2em 0;
     }
 
-    .meta-strip {
-      max-width: 700px;
-      margin: 18px auto 0;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-
-    .stat {
-      background: rgba(255, 250, 242, 0.7);
-      border: 1px solid var(--border);
-      padding: 12px 14px;
-      font-size: 11px;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: var(--ink-muted);
-      box-shadow: var(--shadow-soft);
-    }
-
-    .stat strong {
-      display: block;
-      margin-top: 6px;
-      font-family: 'Inter', sans-serif;
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      color: var(--ink);
-      text-transform: none;
-    }
-
     .footnotes {
       border-top: 1px solid var(--border);
       margin-top: 3.5em;
@@ -431,10 +369,6 @@
         justify-self: stretch;
         width: 100%;
       }
-
-      .meta-strip {
-        grid-template-columns: 1fr;
-      }
     }
 
     @media (max-width: 740px) {
@@ -463,11 +397,15 @@
       }
 
       .cover-title {
-        font-size: 44px;
+        font-size: 46px;
+      }
+
+      .cover-subtitle {
+        font-size: 17px;
       }
 
       article {
-        padding: 32px 20px 60px;
+        padding: 4px 20px 60px;
       }
     }
   </style>
@@ -482,12 +420,12 @@
   </nav>
 
   <main class="page">
-    <section class="cover-frame" aria-label="Essay cover layout for The Timebound Sandbox">
+    <section class="cover-frame" aria-label="Essay cover layout for The Yesterday Test">
       <div class="cover-panel">
         <div class="cover-copy">
           <span class="cover-kicker">Essay / II · May 2026</span>
-          <h1 class="cover-title">The Timebound Sandbox</h1>
-          <p class="cover-subtitle">Why backtesting could become the missing discipline of the agent era — if we train models to respect time, not just search it.</p>
+          <h1 class="cover-title">The Yesterday Test</h1>
+          <p class="cover-subtitle">Why the Timebound Sandbox could become the missing discipline of the agent era.</p>
         </div>
         <div class="cover-diagram" aria-hidden="true">
           <svg viewBox="0 0 320 260" role="img">
@@ -521,16 +459,8 @@
       </div>
     </section>
 
-    <div class="meta-strip" aria-label="Essay metadata">
-      <div class="stat">Theme<strong>Agents, evaluation, backtesting</strong></div>
-      <div class="stat">Thesis<strong>Respect time or your benchmark is theater</strong></div>
-      <div class="stat">Structure<strong>Point-in-time stack, leakage audit, replay loop</strong></div>
-    </div>
-
     <article>
-      <p class="eyebrow">Technology · Research · May 2026</p>
-      <h1>The Timebound Sandbox</h1>
-      <p class="dek">Why backtesting could become the missing discipline of the agent era — if we train models to respect time, not just search it.</p>
+      <div class="article-start"></div>
 
       <p>The great strength of classical machine learning was not only that it learned from data. It was that it could be run again against yesterday.</p>
 
