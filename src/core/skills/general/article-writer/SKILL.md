@@ -40,12 +40,15 @@ If the user asks for optimism, keep it analytical rather than utopian. If the us
 - Reuse one or two controlling metaphors throughout the piece. Do not invent a new metaphor every section. Why: “better highways vs better cities,” “country of geniuses in a datacenter,” and “compressed 21st century” give the essay memorability and coherence.
 - Define jargon immediately in ordinary language, or rename it if the standard term carries hype baggage. Why: the examples repeatedly translate specialized concepts into direct English and reject loaded terminology.
 - Present bold claims with explicit calibration words: “I think,” “my guess,” “it seems likely,” “I’m optimistic about,” “I’m not confident that.” Why: the style is confident in structure, modest in certainty.
+- Let energy come from concrete claims, tension, and original framing — not stock hype like “revolutionary,” “game-changing,” “the next big unlock,” or other inflated superlatives. Why: the prose should feel vivid because it is specific, not because it is loud.
 - Reject false binaries by naming two extreme views and then arguing for the middle or mixed picture. Why: one essay dismisses “integrations fix it”; the other explicitly rejects both singularity-speed and saturation pessimism.
+- If you criticize the status quo, make the criticism do explanatory work. Do not attack norms just to sound bold; show what fails, why it fails, what evidence supports that claim, and what alternative follows. Why: durable critique is diagnostic, not performative.
 - Use rhetorical questions sparingly to open a section or pivot: “What powerful AI will look like…”, “What about clinical trials?” Why: the examples use questions to reset attention without becoming conversational fluff.
 - Prefer medium-to-long paragraphs that carry reasoning forward, interrupted by occasional one-sentence paragraphs for emphasis. Why: the cadence relies on sustained argument, not listicle fragments.
 - Include concrete examples in batches of 3–7 items. Name real mechanisms, tasks, or technologies rather than speaking in abstractions. Why: the examples make claims feel testable by enumerating email workflows, CRISPR, mRNA vaccines, judicial services, etc.
 - Use numbers when making forecasts: date windows, multipliers, ranges, proportions. Avoid vague scale words like “massive” unless paired with a specific referent. Why: the essays feel serious because they quantify uncertainty.
 - Admit uncertainty without retreating into mush. After each caveat, continue the argument. Why: the voice is exploratory but still directional.
+- Keep the piece future-proof in both argument and language: prefer mechanisms, evidence, and durable terms over trend-chasing phrasing that will age badly. Why: the goal is to publish writing that still reads as serious after the hype cycle moves on.
 - Avoid sci-fi tone even when discussing radical outcomes. No cosmic destiny, sentient inevitability, or neon-future imagery. Why: one essay explicitly argues against “sci-fi baggage.”
 - Keep the moral register earnest. Frame stakes in terms of suffering, freedom, beauty, dignity, wasted talent, or things not yet made. Why: both essays end by linking systems design to human flourishing.
 - Do not posture as a prophet. Write like someone trying to think clearly in public. Why: the second example explicitly rejects grandiosity.
@@ -152,6 +155,7 @@ The goal is not to make government feel futuristic. It is to make it feel compet
 
 ## What NOT to do
 - Do not write like a product launch, with claims of “revolution,” “paradigm shift,” or “unlocking value” unsupported by mechanisms.
+- Do not use cliché futurist filler or inflated praise where a concrete claim should be.
 - Do not stay abstract for more than a few paragraphs. The reader must see actual tasks, systems, or technologies.
 - Do not use a scattershot metaphor on every page. Pick one or two and reuse them consistently.
 - Do not sound omniscient. Avoid absolute claims about timelines, inevitability, or historical destiny.
