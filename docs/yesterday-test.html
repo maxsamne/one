@@ -5,18 +5,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>The Yesterday Test — Maximilian Samne</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f7f5ef;
-      --surface: #fffdf8;
+      --bg: #f7f3ec;
+      --surface: #fffaf5;
       --ink: #262521;
       --ink-muted: #7d786f;
-      --accent: #7fb89d;
-      --accent-dark: #3b6b55;
-      --border: #e7e1d6;
-      --tag-bg: #f2eee5;
-      --shadow-soft: 0 12px 32px rgba(38, 37, 33, 0.04);
+      --accent: #d59663;
+      --accent-dark: #9d5b2f;
+      --border: #e7ddd1;
+      --tag-bg: #f5ede3;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,11 +24,6 @@
       margin: 0;
       padding: 0;
       background-color: var(--bg);
-      background-image:
-        linear-gradient(rgba(231, 225, 214, 0.4) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(231, 225, 214, 0.4) 1px, transparent 1px);
-      background-size: 24px 24px;
-      background-position: center top;
       color: var(--ink);
       font-family: 'Lora', Georgia, serif;
       font-size: 17px;
@@ -37,7 +31,6 @@
       min-height: 100vh;
     }
 
-    /* NAV BAR STYLE (match Silicon Sociology; no top-right squares) */
     nav {
       max-width: 1200px;
       margin: 0 auto;
@@ -45,7 +38,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 24px 40px;
-      font-family: 'Inter', sans-serif;
+      font-family: 'JetBrains Mono', monospace;
     }
 
     nav .wordmark {
@@ -65,12 +58,8 @@
       align-items: center;
       list-style: none;
       gap: 16px;
-      background: rgba(255, 253, 248, 0.6);
       padding: 6px 18px;
       border: 1px solid var(--border);
-      border-radius: 4px;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
     }
 
     nav ul li { display: flex; align-items: center; }
@@ -87,23 +76,15 @@
 
     nav ul li a:hover, nav ul li a.active { color: var(--ink); }
 
-    /* ARTICLE WRAPPER */
     article {
       max-width: 700px;
       margin: 40px auto 120px;
       padding: 48px 24px 84px;
-      background: rgba(255, 253, 248, 0.7);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      box-shadow: var(--shadow-soft);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
     }
 
     @media (max-width: 740px) {
       article {
         margin: 20px 16px 80px;
-        border-radius: 6px;
         padding: 32px 20px 60px;
       }
     }
@@ -175,7 +156,7 @@
       padding: 16px 20px;
       border-left: 3px solid var(--accent-dark);
       color: var(--ink);
-      background: rgba(127, 184, 157, 0.08);
+      background: rgba(213, 150, 99, 0.1);
       font-style: italic;
       border-radius: 0 4px 4px 0;
     }
@@ -192,14 +173,14 @@
     a {
       color: var(--accent-dark);
       text-decoration: none;
-      border-bottom: 1.5px solid rgba(127, 184, 157, 0.4);
+      border-bottom: 1.5px solid rgba(213, 150, 99, 0.45);
       padding-bottom: 1px;
       transition: all 0.15s;
     }
 
     a:hover {
       border-color: var(--accent-dark);
-      background: rgba(127, 184, 157, 0.05);
+      background: rgba(213, 150, 99, 0.08);
     }
 
     code {
@@ -222,7 +203,7 @@
       padding: 16px 20px;
       border-left: 3px solid var(--accent);
       color: var(--ink);
-      background: rgba(127, 184, 157, 0.08);
+      background: rgba(213, 150, 99, 0.1);
       border-radius: 0 4px 4px 0;
     }
 
@@ -283,9 +264,9 @@
 
     <p>You could train on one period, validate on another, change the model, and know whether you had actually improved anything. A better loss curve was nice. A cleaner backtest was the real unlock. It turned model building from intuition into iteration.</p>
 
-    <p>Generative AI has partially lost that discipline. We can benchmark models. We can watch demos. We can run them on canned tasks. But the thing people increasingly want from 2026-era systems is not a one-shot answer. It is a research loop. Read the filings. Search the web. Call tools. Form a view. Decide. In that world, the crucial question is simple: <em>could this agent have done the work before the outcome was known?</em></p>
+    <p>Generative AI has partially lost that discipline. We can benchmark models. We can watch demos. We can run them on canned tasks. But the thing people increasingly want from 2026-era systems is not a one-shot answer. It is a research loop. Read the filings. Search the web. Call tools. Form a view. Decide. In that world, the central evaluative question is simple: <em>could this agent have done the work before the outcome was known?</em></p>
 
-    <p class="leadline">My view is that backtesting can become as important for agentic AI as it was for traditional ML, but only if we treat it as a training and systems problem, not a prompting trick. The unlock is a <em>point-in-time stack</em>: a frozen environment, a leakage auditor, and an offline policy-improvement loop built on historical traces.</p>
+    <p class="leadline">My view is that backtesting can become as important for agentic AI as it was for traditional ML, but only if we treat it as a training and systems problem in its own right, not as a clever prompting workaround. Everyone already understands that simply asking a model to role-play ignorance is not enough. The real opportunity is a <em>point-in-time stack</em>: a frozen environment, a leakage auditor, and an offline policy-improvement loop built on historical traces.</p>
 
     <p>If the answer is no, then a lot of current evaluation is weaker than it looks. A model that appears brilliant on a 2023 company analysis may simply be leaking 2024 facts from its weights, from retrieval, or from the environment around it. In that case, it is not really forecasting; it is partly recollecting.</p>
 
@@ -305,7 +286,7 @@
 
     <h2>What the research now says</h2>
 
-    <p>The evidence on leakage has become much sharper. ExAnte shows that frontier models routinely violate explicit temporal cutoffs.<sup id="ref1"><a href="#fn1">1</a></sup> Look-Ahead-Bench shows the same pattern in agentic finance: once you align evaluation windows to what the model could really have known, a surprising amount of apparent alpha evaporates.<sup id="ref2"><a href="#fn2">2</a></sup> And <em>Simulated Ignorance Fails</em> makes the central point brutally clear: telling a model to “pretend not to know” does not recreate true ignorance; the paper reports a 52% performance gap between simulated and true ignorance settings, with reasoning-tuned models often cheating more convincingly, not less.<sup id="ref3"><a href="#fn3">3</a></sup></p>
+    <p>The evidence on leakage has become much sharper. ExAnte shows that frontier models routinely violate explicit temporal cutoffs.<sup id="ref1"><a href="#fn1">1</a></sup> Look-Ahead-Bench shows the same pattern in agentic finance: once you align evaluation windows to what the model could really have known, a surprising amount of apparent alpha evaporates.<sup id="ref2"><a href="#fn2">2</a></sup> And <em>Simulated Ignorance Fails</em> makes the obvious point impossible to ignore: we are also very aware that simply prompting the model to pretend not to know will not get us very far ;). The paper shows why. Simulated ignorance does not recreate true ignorance, there is a large gap between simulated and true ignorance settings, and reasoning-tuned models may cheat more convincingly, not less.<sup id="ref3"><a href="#fn3">3</a></sup> That is not an argument for better prompt wording. It is evidence that the failure of prompting only makes the systems problem more obvious.</p>
 
     <p>There is also growing evidence that date-filtered retrieval by itself is not enough. A 2026 case study on retrospective forecasting found that standard date-constrained web search still leaked later information through updated pages, misleading timestamps, and side-channel cues. On their audit, at least one major leak appeared for 71% of Google questions and 81% of DuckDuckGo questions; the resulting contamination improved Brier score from 0.24 to 0.10, which is less a gain than a mirage.<sup id="ref4"><a href="#fn4">4</a></sup></p>
 
@@ -361,7 +342,7 @@
 
     <p>OREO is relevant here because it shows how offline reinforcement learning can assign credit inside long reasoning traces rather than only at the end.<sup id="ref8"><a href="#fn8">8</a></sup> DYSTIL is relevant for a different reason: it turns successful and unsuccessful trajectories into textual strategies, then folds those strategies back into the policy-improvement loop.<sup id="ref9"><a href="#fn9">9</a></sup> Neither paper solves temporal leakage on its own. What they do suggest is that once you have a trustworthy replay buffer, agent behavior becomes easier to analyze, compare, and improve systematically.</p>
 
-    <p>That matters most for deep-research systems operating in domains where the world keeps moving and where clean evaluation is harder than it is in code. Imagine a historical dataset of unresolved questions: companies before earnings shocks, clinical programs before readouts, policy debates before court decisions, acquisition rumors before confirmation, macro debates before inflation turns, or regulatory choices before their second-order effects become obvious. A research agent works the case using only contemporaneous materials. Its trace is stored. Later, once the outcome is known, you can score not just the final answer but the intermediate work:</p>
+    <p>That matters most for deep-research systems operating in domains where the world keeps moving and where clean evaluation is much harder than it is in code. In software, we can often restore an old repository, rerun the tests, replay the tool calls, and ask a crisp question: did the model genuinely improve? That is one reason code has become the domain where language models have come closest to fulfilling their early promise. The environment is unusually backtestable. Real-world research is different. Imagine a historical dataset of unresolved questions: companies before earnings shocks, clinical programs before readouts, policy debates before court decisions, acquisition rumors before confirmation, macro debates before inflation turns, or regulatory choices before their second-order effects become obvious. A research agent works the case using only contemporaneous materials. Its trace is stored. Later, once the outcome is known, you can score not just the final answer but the intermediate work:</p>
 
     <ul>
       <li>Did it retrieve the decisive documents?</li>
@@ -396,7 +377,7 @@
 
     <p>This is not a magic bridge from classical ML to autonomous agents.</p>
 
-    <p>First, many agents are not passive predictors. They intervene. A trading agent moves markets. A negotiation agent changes counterpart behavior. A coding agent alters the codebase it is later evaluated against. Historical replay is therefore truest for read-heavy systems and roughest for write-heavy ones. That is another reason this matters so much for research, analysis, and advisory tasks: these are exactly the areas where people expect LLMs to help with judgments about the world, yet where the time dependence of knowledge makes clean testing unusually difficult.</p>
+    <p>First, many agents are not passive predictors. They intervene. A trading agent moves markets. A negotiation agent changes counterpart behavior. A coding agent alters the codebase it is later evaluated against. Historical replay is therefore truest for read-heavy systems and roughest for write-heavy ones. The key question is still whether the agent could have done the work before the outcome was known, but in live domains that question becomes harder because information keeps evolving, actions change what happens next, and small decisions can create downstream consequences that propagate through the system. That is another reason this matters so much for research, analysis, and advisory tasks: these are exactly the areas where people expect LLMs to help with judgments about the world, yet where the time dependence of knowledge makes clean testing unusually difficult.</p>
 
     <p>Second, the compute bill is ugly. A tabular model can be backtested over millions of rows quickly. A deep-research agent may need dozens of searches, hundreds of tool calls, and long traces for a single case. That makes rigorous replay expensive enough that teams will be tempted to cut corners precisely where leakage is easiest.</p>
 
@@ -410,13 +391,15 @@
 
     <p>A team could say: this research agent was replayed on 600 historical cases, under a point-in-time stack, with claim-level leakage auditing, and the new policy improved retrieval coverage, calibration, and final decision quality relative to the previous one. That is a more useful sentence than “the agent felt smarter,” because it points to a process that can be repeated, challenged, and improved.</p>
 
-    <p>This is especially important outside software engineering. In code, it is often much easier to construct a replayable environment: old repositories can be restored, tests can be rerun, and tool use can be scored against a relatively stable ground truth. The harder frontier is work that depends on the state of public knowledge at a given moment: assessing a company before the market reprices it, reasoning about an economic policy before its effects are visible, or analyzing a political decision before later events reveal which concerns mattered most.</p>
+    <p>This is especially important outside software engineering. In code, it is often much easier to construct a replayable environment: old repositories can be restored, tests can be rerun, and tool use can be scored against a relatively stable ground truth. You can often prove, in a fairly literal sense, whether the system would have helped before the answer was already sitting in front of you. The harder frontier is work that depends on the state of public knowledge at a given moment: assessing a company before the market reprices it, reasoning about an economic policy before its effects are visible, or analyzing a political decision before later events reveal which concerns mattered most.</p>
 
-    <p>Those are exactly the domains where people keep expecting LLMs to become genuinely useful, and exactly the domains where current evaluation is weakest. Turning off web search is not enough, because the model may still know too much from training. Leaving web search on is not enough, because today’s web contains clues, edits, and summaries that were not available at the time. The result is a gap: we want to optimize policies for serious real-world research, but we often lack a clean way to tell whether the system is reasoning from contemporaneous evidence or from accidental hindsight.</p>
+    <p>Those are exactly the domains where people keep expecting LLMs to become genuinely useful, and exactly the domains where current evaluation is weakest. We can often judge an output qualitatively. We can decide whether a memo sounds sensible, whether a line of reasoning feels plausible, whether a recommendation seems thoughtful. What is much harder is proving that the system would actually have helped us make a better decision before the outcome was known. Turning off web search is not enough, because the model may still know too much from training. Leaving web search on is not enough, because today’s web contains clues, edits, and summaries that were not available at the time. The result is a gap: we want to optimize policies for serious real-world research, but we often lack a clean way to tell whether the system is reasoning from contemporaneous evidence or from accidental hindsight.</p>
 
-    <p>That is why a trustworthy replay setting could matter so much. It would not just help with generic tool-use policy optimization, important though that is. It would make it easier to optimize for a harder and more consequential class of behavior: when to search, what sources to trust, how to frame a case, when to branch into alternatives, when to stop, and when to abstain in domains where the world itself keeps changing underneath the model. My guess is that this is one of the clearest paths by which LLMs could improve outside the code-heavy settings that currently dominate agent evaluation.</p>
+    <p>That is why a trustworthy replay setting could matter so much. It would not just help with generic tool-use policy optimization, important though that is. It would make it easier to optimize for a harder and more consequential class of behavior: when to search, what sources to trust, how to frame a case, when to branch into alternatives, when to stop, and when to abstain in domains where the world itself keeps changing underneath the model. This is the point I want to make as plainly as possible: the alternative to a proper time-boxed, isolated environment is not some prompting trick. Everyone already knows prompting alone is insufficient. The neglected opportunity is to treat backtesting as a training and systems discipline, and to build around that fact. My guess is that this is one of the clearest paths by which LLMs could improve outside the code-heavy settings that currently dominate agent evaluation.</p>
 
     <p>The past will never be a perfect stand-in for the future, and a backtest will never settle questions of judgment on its own. But for research-heavy agents especially, the ability to evaluate a system inside a world it was not allowed to already know seems like a necessary step toward building trust in applications with real consequences. If agents are going to help with company analysis, policy research, economic interpretation, or other forms of evolving knowledge work, then point-in-time replay may be less a nice evaluation trick than a basic piece of the infrastructure.</p>
+
+    <p>The sharper question comes after that. If we can build trustworthy backtests for agents, can we also learn to forecast how decisions propagate through evolving environments? Can we simulate not just answers, but the spread of consequences from policies, judgments, and interventions? That seems to me like the deeper promise hidden inside the Yesterday Test.</p>
 
     <section class="footnotes">
       <ol>
