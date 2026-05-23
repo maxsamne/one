@@ -15,7 +15,7 @@
       --accent: #b35a1e;
       --accent-dark: #7a3612;
       --border: #e7e1d6;
-      --tag-bg: #f2eee5;
+      --tag-bg: #f4ece3;
       --shadow-soft: 0 12px 32px rgba(38, 37, 33, 0.04);
     }
 
@@ -37,7 +37,6 @@
       min-height: 100vh;
     }
 
-    /* NAV BAR STYLE (match Silicon Sociology; no top-right squares) */
     nav {
       max-width: 1200px;
       margin: 0 auto;
@@ -87,7 +86,6 @@
 
     nav ul li a:hover, nav ul li a.active { color: var(--ink); }
 
-    /* ARTICLE WRAPPER */
     article {
       max-width: 700px;
       margin: 40px auto 120px;
@@ -216,7 +214,6 @@
 
     figure { margin: 2.2em 0; }
 
-    /* Manuscript callouts */
     .note {
       margin: 1.8em 0;
       padding: 16px 20px;
@@ -228,7 +225,6 @@
 
     .note p:last-child { margin-bottom: 0; }
 
-    /* Footnotes */
     .footnotes {
       border-top: 1px solid var(--border);
       margin-top: 3.5em;
@@ -265,7 +261,6 @@
       a { transition: none; }
     }
 
-    /* Match SVG typography + stroke palette to the manuscript UI */
     svg { color: inherit; }
   </style>
 </head>
@@ -283,13 +278,15 @@
 
     <p>You could train on one period, validate on another, change the model, and know whether you had actually improved anything. A better loss curve was nice. A cleaner backtest was the real unlock. It turned model building from intuition into iteration.</p>
 
-    <p>Generative AI has partially lost that discipline. We can benchmark models. We can watch demos. We can run them on canned tasks. But the thing people increasingly want from 2026-era systems is not a one-shot answer. It is a research loop. Read the filings. Search the web. Call tools. Form a view. Decide. In that world, the crucial question is simple: <em>could this agent have done the work before the outcome was known?</em></p>
+    <p>Generative AI has partially lost that discipline. We can benchmark models. We can watch demos. We can run them on canned tasks. But the thing people increasingly want from 2026-era systems is not a one-shot answer. It is a research loop. Read the filings. Search the web. Call tools. Form a view. Decide. In that world, the crucial question is not whether the answer looks persuasive now. It is whether the agent could have done the work <em>before the outcome was known</em>.</p>
 
-    <p class="leadline">My view is that backtesting can become as important for agentic AI as it was for traditional ML, but only if we treat it as a training and systems problem, not a prompting trick. The unlock is a <em>point-in-time stack</em>: a frozen environment, a leakage auditor, and an offline policy-improvement loop built on historical traces.</p>
+    <p class="leadline">My view is that backtesting can become as important for agentic AI as it was for traditional ML, but only if we treat it as a training and systems problem. This is not a plea for a clever prompt. Everyone already understands that asking a model to forget the future is insufficient. The unlock is a <em>point-in-time stack</em>: a frozen environment, a leakage auditor, and an offline policy-improvement loop built on historical traces.</p>
 
-    <p>If the answer is no, then a lot of current evaluation is weaker than it looks. A model that appears brilliant on a 2023 company analysis may simply be leaking 2024 facts from its weights, from retrieval, or from the environment around it. In that case, it is not really forecasting; it is partly recollecting.</p>
+    <p>That distinction matters because the failure of prompting is not a side note. It is the reason the systems problem becomes so obvious. If the answer is no, then a great deal of current evaluation is weaker than it looks. A model that appears brilliant on a 2023 company analysis may simply be leaking 2024 facts from its weights, from retrieval, or from the environment around it. In that case, it is not really forecasting; it is partly recollecting.</p>
 
     <p>Too often, we are evaluating forward-looking agents in environments that quietly expose later facts.</p>
+
+    <p>For real-world agents, that is the test that matters: could this system have done the work before the outcome was known?</p>
 
     <h2>The familiar part</h2>
 
@@ -300,12 +297,16 @@
     <p>But this is also where the easy analogy ends. In classical ML, a time split mostly solved the problem. In LLMs, the model itself is already contaminated. The future is in the weights.</p>
 
     <div class="note">
-      <p><strong>The engineering target is stricter than archived search.</strong> A backtestable agent needs three boundaries at once: the corpus boundary, so tools only expose pre-cutoff material; the claim boundary, so reasoning steps can be checked for post-cutoff leakage; and the policy boundary, so the agent can actually be improved offline rather than merely inspected.</p>
+      <p><strong>The engineering target is stricter than archived search.</strong> A backtestable agent needs aligned boundaries across the stack: a model boundary, so the weights are frozen at time <em>T</em>; a corpus boundary, so tools expose only pre-cutoff material; a claim boundary, so reasoning steps can be checked for post-cutoff leakage; and a policy boundary, so the agent can actually be improved offline rather than merely inspected.</p>
     </div>
 
     <h2>What the research now says</h2>
 
-    <p>The evidence on leakage has become much sharper. ExAnte shows that frontier models routinely violate explicit temporal cutoffs.<sup id="ref1"><a href="#fn1">1</a></sup> Look-Ahead-Bench shows the same pattern in agentic finance: once you align evaluation windows to what the model could really have known, a surprising amount of apparent alpha evaporates.<sup id="ref2"><a href="#fn2">2</a></sup> And <em>Simulated Ignorance Fails</em> makes the central point brutally clear: telling a model to “pretend not to know” does not recreate true ignorance; the paper reports a 52% performance gap between simulated and true ignorance settings, with reasoning-tuned models often cheating more convincingly, not less.<sup id="ref3"><a href="#fn3">3</a></sup></p>
+    <p>The evidence on leakage has become much sharper. ExAnte shows that frontier models routinely violate explicit temporal cutoffs.<sup id="ref1"><a href="#fn1">1</a></sup> Look-Ahead-Bench shows the same pattern in agentic finance: once you align evaluation windows to what the model could really have known, a surprising amount of apparent alpha evaporates.<sup id="ref2"><a href="#fn2">2</a></sup></p>
+
+    <p>The tempting escape hatch would be to ask the model to role-play ignorance. We are also very aware that simply prompting the model to pretend not to know won't get us very far ;). <em>Simulated Ignorance Fails</em> is valuable precisely because it shuts that door. Simulated ignorance does not recreate true ignorance. The gap is large — 52% in the paper's central comparison — and reasoning-tuned models often cheat more convincingly, not less.<sup id="ref3"><a href="#fn3">3</a></sup></p>
+
+    <p>In other words, prompting is not the alternative to a proper point-in-time environment. Its failure is evidence that the problem sits lower in the stack. If a model can only look temporally disciplined when we ask it to perform a little amnesia on cue, then we do not have a solution. We have only described the absence of one more clearly.</p>
 
     <p>There is also growing evidence that date-filtered retrieval by itself is not enough. A 2026 case study on retrospective forecasting found that standard date-constrained web search still leaked later information through updated pages, misleading timestamps, and side-channel cues. On their audit, at least one major leak appeared for 71% of Google questions and 81% of DuckDuckGo questions; the resulting contamination improved Brier score from 0.24 to 0.10, which is less a gain than a mirage.<sup id="ref4"><a href="#fn4">4</a></sup></p>
 
@@ -361,7 +362,7 @@
 
     <p>OREO is relevant here because it shows how offline reinforcement learning can assign credit inside long reasoning traces rather than only at the end.<sup id="ref8"><a href="#fn8">8</a></sup> DYSTIL is relevant for a different reason: it turns successful and unsuccessful trajectories into textual strategies, then folds those strategies back into the policy-improvement loop.<sup id="ref9"><a href="#fn9">9</a></sup> Neither paper solves temporal leakage on its own. What they do suggest is that once you have a trustworthy replay buffer, agent behavior becomes easier to analyze, compare, and improve systematically.</p>
 
-    <p>That matters most for deep-research systems operating in domains where the world keeps moving and where clean evaluation is harder than it is in code. Imagine a historical dataset of unresolved questions: companies before earnings shocks, clinical programs before readouts, policy debates before court decisions, acquisition rumors before confirmation, macro debates before inflation turns, or regulatory choices before their second-order effects become obvious. A research agent works the case using only contemporaneous materials. Its trace is stored. Later, once the outcome is known, you can score not just the final answer but the intermediate work:</p>
+    <p>That matters most for deep-research systems operating in domains where the world keeps moving. Imagine a historical dataset of unresolved questions: companies before earnings shocks, clinical programs before readouts, policy debates before court decisions, acquisition rumors before confirmation, macro debates before inflation turns, or regulatory choices before their second-order effects become obvious. A research agent works the case using only contemporaneous materials. Its trace is stored. Later, once the outcome is known, you can score not just the final answer but the intermediate work:</p>
 
     <ul>
       <li>Did it retrieve the decisive documents?</li>
@@ -392,6 +393,16 @@
       <p class="caption">A clean model should become more surprised after the cutoff. If it stays comfortable, it probably knows too much.</p>
     </figure>
 
+    <h2>Why code got there first</h2>
+
+    <p>Code is the clearest counterexample to the claim that language models cannot be evaluated seriously. In software, we can usually construct a replayable historical world with unusual fidelity. We can restore an old repository, pin the toolchain, rerun the tests, replay the issue, and see whether the model or agent actually improved anything. The environment is versioned. The specification is partially executable. Ground truth is imperfect, but often crisp enough to matter.</p>
+
+    <p>That is one reason code has become the domain where language models have come closest to fulfilling their early promise. It is not only that the models are good at syntax or APIs. It is that software is unusually backtestable.</p>
+
+    <p>The real world is harder in precisely the opposite way. Public information changes continuously. Human behavior shifts in response to news, incentives, and each other. Our own actions can alter the state we are trying to predict. A memo, a policy, or a recommendation does not merely describe the environment; it can redirect it. In those settings, we can often judge an output qualitatively. It is much harder to prove whether the system would actually have helped us make a better decision before the outcome was known.</p>
+
+    <p>And that difficulty compounds. Small judgments can produce downstream consequences, second-order effects, and eventually wider changes in the system the agent is supposed to understand. The question is not just whether the answer looked reasonable in the moment. Reasonable today may be wrong tomorrow. The real challenge is whether the system made a sound call inside the historical world it actually inhabited.</p>
+
     <h2>Where the analogy breaks</h2>
 
     <p>This is not a magic bridge from classical ML to autonomous agents.</p>
@@ -408,15 +419,17 @@
 
     <p>If this works, the main gain is practical: teams could improve research and decision-support agents against something firmer than anecdote, cherry-picked demos, or one-off benchmark wins.</p>
 
-    <p>A team could say: this research agent was replayed on 600 historical cases, under a point-in-time stack, with claim-level leakage auditing, and the new policy improved retrieval coverage, calibration, and final decision quality relative to the previous one. That is a more useful sentence than “the agent felt smarter,” because it points to a process that can be repeated, challenged, and improved.</p>
+    <p>I do not think achieving this step-change is inherently crazy hard. The recipe is conceptually plain. We need models that can be cut off at customizable knowledge dates — trained up to time <em>T</em>, then frozen. We need isolated, time-locked access to the web and public corpus that existed up to that same date, rather than the live web. And we need those two layers aligned, so the model can research only what was actually available then. The frontier-model question is the same whether the stack uses OpenAI models or anyone else's: can the system be made to inhabit a historical world, rather than merely imitate one?</p>
 
-    <p>This is especially important outside software engineering. In code, it is often much easier to construct a replayable environment: old repositories can be restored, tests can be rerun, and tool use can be scored against a relatively stable ground truth. The harder frontier is work that depends on the state of public knowledge at a given moment: assessing a company before the market reprices it, reasoning about an economic policy before its effects are visible, or analyzing a political decision before later events reveal which concerns mattered most.</p>
+    <p>Today, web search is mostly used to compensate for what lies beyond the model's training cutoff. For evaluation, the better move is almost the opposite. Align the training cutoff and the search index to the same date, then replay the case historically. Instead of waiting years to learn whether a prediction or risk assessment was sound, ask yesterday's version of the model to make the call, store the trace, and compare it with what actually happened.</p>
 
-    <p>Those are exactly the domains where people keep expecting LLMs to become genuinely useful, and exactly the domains where current evaluation is weakest. Turning off web search is not enough, because the model may still know too much from training. Leaving web search on is not enough, because today’s web contains clues, edits, and summaries that were not available at the time. The result is a gap: we want to optimize policies for serious real-world research, but we often lack a clean way to tell whether the system is reasoning from contemporaneous evidence or from accidental hindsight.</p>
+    <p>Consider a simple use case. Given a company, what are the greatest risks to watch over the coming years? A serious agent should produce a risk memo, surface the evidence, record its uncertainty, and commit to the view. Later, you can revisit the case. Which risks actually materialized? Which ones were missed? Which claims sounded reasonable at the time but turned out to be badly wrong? That kind of replay is much stronger evidence than a memo that merely feels clever in the short term.</p>
 
-    <p>That is why a trustworthy replay setting could matter so much. It would not just help with generic tool-use policy optimization, important though that is. It would make it easier to optimize for a harder and more consequential class of behavior: when to search, what sources to trust, how to frame a case, when to branch into alternatives, when to stop, and when to abstain in domains where the world itself keeps changing underneath the model. My guess is that this is one of the clearest paths by which LLMs could improve outside the code-heavy settings that currently dominate agent evaluation.</p>
+    <p>A team could then say: this research agent was replayed on 600 historical cases, under a point-in-time stack, with claim-level leakage auditing, and the new policy improved retrieval coverage, calibration, and final decision quality relative to the previous one. That is a more useful sentence than “the agent felt smarter,” because it points to a process that can be repeated, challenged, and improved.</p>
 
-    <p>The past will never be a perfect stand-in for the future, and a backtest will never settle questions of judgment on its own. But for research-heavy agents especially, the ability to evaluate a system inside a world it was not allowed to already know seems like a necessary step toward building trust in applications with real consequences. If agents are going to help with company analysis, policy research, economic interpretation, or other forms of evolving knowledge work, then point-in-time replay may be less a nice evaluation trick than a basic piece of the infrastructure.</p>
+    <p>The past will never be a perfect stand-in for the future, and a backtest will never settle questions of judgment on its own. But for research-heavy agents especially, the ability to evaluate a system inside a world it was not allowed to already know seems like a necessary step toward validation and trust in applications with real consequences.</p>
+
+    <p>If agents are going to help with company analysis, policy research, economic interpretation, or other forms of evolving knowledge work, then point-in-time replay may be less a neat evaluation trick than a basic piece of epistemic infrastructure. And once that infrastructure exists, a sharper question appears. Can backtesting LLMs let us genuinely forecast how decisions propagate through evolving environments? Can we simulate not just answers, but the spread of consequences from policies, judgments, and interventions? That seems like the natural next question once we are finally able to ask yesterday's model what it would have done before the outcome was known.</p>
 
     <section class="footnotes">
       <ol>
