@@ -73,6 +73,7 @@ async def test_grader_hook_injects_user_prompt_and_images_on_every_call():
 
     assert "MAKE A WEBSITE LIKE THIS" in captured["prompt"]
     assert "user_satisfaction" in captured["prompt"]
+    assert "The original user request is the primary scope" in captured["prompt"]
     assert captured["images"] == sentinel_imgs
 
 

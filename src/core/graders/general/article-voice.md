@@ -9,9 +9,14 @@ suggested_for_skills:
 
 ### follows_skill (weight: 2)
 Does the output follow the structural and voice rules of the attached skill file(s)?
-Inspect the active skills the author was working from. Cite exact passages where
-the work deviates — wrong heading hierarchy, missing sections, abandoned section
-templates, voice that doesn't match the skill's stated tone.
+Inspect the active skills the author was working from, but keep the user's requested
+scope primary. For article revision prompts that ask for framing, prose, argument,
+or voice changes, grade the writing against the article-writer guidance and do not
+request CSS, layout, typography, or article-design cleanup unless the user explicitly
+asked for presentation changes or the design defect makes the article unreadable.
+Cite exact passages where the work deviates — wrong heading hierarchy, missing
+sections, abandoned section templates, voice that doesn't match the skill's stated
+tone.
 
 ### tone_and_voice (weight: 1)
 Plain, confident, non-corporate, and specific. No hedging ("perhaps", "it could be argued"),
