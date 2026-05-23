@@ -167,6 +167,24 @@ async def test_followup_reuse_fetches_and_fast_forwards_parent_branch(repo):
         await worktree.cleanup(wts)
 
 
+async def test_followup_of_followup_reuses_nearest_ancestor_branch(repo, monkeypatch):
+    _run(["git", "checkout", "-q", "-b", "task/root"], repo)
+
+    lineage = {"child": "rootless", "rootless": "root"}
+    monkeypatch.setattr(manager, "task_parent_id", lambda task_id: lineage.get(task_id))
+
+    assert await manager._resolve_parent_base("child") == "task/root"
+
+
+def test_followup_pr_url_resolves_from_ancestor_chain(monkeypatch):
+    lineage = {"child": "middle", "middle": "root"}
+    urls = {"root": "https://github.com/maxsamne/one/pull/42"}
+    monkeypatch.setattr(manager, "task_parent_id", lambda task_id: lineage.get(task_id))
+    monkeypatch.setattr(manager, "task_pr_url", lambda task_id: urls.get(task_id))
+
+    assert manager._resolve_parent_pr_url("child") == "https://github.com/maxsamne/one/pull/42"
+
+
 async def test_reuse_base_branch_reports_branch_mismatch(repo):
     _, parent_base, parent_wts = await worktree.setup("parent", ["fakeprov"])
     await worktree.merge("parent", parent_base, parent_wts, push=False)
