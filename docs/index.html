@@ -44,63 +44,6 @@
       padding-bottom: 120px;
     }
 
-    /* NAV BAR STYLE */
-    nav {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 24px 40px;
-      font-family: 'Inter', sans-serif;
-    }
-
-    nav .wordmark {
-      font-family: 'Lora', serif;
-      font-size: 19px;
-      font-weight: 500;
-      color: var(--ink);
-      text-decoration: none;
-      letter-spacing: -0.01em;
-      transition: opacity 0.2s;
-    }
-
-    nav .wordmark:hover {
-      opacity: 0.8;
-    }
-
-    nav ul {
-      display: flex;
-      align-items: center;
-      list-style: none;
-      gap: 16px;
-      background: rgba(255, 253, 248, 0.65);
-      padding: 4px 12px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-    }
-
-    nav ul li {
-      display: flex;
-      align-items: center;
-    }
-
-    nav ul li a {
-      color: var(--ink-muted);
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 500;
-      letter-spacing: 0.01em;
-      transition: color 0.15s;
-      padding: 4px 8px;
-    }
-
-    nav ul li a:hover, nav ul li a.active {
-      color: var(--ink);
-    }
-
     /* MAIN CONTAINER */
     main {
       max-width: 1200px;
@@ -672,6 +615,13 @@
       bottom: 24px;
       right: 24px;
       z-index: 100;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .floating-pill-container.is-hidden {
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
     }
 
     .floating-pill {
@@ -709,29 +659,20 @@
   </style>
 </head>
 <body>
-  <!-- NAV BAR -->
-  <nav>
-    <span class="wordmark" aria-label="Home"></span>
-    <ul>
-      <li><a href="/one/writing" class="active">Writing</a></li>
-      <li><a href="/one/work">Work</a></li>
-    </ul>
-  </nav>
-
   <!-- MAIN CONTAINER -->
   <main>
     <!-- HERO SECTION -->
     <section class="hero-section">
       <div class="hero-eyebrow">Maximilian Samne</div>
       <h1>
-        Building things worth<br>
-        <span class="light-text">paying attention to.</span>
+        Exploring coordination through<br>
+        <span class="light-text">code and capital.</span>
       </h1>
       <p class="hero-lead">Investor, builder, and occasional writer. Working at the intersection of AI and venture.</p>
     </section>
 
     <!-- CENTERPIECE WORKSPACE ARCHITECTURAL CARD (CREATIVE, NO DEAD INPUTS) -->
-    <section class="workspace-card">
+    <section class="workspace-card" id="workspace-card">
       <!-- Left side: Systems Topology (Subtle blueprint matrix of ideas) -->
       <div class="pane-left">
         <div class="node-graph-container">
@@ -835,7 +776,7 @@
             <span id="system-status-text">THESIS_SOC // SYNCHRONIZED</span>
           </div>
           <!-- Real link targeting appropriate files -->
-          <a class="action-btn" id="thesis-cta-btn" href="/one/silicon-sociology">Read essay: Silicon Sociology →</a>
+          <a class="action-btn" id="thesis-cta-btn" href="/one/silicon-sociology">Read thought: Silicon Sociology →</a>
         </div>
       </div>
     </section>
@@ -850,7 +791,7 @@
         <!-- 3D Leaning Book -->
         <div class="book-card" onclick="window.location.href='/one/silicon-sociology';" style="cursor: pointer;">
           <div class="book-header">
-            <span class="book-chapter">Essay / I</span>
+            <span class="book-chapter">Thought / I</span>
             <h3 class="book-title">Silicon Sociology</h3>
           </div>
           <div class="book-cover-container">
@@ -863,7 +804,7 @@
         </div>
         <div class="book-card" onclick="window.location.href='/one/yesterday-test';" style="cursor: pointer;">
           <div class="book-header">
-            <span class="book-chapter">Essay / II</span>
+            <span class="book-chapter">Thought / II</span>
             <h3 class="book-title">The Yesterday Test</h3>
           </div>
           <div class="book-cover-container">
@@ -877,7 +818,7 @@
         <!-- Overlapping Glass Shelf Pocket -->
         <div class="book-glass-pocket"></div>
       </div>
-      <a href="/one/yesterday-test" class="shelf-caption-link">Read the latest essay (II)</a>
+      <a href="/one/yesterday-test" class="shelf-caption-link">Read the latest thought (II)</a>
     </section>
 
     <!-- FOOTER FEATURE CARD COLUMNS -->
@@ -888,7 +829,7 @@
       </div>
       <div class="feature-card">
         <h4 class="feature-title">The Yesterday Test</h4>
-        <p class="feature-text">A new essay on why the timebound sandbox could become the missing discipline of the agent era. <a href="/one/yesterday-test">Read the full piece</a>.</p>
+        <p class="feature-text">A new thought on why the timebound sandbox could become the missing discipline of the agent era. <a href="/one/yesterday-test">Read the full piece</a>.</p>
       </div>
       <div class="feature-card">
         <h4 class="feature-title">Venture Network</h4>
@@ -905,13 +846,14 @@
           <path d="M12 5v14M19 12l-7 7-7-7"/>
         </svg>
       </span>
-      <span>Read latest essay</span>
+      <span>Read latest thought</span>
     </a>
   </div>
 
   <!-- Bulletproof Interactive Tab Controller -->
   <script>
     function switchThesis(id) {
+      window.__thesisInteractionY = window.scrollY;
       // Remove active classes from tabs
       document.querySelectorAll('.thesis-tab').forEach(t => t.classList.remove('active'));
       // Remove active classes from nodes
@@ -935,7 +877,7 @@
       if (id === 'soc') {
         statusText.textContent = 'THESIS_SOC // SYNCHRONIZED';
         ctaBtn.setAttribute('href', '/one/silicon-sociology');
-        ctaBtn.textContent = 'Read essay: Silicon Sociology →';
+        ctaBtn.textContent = 'Read thought: Silicon Sociology →';
         ctaBtn.style.display = 'inline-flex';
       } else if (id === 'cap') {
         statusText.textContent = 'THESIS_CAP // LOCAL_RECORD';
@@ -954,6 +896,18 @@
         ctaBtn.style.display = 'inline-flex';
       }
     }
+
+    const floatingPill = document.querySelector('.floating-pill-container');
+    const workspaceCard = document.getElementById('workspace-card');
+    function updateFloatingPill() {
+      if (!floatingPill || !workspaceCard) return;
+      const threshold = workspaceCard.getBoundingClientRect().bottom + window.scrollY - 120;
+      const shouldHide = window.scrollY > threshold;
+      floatingPill.classList.toggle('is-hidden', shouldHide);
+    }
+    window.addEventListener('scroll', updateFloatingPill, { passive: true });
+    window.addEventListener('resize', updateFloatingPill);
+    updateFloatingPill();
   </script>
 </body>
 </html>
