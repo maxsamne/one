@@ -29,7 +29,7 @@ _JSON_TYPE_MAP = {
     "object": "OBJECT",
 }
 
-_MAX_TURNS = 50
+_MAX_TURNS = 200
 
 # Pro model doesn't support MINIMAL thinking — clamp to LOW.
 _NO_MINIMAL_THINKING = {"gemini-3.1-pro-preview"}
