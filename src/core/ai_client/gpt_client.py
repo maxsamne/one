@@ -29,7 +29,7 @@ def _user_input(prompt: str, images: list[ImageContent]) -> Any:
         content.append({"type": "input_image", "image_url": data_uri})
     return [{"role": "user", "content": content}]
 
-_MAX_TURNS = 50
+_MAX_TURNS = 200
 
 
 class GptClient(AiClient):

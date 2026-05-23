@@ -25,7 +25,7 @@ _EMBED_MODELS: dict[EmbeddingModel, tuple[str, int]] = {
     EmbeddingModel.GEMMA: ("embeddinggemma",           768),
 }
 
-_MAX_TURNS = 50
+_MAX_TURNS = 200
 
 
 class OllamaEmbeddingClient(EmbeddingClient):
