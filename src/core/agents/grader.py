@@ -144,6 +144,11 @@ no decimals, no half-points:
 
 Scoring rules:
 - Length does NOT affect scores. A concise piece can score {MAX_SCORE}/{MAX_SCORE}.
+- The original user request is the primary scope. Skill rules are supporting context, not
+  permission to ask for unrelated changes. If a skill contains guidance for design,
+  formatting, research depth, tooling, or structure that the user did not ask to change,
+  do not lower scores or request revisions for that area unless it directly breaks the
+  requested output.
 - For `follows_skill`: check the output line-by-line against the actual rules in the
   injected skills above. Name specific rules that were broken or followed.
 - Grade each criterion independently against its definition only.
