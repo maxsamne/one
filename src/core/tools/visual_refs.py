@@ -115,6 +115,26 @@ def _git_show(ref: str, path: str) -> bytes | None:
         return None
 
 
+def _git_common_dir(cwd: Path) -> Path | None:
+    try:
+        raw = subprocess.check_output(
+            ["git", "-C", str(cwd), "rev-parse", "--git-common-dir"],
+            stderr=subprocess.DEVNULL,
+        ).decode("utf-8", "replace").strip()
+    except subprocess.CalledProcessError:
+        return None
+    path = Path(raw)
+    if not path.is_absolute():
+        path = cwd / path
+    return path.resolve()
+
+
+def _workdir_belongs_to_repo(workdir: Path) -> bool:
+    workdir_common = _git_common_dir(workdir)
+    repo_common = _git_common_dir(REPO_ROOT)
+    return workdir_common is not None and repo_common is not None and workdir_common == repo_common
+
+
 def _image_content(data: bytes) -> ImageContent | None:
     try:
         resized = shrink(data)
@@ -123,7 +143,7 @@ def _image_content(data: bytes) -> ImageContent | None:
     return ImageContent(mime=resized.mime, data=resized.data)
 
 
-def _branch_docs_html(ref: str) -> list[tuple[str, str]]:
+def _branch_docs_listing(ref: str) -> list[str]:
     try:
         listing = subprocess.check_output(
             ["git", "-C", str(REPO_ROOT), "ls-tree", "-r", "--name-only", ref, "docs"],
@@ -131,9 +151,13 @@ def _branch_docs_html(ref: str) -> list[tuple[str, str]]:
         ).decode("utf-8", "replace")
     except subprocess.CalledProcessError:
         return []
+    return [path for path in listing.splitlines() if path.startswith("docs/")]
+
+
+def _branch_docs_html(ref: str) -> list[tuple[str, str]]:
     out: list[tuple[str, str]] = []
-    for path in listing.splitlines():
-        if not path.startswith("docs/") or not path.endswith(".html"):
+    for path in _branch_docs_listing(ref):
+        if not path.endswith(".html"):
             continue
         data = _git_show(ref, path)
         if data is not None:
@@ -179,13 +203,26 @@ def _explicit_local_candidate(path: str, workdir: Path) -> _Candidate | None:
 def _explicit_branch_candidate(path: str, task_id: str) -> _Candidate | None:
     if not _TASK_ID_RE.fullmatch(task_id):
         return None
+    return _explicit_ref_candidate(path, f"task/{task_id}")
+
+
+def _explicit_ref_candidate(path: str, ref: str) -> _Candidate | None:
     docs_path = _docs_image_path(path)
     if not docs_path:
         return None
-    ref = f"task/{task_id}"
     if _git_show(ref, docs_path) is None:
         return None
     return _Candidate(Path(docs_path).name, "explicit path", path, context=path, branch_ref=ref, branch_path=docs_path)
+
+
+def _explicit_canonical_candidate(path: str, workdir: Path) -> _Candidate | None:
+    if not _workdir_belongs_to_repo(workdir):
+        return None
+    for ref in ("origin/main", "main"):
+        candidate = _explicit_ref_candidate(path, ref)
+        if candidate:
+            return candidate
+    return None
 
 
 def _local_candidates() -> list[_Candidate]:
@@ -217,6 +254,10 @@ def _branch_candidates(task_id: str) -> list[_Candidate]:
     if not _TASK_ID_RE.fullmatch(task_id):
         return []
     ref = f"task/{task_id}"
+    return _branch_ref_candidates(ref)
+
+
+def _branch_ref_candidates(ref: str) -> list[_Candidate]:
     out: list[_Candidate] = []
     for html_path, html in _branch_docs_html(ref):
         for src in _extract_sources(html):
@@ -225,6 +266,26 @@ def _branch_candidates(task_id: str) -> list[_Candidate]:
                 continue
             branch_path, _ = resolved
             out.append(_Candidate(Path(branch_path).name, html_path, src, context=html, branch_ref=ref, branch_path=branch_path))
+    for path in _branch_docs_listing(ref):
+        rel = Path(path)
+        if not path.startswith("docs/images/") or rel.suffix.lower() not in _IMAGE_SUFFIXES:
+            continue
+        out.append(_Candidate(rel.name, "docs/images", path, context=path, branch_ref=ref, branch_path=path))
+    return out
+
+
+def _canonical_branch_candidates(workdir: Path) -> list[_Candidate]:
+    if not _workdir_belongs_to_repo(workdir):
+        return []
+    out: list[_Candidate] = []
+    seen_paths: set[str] = set()
+    for ref in ("origin/main", "main"):
+        for candidate in _branch_ref_candidates(ref):
+            key = candidate.branch_path or candidate.src
+            if key in seen_paths:
+                continue
+            seen_paths.add(key)
+            out.append(candidate)
     return out
 
 
@@ -297,12 +358,16 @@ async def load_website_image_refs(
         candidate = _explicit_local_candidate(path, workdir)
         if not candidate and from_task_id:
             candidate = _explicit_branch_candidate(path, from_task_id)
+        if not candidate:
+            candidate = _explicit_canonical_candidate(path, workdir)
         if candidate:
             candidates.append(candidate)
 
     pool = _local_candidates()
     if from_task_id:
         pool.extend(_branch_candidates(from_task_id))
+    if query:
+        pool.extend(_canonical_branch_candidates(workdir))
 
     if query:
         candidates.extend(_rank_candidates(pool, query))
@@ -375,7 +440,8 @@ LOAD_WEBSITE_IMAGE_REFS_TOOL = Tool(
         "Load existing website/article images as visual references for the next model call. "
         "Use this only when a task asks to match an existing site/article visual style, create a new article "
         "cover in the same family, or critique whether a generated image fits the website. It deterministically "
-        "loads exact `paths` first, or ranks local `docs/*.html` image references by a text `query` when provided. "
+        "loads exact `paths` first, or ranks local and canonical-main `docs/*.html` image references by a "
+        "text `query` when provided. "
         "It resolves paths like `/one/images/foo.png` to `docs/images/foo.png`, and can optionally fall back to "
         "`task/<from_task_id>` for prior task branches. There is no LLM inside this tool. The loaded images are "
         "attached once to the next provider iteration; they are not permanently added to every turn."
