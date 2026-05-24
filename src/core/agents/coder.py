@@ -6,7 +6,7 @@ from pathlib import Path
 
 from core.agents.board import get_board
 from core.agents.compact import ConversationHistory
-from core.agents.hooks import DEFAULT_HOOK_RETRIES, DEFAULT_HOOKS, Hook, HookContext, run_hooks
+from core.agents.hooks import DEFAULT_HOOK_RETRIES, DEFAULT_HOOKS, Hook, HookContext, HookPolicy, run_hooks
 from core.agents.ledger import Ledger
 from core.agents.agent_ctx import AGENT_ID_CTX, CURRENT_TURN, ROLE_CTX, SPAWN_CTX, SUBAGENT_DEPTH, SpawnContext
 from core.agents.task_ctx import current_task_id
@@ -70,13 +70,10 @@ Write outputs to the correct location — never pollute src/ with generated cont
 
 Never guess at file contents. Always read or grep before editing.
 
-If your task produces ANY HTML artifact (chart, dashboard, mini-site, briefing, article,
-visualization, etc.), the final response MUST include the COMPLETE self-contained HTML
-document inside a ```html``` code block. This is non-negotiable: the chat iframe and the
-open-in-tab link both render from this block. If you only describe the file path or say
-"file is committed", the user sees a broken artifact with no preview. Always paste the
-full HTML inline as the last thing in your response, even if you also wrote it to a file.
-Load any libraries from cdnjs.cloudflare.com.\
+If the user explicitly asks for an inline/full HTML preview, include the complete
+self-contained HTML document inside a ```html``` code block. Otherwise, for persistent
+repo edits, commit the file changes and summarize the files/commit instead of pasting
+large HTML documents into the final response.\
 """
 
 
@@ -99,6 +96,7 @@ async def run(
     extra_hooks: list[Hook] | None = None,
     hook_retries: int = DEFAULT_HOOK_RETRIES,
     prior_history: dict | None = None,
+    hook_policy: HookPolicy | None = None,
 ) -> str:
     """Run the coder loop for a task. Returns the final response.
 
@@ -167,6 +165,7 @@ async def run(
     images = merged
     history.images = list(merged)
     response = ""
+    hook_policy = hook_policy or HookPolicy()
     effective_hooks = (list(DEFAULT_HOOKS) + list(extra_hooks or [])) if hooks is None else hooks
     hook_retries_left = hook_retries
     hook_feedback: str | None = None  # if set, used as next turn's user input
@@ -230,6 +229,7 @@ async def run(
                     ctx = HookContext(
                         response=response, turn=turn + 1,
                         agent_id=effective_agent_id, role=role,
+                        policy=hook_policy,
                     )
                     hook_feedback = await run_hooks(effective_hooks, ctx)
                     if hook_feedback:

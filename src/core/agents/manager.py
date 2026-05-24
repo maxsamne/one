@@ -13,6 +13,7 @@ The result: zero LLM calls inside manager when mode is unambiguous; one when not
 
 import shutil
 import time
+import re
 from contextlib import AsyncExitStack
 from dataclasses import dataclass
 from enum import StrEnum
@@ -23,7 +24,7 @@ from pydantic import BaseModel, Field
 from core.agents import coder, graders, router, skills, workdir_registry, worktree
 from core.agents.coder import _INSTRUCTIONS_BASE, _INSTRUCTIONS_PERSISTENT
 from core.agents.grader import GRADER_HOOK_RETRIES
-from core.agents.hooks import DEFAULT_HOOK_RETRIES, Hook
+from core.agents.hooks import DEFAULT_HOOK_RETRIES, Hook, HookPolicy
 from core.agents.task_ctx import PR_URL_CTX, TASK_GRADERS_CTX, TASK_IMAGES_CTX, TASK_SKILLS_CTX, TIER_CTX, current_task_id
 from core.ai_client import AiClient
 from core.ai_client.models import ImageContent, ThinkingLevel, Tool
@@ -112,6 +113,77 @@ The manager already created the correct branch and will push/open/update the PR 
 your final answer. Do not create branches, check out branches, push, or open PRs.
 Use only git_status, git_diff, git_add, git_commit, and git_log for your own changes.
 """
+
+_INLINE_HTML_REQUEST_RE = re.compile(
+    r"\b(?:full|complete|inline|self-contained)\s+html\b|html\s+block|```html|paste\s+.*html",
+    re.IGNORECASE,
+)
+
+
+def _hook_policy(task: str, mode: TaskMode) -> HookPolicy:
+    """Persistent repo edits are the artifact unless the user asks for inline HTML."""
+    return HookPolicy(
+        require_inline_html=mode == TaskMode.CONVERSATIONAL or bool(_INLINE_HTML_REQUEST_RE.search(task)),
+    )
+
+
+async def _dirty_line(workdir: Path) -> str | None:
+    rc, out = await worktree._git("status", "--porcelain", cwd=workdir)
+    if rc == 0 and out.strip():
+        return out.splitlines()[0]
+    return None
+
+
+async def _recover_dirty_worktree(
+    *,
+    task: str,
+    task_id: str,
+    provider: str,
+    ai: AiClient,
+    thinking: ThinkingLevel,
+    tools: list[Tool],
+    instructions: str | None,
+    workdir: Path,
+) -> str:
+    dirty = await _dirty_line(workdir)
+    if not dirty:
+        return ""
+
+    _log(Category.AGENT, "dirty cleanup start", provider=provider, dirty=dirty)
+    cleanup_task = f"""\
+Your worktree still has uncommitted changes, so the manager cannot merge it yet.
+
+Original user task:
+{task}
+
+Current dirty status starts with:
+{dirty}
+
+Do not do new feature work. Inspect git_status and git_diff. If the dirty changes
+are intentional and satisfy the original request, stage and commit them with a
+clear message. If they are accidental, remove only those accidental edits. End
+with a brief summary.
+"""
+    result = await coder.run(
+        cleanup_task,
+        ai,
+        instructions=instructions,
+        thinking=thinking,
+        tools=tools,
+        workdir=workdir,
+        agent_id=f"{task_id}:{provider}:cleanup",
+        prior_history=transcript_load(task_id),
+        hooks=[],
+        hook_retries=0,
+        max_turns=3,
+        hook_policy=HookPolicy(require_inline_html=False),
+    )
+
+    if still_dirty := await _dirty_line(workdir):
+        _log(Category.AGENT, "dirty cleanup incomplete", provider=provider, dirty=still_dirty)
+    else:
+        _log(Category.AGENT, "dirty cleanup complete", provider=provider)
+    return result
 
 
 def _build_instructions(base: str, skill_bodies: str, skill_index: str, date_ctx: str) -> str | None:
@@ -340,6 +412,7 @@ async def _dispatch(
         workdir_registry.register(task_id, workdir)
         success = False
         extra_hooks, hook_retries = _build_extra_hooks()
+        hook_policy = _hook_policy(task, mode)
         try:
             result = await coder.run(
                 task, ai,
@@ -351,8 +424,21 @@ async def _dispatch(
                 prior_history=prior_history,
                 extra_hooks=extra_hooks,
                 hook_retries=hook_retries,
+                hook_policy=hook_policy,
             )
             if worktrees:
+                cleanup_result = await _recover_dirty_worktree(
+                    task=task,
+                    task_id=task_id,
+                    provider=provider,
+                    ai=ai,
+                    thinking=thinking,
+                    tools=tools,
+                    instructions=instructions,
+                    workdir=workdir,
+                )
+                if cleanup_result:
+                    result = f"{result}\n\n---\n\n{cleanup_result}"
                 merge_results = await worktree.merge(
                     task_id, base_branch, worktrees,
                     pr_base=starting_ref, pr_title=task[:70],

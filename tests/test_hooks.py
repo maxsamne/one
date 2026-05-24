@@ -178,7 +178,7 @@ async def test_docs_image_path_satisfies_local_and_pages_hooks(tmp_path):
 
 
 async def test_missing_inline_html_fires_when_path_mentioned_but_no_block():
-    from core.agents.hooks import MissingInlineHtmlHook
+    from core.agents.hooks import HookPolicy, MissingInlineHtmlHook
     h = MissingInlineHtmlHook()
     # Mentions the file path, no ```html``` block → should fire.
     bad = "Done — I wrote `generated/reports/2026-05-10-week-ahead-briefing.html`. The file is committed."
@@ -189,6 +189,15 @@ async def test_missing_inline_html_fires_when_path_mentioned_but_no_block():
     # File mentioned AND inline block present → silent.
     good = bad + "\n\n```html\n<!doctype html><html><body>x</body></html>\n```"
     assert await h.check(HookContext(response=good, turn=1, agent_id="t", role="r")) is None
+    # Persistent repo-edit runs can opt out; the committed file/PR is the artifact.
+    persistent_ctx = HookContext(
+        response=bad,
+        turn=1,
+        agent_id="t",
+        role="r",
+        policy=HookPolicy(require_inline_html=False),
+    )
+    assert await h.check(persistent_ctx) is None
     # News URLs ending in .html in body text must NOT trigger the hook —
     # research summaries cite sources like techcrunch.com/article.html all the time.
     cite = "Source: https://techcrunch.com/2026/05/10/some-startup-raised.html and eu-startups.com/post.html."

@@ -38,12 +38,23 @@ from core.tools.ctx import WORKDIR
 
 
 @dataclass(frozen=True)
+class HookPolicy:
+    """Per-run hook strictness switches.
+
+    Defaults preserve existing behavior; manager can relax specific checks for
+    persistent repo edits where the committed file/PR is the durable artifact.
+    """
+    require_inline_html: bool = True
+
+
+@dataclass(frozen=True)
 class HookContext:
     """Inputs every hook sees. Add fields here as more hooks need more context."""
     response: str
     turn: int            # 1-based turn number that produced the response
     agent_id: str
     role: str
+    policy: HookPolicy = HookPolicy()
 
 
 class Hook(ABC):
@@ -89,6 +100,8 @@ class MissingInlineHtmlHook(Hook):
     name = "missing-inline-html"
 
     async def check(self, ctx: HookContext) -> str | None:
+        if not ctx.policy.require_inline_html:
+            return None
         if extract_html_block(ctx.response) is not None:
             return None  # inline block present, nothing to do
         if not _HTML_PATH_RE.search(ctx.response):
