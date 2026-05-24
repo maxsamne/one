@@ -5,17 +5,23 @@ from unittest.mock import patch
 
 import pytest
 
+from core import log as log_mod
 from core.scheduler import runner, store
 
 
 @pytest.fixture(autouse=True)
-def _clean_schedules():
-    """Each test starts with no schedules — keep tests independent of dev DB state."""
-    for s in store.list_all():
-        store.delete(s.id)
+def _isolated_scheduler_db(tmp_path, monkeypatch):
+    """Keep scheduler tests off the developer's real .agent.db."""
+    with log_mod._lock:
+        if log_mod._con is not None:
+            log_mod._con.close()
+        log_mod._con = None
+        monkeypatch.setattr(log_mod, "_DB_PATH", tmp_path / ".agent.db")
     yield
-    for s in store.list_all():
-        store.delete(s.id)
+    with log_mod._lock:
+        if log_mod._con is not None:
+            log_mod._con.close()
+        log_mod._con = None
 
 
 def test_create_get_update_delete_roundtrip():
