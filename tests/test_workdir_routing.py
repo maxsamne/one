@@ -294,3 +294,30 @@ async def test_dirty_persistent_worktree_gets_cleanup_commit(tmp_path):
     assert "Committed dirty cleanup" in result
     assert _run(["git", "status", "--porcelain"], repo) == ""
     assert _run(["git", "log", "-1", "--format=%s"], repo) == "Commit dirty cleanup"
+
+
+async def test_changed_html_artifact_is_appended_from_disk(tmp_path):
+    from core.agents import manager
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _run(["git", "init", "-q", "-b", "main"], repo)
+    _run(["git", "config", "user.email", "t@t.t"], repo)
+    _run(["git", "config", "user.name", "t"], repo)
+    (repo / "README.md").write_text("seed\n", encoding="utf-8")
+    _run(["git", "add", "README.md"], repo)
+    _run(["git", "commit", "-q", "-m", "seed"], repo)
+    start = _run(["git", "rev-parse", "HEAD"], repo)
+
+    html = repo / "docs" / "index.html"
+    html.parent.mkdir(parents=True)
+    html.write_text("<!doctype html><html><body>preview</body></html>", encoding="utf-8")
+    _run(["git", "add", "docs/index.html"], repo)
+    _run(["git", "commit", "-q", "-m", "add html"], repo)
+
+    files = await manager._changed_html_files(repo, start)
+    result = manager._append_html_artifacts("Done.", files, repo)
+
+    assert "Rendered HTML artifact from `docs/index.html`" in result
+    assert "```html" in result
+    assert "<body>preview</body>" in result

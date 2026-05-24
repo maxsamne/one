@@ -202,3 +202,20 @@ async def test_missing_inline_html_fires_when_path_mentioned_but_no_block():
     # research summaries cite sources like techcrunch.com/article.html all the time.
     cite = "Source: https://techcrunch.com/2026/05/10/some-startup-raised.html and eu-startups.com/post.html."
     assert await h.check(HookContext(response=cite, turn=1, agent_id="t", role="r")) is None
+
+
+async def test_missing_inline_html_skips_when_file_exists_in_workdir(tmp_path):
+    from core.agents.hooks import MissingInlineHtmlHook
+    from core.tools.ctx import WORKDIR
+
+    html = tmp_path / "docs" / "index.html"
+    html.parent.mkdir(parents=True)
+    html.write_text("<!doctype html><html><body>ok</body></html>", encoding="utf-8")
+
+    tok = WORKDIR.set(tmp_path)
+    try:
+        response = "Done — I wrote `docs/index.html`."
+        fb = await MissingInlineHtmlHook().check(HookContext(response=response, turn=1, agent_id="t", role="r"))
+        assert fb is None
+    finally:
+        WORKDIR.reset(tok)

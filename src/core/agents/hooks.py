@@ -91,7 +91,17 @@ class HtmlLintHook(Hook):
 # Match a backtick-wrapped relative path ending in .html. The leading backtick
 # is intentional — it excludes URLs in body text (e.g. "techcrunch.com/x.html")
 # which would otherwise trip this on any response that cites a news source.
-_HTML_PATH_RE = re.compile(r"`(?!https?://)[\w./\-]+\.html`")
+_HTML_PATH_RE = re.compile(r"`((?!https?://)[\w./\-]+\.html)`")
+
+
+def _html_file_exists(ref: str, workdir: Path) -> bool:
+    if ref.startswith("/one/"):
+        candidates = [workdir / "docs" / ref[len("/one/"):], workdir / ref.lstrip("/")]
+    elif ref.startswith("/"):
+        candidates = [workdir / ref.lstrip("/")]
+    else:
+        candidates = [workdir / ref]
+    return any(_candidate_exists(candidate, workdir) for candidate in candidates)
 
 
 class MissingInlineHtmlHook(Hook):
@@ -104,8 +114,12 @@ class MissingInlineHtmlHook(Hook):
             return None
         if extract_html_block(ctx.response) is not None:
             return None  # inline block present, nothing to do
-        if not _HTML_PATH_RE.search(ctx.response):
+        refs = [m.group(1) for m in _HTML_PATH_RE.finditer(ctx.response)]
+        if not refs:
             return None  # response doesn't claim to have written an html file
+        workdir = WORKDIR.get()
+        if all(_html_file_exists(ref, workdir) for ref in refs):
+            return None  # manager will append renderable HTML from disk
         return (
             "Your response references writing an HTML file but does not include the "
             "document inline. The chat iframe and the open-in-tab link both need the "
