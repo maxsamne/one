@@ -486,6 +486,7 @@ async def _dispatch(
                  write_scope="repo_worktree")
 
         assert workdir is not None
+        start_head: str | None = None
         if mode == TaskMode.PERSISTENT:
             rc, out = await worktree._git("rev-parse", "HEAD", cwd=workdir)
             start_head = out.strip() if rc == 0 and out.strip() else None

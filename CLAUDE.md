@@ -313,6 +313,8 @@ Multiple hooks combine their feedback into one message so the agent fixes everyt
 
 **Changed-file context** — before calling the judge, `GraderHook` adds deterministic task-output context when available. Persistent tasks get a capped git diff from the task's starting HEAD through committed and dirty tracked changes; conversational tasks fall back to capped contents of files touched through write/edit tools. This lets graders inspect what actually changed without asking coders to paste or recreate full HTML/files just for evaluation.
 
+**Read-only grader inspection loop** — capped diff context stays as the cheap/default evidence path. When that context is truncated, omits touched files, spans many files, or points at criteria that need file-level inspection, `GraderHook` first runs `core/agents/grader_inspector.py`. The inspector is an evidence gatherer, not a judge: it gets only read-only file/git tools plus `changed_files` and bounded read-only sub-agents, uses coder-style auto-compaction with inspection-specific summary instructions, and returns structured JSON evidence. The final judge prompt receives that evidence under "Read-only grader inspection evidence" and remains responsible for scoring.
+
 **Suggestions** — `GET /graders/suggest?skills=path1,path2` returns graders whose `suggested_for_skills` overlaps the given skills. UI surfaces them as "add grader?" chips when the user attaches a skill.
 
 **Gateway endpoints:** `GET /graders` (catalog), `GET /graders/suggest?skills=…`, plus the `graders` field on `POST /task` and on schedule create/update.

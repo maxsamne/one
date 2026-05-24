@@ -54,10 +54,12 @@ class ConversationHistory:
         goal: str,
         window: int = 128_000,
         threshold: float = 0.75,
+        compact_instructions: str | None = None,
     ) -> None:
         self.goal = goal
         self._window = window
         self._threshold = threshold
+        self._compact_instructions = compact_instructions or _COMPACT_INSTRUCTIONS
         self._turns: list[Turn] = []
         self._summary: str | None = None
         # Turn-0 images — kept on the history so they survive snapshot/load for
@@ -122,7 +124,7 @@ class ConversationHistory:
 
         self._summary = await client.complete(
             f"Goal: {self.goal}\n\nHistory to summarise:\n{history_text}",
-            instructions=_COMPACT_INSTRUCTIONS,
+            instructions=self._compact_instructions,
             thinking=ThinkingLevel.LOW,
         )
 
