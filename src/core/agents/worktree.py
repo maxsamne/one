@@ -72,7 +72,11 @@ async def _fast_forward_local_branch_from_origin(branch: str) -> None:
         return
     rc, _ = await _git("merge-base", "--is-ancestor", branch, f"origin/{branch}")
     if rc == 0:
-        rc, out = await _git("branch", "-f", branch, f"origin/{branch}")
+        current = (await _current_branch()).strip()
+        if current == branch:
+            rc, out = await _git("merge", "--ff-only", f"origin/{branch}")
+        else:
+            rc, out = await _git("branch", "-f", branch, f"origin/{branch}")
         if rc != 0:
             _log(Category.AGENT, "base branch fast-forward failed", branch=branch, error=out)
             raise RuntimeError(f"could not fast-forward {branch} from origin/{branch}: {out}")
@@ -110,6 +114,9 @@ async def setup(
         starting_ref = base_ref or await _current_branch()
 
     async with get_ledger().lock(_GIT_RESOURCE, agent_id=f"{task_id}:setup"):
+        if not reuse_base_branch and base_ref is None:
+            await fetch_branch(starting_ref)
+            await _fast_forward_local_branch_from_origin(starting_ref)
         if reuse_base_branch:
             await _fast_forward_local_branch_from_origin(base_branch)
             rc, out = await _git("rev-parse", "--verify", base_branch)
