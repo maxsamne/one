@@ -29,7 +29,7 @@ from core.ai_client import AiClient
 from core.ai_client.models import ImageContent, ThinkingLevel, Tool
 from core.log import Category
 from core.log import log as _log
-from core.log import task_pr_url
+from core.log import task_parent_id, task_pr_url
 from core.log import transcript_load
 from core.prompt import date_context
 from core.tools.calc import CALC_TOOLS
@@ -407,20 +407,25 @@ async def run(
 
 
 async def _resolve_parent_base(parent_task_id: str | None) -> str | None:
-    """Return the parent's task branch if it still exists locally or on origin.
+    """Return the nearest ancestor task branch if it still exists locally or on origin.
 
     A remote-only branch is still an active follow-up target; worktree.setup()
     recreates the local tracking branch before checking it out.
     """
-    if not parent_task_id:
-        return None
-    branch = f"task/{parent_task_id}"
-    await worktree.fetch_branch(branch)
-    rc, _ = await worktree._git("rev-parse", "--verify", branch)
-    if rc == 0:
-        return branch
-    rc, _ = await worktree._git("rev-parse", "--verify", f"origin/{branch}")
-    return branch if rc == 0 else None
+    seen: set[str] = set()
+    current = parent_task_id
+    while current and current not in seen:
+        seen.add(current)
+        branch = f"task/{current}"
+        await worktree.fetch_branch(branch)
+        rc, _ = await worktree._git("rev-parse", "--verify", branch)
+        if rc == 0:
+            return branch
+        rc, _ = await worktree._git("rev-parse", "--verify", f"origin/{branch}")
+        if rc == 0:
+            return branch
+        current = task_parent_id(current)
+    return None
 
 
 async def _dispatch(

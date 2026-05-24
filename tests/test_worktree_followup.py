@@ -167,6 +167,46 @@ async def test_followup_reuse_fetches_and_fast_forwards_parent_branch(repo):
         await worktree.cleanup(wts)
 
 
+async def test_resolve_parent_base_walks_followup_chain(repo, monkeypatch):
+    _run(["git", "checkout", "-q", "-b", "task/root"], repo)
+    (repo / "root.txt").write_text("root branch\n")
+    _run(["git", "add", "root.txt"], repo)
+    _run(["git", "commit", "-q", "-m", "root task"], repo)
+    _run(["git", "checkout", "-q", "main"], repo)
+
+    parents = {"mid": "root"}
+    monkeypatch.setattr(manager, "task_parent_id", lambda task_id: parents.get(task_id))
+
+    assert await manager._resolve_parent_base("mid") == "task/root"
+
+
+async def test_new_task_setup_fast_forwards_current_branch_from_origin(repo):
+    origin = repo.parent / "origin.git"
+    clone = repo.parent / "clone"
+    _run(["git", "init", "-q", "--bare", str(origin)], repo.parent)
+    _run(["git", "remote", "add", "origin", str(origin)], repo)
+    _run(["git", "push", "-u", "origin", "main"], repo)
+
+    _run(["git", "clone", "-q", str(origin), str(clone)], repo.parent)
+    _run(["git", "config", "user.email", "t@t.t"], clone)
+    _run(["git", "config", "user.name", "t"], clone)
+    (clone / "remote.txt").write_text("remote main update\n")
+    _run(["git", "add", "remote.txt"], clone)
+    _run(["git", "commit", "-q", "-m", "remote main update"], clone)
+    _run(["git", "push", "origin", "main"], clone)
+    remote_new = _run(["git", "rev-parse", "HEAD"], clone)
+
+    assert _run(["git", "rev-parse", "main"], repo) != remote_new
+    starting_ref, base_branch, wts = await worktree.setup("child", ["fakeprov"])
+    try:
+        assert starting_ref == "main"
+        assert base_branch == "task/child"
+        assert _run(["git", "rev-parse", "main"], repo) == remote_new
+        assert (wts[0].path / "remote.txt").read_text() == "remote main update\n"
+    finally:
+        await worktree.cleanup(wts)
+
+
 async def test_reuse_base_branch_reports_branch_mismatch(repo):
     _, parent_base, parent_wts = await worktree.setup("parent", ["fakeprov"])
     await worktree.merge("parent", parent_base, parent_wts, push=False)
