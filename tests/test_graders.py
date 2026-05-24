@@ -1,13 +1,15 @@
 """Graders: discovery + frontmatter parsing + judge inheritance + suggestion + universal user_satisfaction baseline."""
 
 from pathlib import Path
+import subprocess
 
 import pytest
 
 from core.agents import graders
 from core.agents.grader import Criterion, GraderHook, MAX_SCORE
 from core.agents.hooks import HookContext
-from core.agents.task_ctx import TASK_CTX, TASK_IMAGES_CTX, TaskContext
+from core.agents.task_ctx import GRADER_DIFF_BASE_CTX, TASK_CTX, TASK_IMAGES_CTX, TaskContext
+from core.tools.ctx import TOOL_LOG, WORKDIR
 
 
 def test_discover_parses_article_voice_with_inherited_judge():
@@ -76,6 +78,102 @@ async def test_grader_hook_injects_user_prompt_and_images_on_every_call():
     assert "The original user request is the primary scope" in captured["prompt"]
     assert "capability map, not a mandatory checklist" in captured["prompt"]
     assert captured["images"] == sentinel_imgs
+
+
+def _git(repo: Path, *args: str) -> str:
+    result = subprocess.run(
+        ["git", *args],
+        cwd=repo,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=True,
+    )
+    return result.stdout.strip()
+
+
+async def test_grader_hook_injects_persistent_task_diff(tmp_path: Path):
+    captured: dict = {}
+
+    class _StubJudge:
+        async def complete(self, prompt, images=None, response_model=None, **kw):
+            captured["prompt"] = prompt
+            from core.agents.grader import _CriterionScore, _GradeResponse
+            return _GradeResponse(
+                scores=[
+                    _CriterionScore(name="user_satisfaction", score=5, justification="ok"),
+                    _CriterionScore(name="c", score=5, justification="ok"),
+                ],
+                strengths=[], outstanding=[], key_excerpts=[], feedback="",
+            )
+
+    _git(tmp_path, "init", "-q")
+    _git(tmp_path, "config", "user.email", "test@example.com")
+    _git(tmp_path, "config", "user.name", "Test User")
+    path = tmp_path / "docs" / "yesterday-test.html"
+    path.parent.mkdir(parents=True)
+    path.write_text("old article", encoding="utf-8")
+    _git(tmp_path, "add", "docs/yesterday-test.html")
+    _git(tmp_path, "commit", "-q", "-m", "base")
+    base = _git(tmp_path, "rev-parse", "HEAD")
+    path.write_text("new article", encoding="utf-8")
+    _git(tmp_path, "add", "docs/yesterday-test.html")
+    _git(tmp_path, "commit", "-q", "-m", "change")
+
+    workdir_token = WORKDIR.set(tmp_path)
+    diff_token = GRADER_DIFF_BASE_CTX.set(base)
+    try:
+        hook = GraderHook([Criterion(name="c", description="d")], _StubJudge())
+        await hook.check(HookContext(
+            response="Done — updated `docs/yesterday-test.html`.",
+            turn=1,
+            agent_id="t1:gpt",
+            role="coder",
+        ))
+    finally:
+        GRADER_DIFF_BASE_CTX.reset(diff_token)
+        WORKDIR.reset(workdir_token)
+
+    assert "Changed-file context" in captured["prompt"]
+    assert "diff --git a/docs/yesterday-test.html b/docs/yesterday-test.html" in captured["prompt"]
+    assert "+new article" in captured["prompt"]
+    assert "Do not ask the author to paste or recreate full files" in captured["prompt"]
+
+
+async def test_grader_hook_falls_back_to_touched_files_without_git(tmp_path: Path):
+    captured: dict = {}
+
+    class _StubJudge:
+        async def complete(self, prompt, images=None, response_model=None, **kw):
+            captured["prompt"] = prompt
+            from core.agents.grader import _CriterionScore, _GradeResponse
+            return _GradeResponse(
+                scores=[
+                    _CriterionScore(name="user_satisfaction", score=5, justification="ok"),
+                    _CriterionScore(name="c", score=5, justification="ok"),
+                ],
+                strengths=[], outstanding=[], key_excerpts=[], feedback="",
+            )
+
+    path = tmp_path / "report.html"
+    path.write_text("<html>scratch artifact</html>", encoding="utf-8")
+
+    workdir_token = WORKDIR.set(tmp_path)
+    log_token = TOOL_LOG.set([{"tool": "write_file", "args": {"path": "report.html"}, "result": "Created"}])
+    try:
+        hook = GraderHook([Criterion(name="c", description="d")], _StubJudge())
+        await hook.check(HookContext(
+            response="Done.",
+            turn=1,
+            agent_id="t1:gpt",
+            role="coder",
+        ))
+    finally:
+        TOOL_LOG.reset(log_token)
+        WORKDIR.reset(workdir_token)
+
+    assert "Changed-file context" in captured["prompt"]
+    assert "scratch artifact" in captured["prompt"]
 
 
 def test_grader_with_own_user_satisfaction_criterion_is_not_double_added():

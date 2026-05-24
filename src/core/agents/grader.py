@@ -17,7 +17,9 @@ so DEFAULT_HOOKS (lint, inline-html) still run alongside.
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from pydantic import BaseModel, Field
 
@@ -25,9 +27,13 @@ from core.agents.hooks import Hook, HookContext
 from core.ai_client.interface import AiClient
 from core.log import Category
 from core.log import log as _log
+from core.tools.ctx import TOOL_LOG, WORKDIR
 
 GRADER_HOOK_RETRIES = 4
 MAX_SCORE = 5  # Score range is 0..MAX_SCORE inclusive. Bump here to widen the rubric.
+_CHANGE_CONTEXT_MAX_BYTES = 120_000
+_TOUCHED_FILE_LIMIT = 8
+_TOUCHED_FILE_MAX_BYTES = 20_000
 
 # ---------------------------------------------------------------------------
 # Public API
@@ -159,6 +165,9 @@ Scoring rules:
   does not expand the assignment. Do not grade or request broad page/design/content
   changes merely because a full HTML document is visible; focus on the user-requested
   change and any directly related defects.
+- When a diff or changed-file context is supplied below, treat it as the ground truth
+  for what changed. Do not ask the author to paste or recreate full files merely so
+  you can inspect them.
 - For `follows_skill`: check the output line-by-line against the actual rules in the
   injected skills above. Name specific rules that were broken or followed.
 - Grade each criterion independently against its definition only.
@@ -190,7 +199,7 @@ class GraderHook(Hook):
 
     async def check(self, ctx: HookContext) -> str | None:
         version = len(self._history) + 1
-        prompt = self._build_prompt(ctx.response)
+        prompt = await self._build_prompt(ctx.response)
         images = self._collect_images()
 
         try:
@@ -233,7 +242,7 @@ class GraderHook(Hook):
 
         return grade.feedback
 
-    def _build_prompt(self, response: str) -> str:
+    async def _build_prompt(self, response: str) -> str:
         from core.agents import skills as _skills
         from core.agents.task_ctx import TASK_CTX, TASK_SKILLS_CTX
 
@@ -269,6 +278,15 @@ class GraderHook(Hook):
             for snap in self._history:
                 parts.append(snap.summary(self._criteria))
 
+        change_context = await _change_context()
+        if change_context:
+            parts.append(
+                "\n## Changed-file context\n\n"
+                "This is deterministic context from the task workdir. Prefer it over "
+                "the author's summary when judging what changed.\n\n"
+                f"{change_context}"
+            )
+
         parts.append("\n## Current draft to grade\n")
         parts.append(response)
 
@@ -279,3 +297,79 @@ class GraderHook(Hook):
         from core.agents.task_ctx import TASK_IMAGES_CTX
         imgs = list(TASK_IMAGES_CTX.get() or [])
         return imgs or None
+
+
+async def _git(*args: str, workdir: Path) -> tuple[int, str]:
+    proc = await asyncio.create_subprocess_exec(
+        "git", *args,
+        cwd=str(workdir),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT,
+    )
+    out, _ = await proc.communicate()
+    return proc.returncode, out.decode(errors="replace")
+
+
+def _truncate_bytes(text: str, limit: int) -> str:
+    if len(text.encode("utf-8")) <= limit:
+        return text
+    return text.encode("utf-8")[:limit].decode("utf-8", errors="ignore") + "\n... [truncated]"
+
+
+async def _git_diff_context(workdir: Path) -> str | None:
+    from core.agents.task_ctx import GRADER_DIFF_BASE_CTX
+
+    diffs: list[str] = []
+    base = GRADER_DIFF_BASE_CTX.get()
+    if base:
+        rc, diff = await _git("diff", "--find-renames", "--diff-filter=ACMR", f"{base}..HEAD", workdir=workdir)
+        if rc == 0 and diff.strip():
+            diffs.append(diff)
+
+    rc, diff = await _git("diff", "--find-renames", "--diff-filter=ACMR", "HEAD", workdir=workdir)
+    if rc == 0 and diff.strip():
+        diffs.append(diff)
+    if diffs:
+        return "```diff\n" + _truncate_bytes("\n".join(diffs), _CHANGE_CONTEXT_MAX_BYTES) + "\n```"
+    return None
+
+
+def _safe_touched_file(workdir: Path, rel: str) -> Path | None:
+    candidate = workdir / rel
+    try:
+        root = workdir.resolve()
+        resolved = candidate.resolve(strict=True)
+    except (FileNotFoundError, OSError):
+        return None
+    if not (resolved == root or root in resolved.parents):
+        return None
+    return resolved if resolved.is_file() else None
+
+
+def _touched_file_context(workdir: Path) -> str | None:
+    paths: list[str] = []
+    for entry in TOOL_LOG.get([]):
+        if entry.get("tool") not in {"write_file", "edit_file"}:
+            continue
+        path = entry.get("args", {}).get("path")
+        if isinstance(path, str) and path not in paths:
+            paths.append(path)
+
+    blocks: list[str] = []
+    for rel in paths[:_TOUCHED_FILE_LIMIT]:
+        path = _safe_touched_file(workdir, rel)
+        if path is None:
+            continue
+        try:
+            content = path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        blocks.append(f"### `{rel}`\n\n```\n{_truncate_bytes(content, _TOUCHED_FILE_MAX_BYTES)}\n```")
+    return "\n\n".join(blocks) if blocks else None
+
+
+async def _change_context() -> str | None:
+    workdir = WORKDIR.get()
+    if git_context := await _git_diff_context(workdir):
+        return git_context
+    return _touched_file_context(workdir)

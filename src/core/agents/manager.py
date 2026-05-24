@@ -24,7 +24,7 @@ from core.agents import coder, graders, router, skills, workdir_registry, worktr
 from core.agents.coder import _INSTRUCTIONS_BASE, _INSTRUCTIONS_PERSISTENT
 from core.agents.grader import GRADER_HOOK_RETRIES
 from core.agents.hooks import DEFAULT_HOOK_RETRIES, Hook, html_path_refs
-from core.agents.task_ctx import PR_URL_CTX, TASK_GRADERS_CTX, TASK_IMAGES_CTX, TASK_SKILLS_CTX, TIER_CTX, current_task_id
+from core.agents.task_ctx import GRADER_DIFF_BASE_CTX, PR_URL_CTX, TASK_GRADERS_CTX, TASK_IMAGES_CTX, TASK_SKILLS_CTX, TIER_CTX, current_task_id
 from core.ai_client import AiClient
 from core.ai_client.models import ImageContent, ThinkingLevel, Tool
 from core.log import Category
@@ -490,6 +490,7 @@ async def _dispatch(
             rc, out = await worktree._git("rev-parse", "HEAD", cwd=workdir)
             start_head = out.strip() if rc == 0 and out.strip() else None
         workdir_token = WORKDIR.set(workdir)
+        grader_diff_token = GRADER_DIFF_BASE_CTX.set(start_head)
         workdir_registry.register(task_id, workdir)
         success = False
         extra_hooks, hook_retries = _build_extra_hooks()
@@ -547,6 +548,7 @@ async def _dispatch(
                 )
             _persist_generated_images(task_id, workdir)
             _prune_generated_images()
+            GRADER_DIFF_BASE_CTX.reset(grader_diff_token)
             if workdir_token is not None:
                 WORKDIR.reset(workdir_token)
             workdir_registry.unregister(task_id)

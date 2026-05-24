@@ -49,6 +49,12 @@ TASK_SKILLS_CTX: ContextVar[list[str]] = ContextVar("task_skills_ctx", default=[
 TASK_GRADERS_CTX: ContextVar[list[str]] = ContextVar("task_graders_ctx", default=[])
 
 
+# Optional git ref used by the grader to show what changed during a persistent task.
+# The manager sets this to the worktree HEAD before the coder starts; conversational
+# scratch workdirs leave it unset and the grader falls back to touched file contents.
+GRADER_DIFF_BASE_CTX: ContextVar[str | None] = ContextVar("grader_diff_base_ctx", default=None)
+
+
 # Images the user attached (drag-drop / upload). Manager merges these with skill `inspiration/`
 # images and passes the union to the coder for turn-0 attachment.
 # Typed as `list` to avoid an import of ImageContent here — gateway constructs, manager consumes.
