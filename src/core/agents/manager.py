@@ -114,8 +114,13 @@ your final answer. Do not create branches, check out branches, push, or open PRs
 Use only git_status, git_diff, git_add, git_commit, and git_log for your own changes.
 """
 
-_INLINE_HTML_REQUEST_RE = re.compile(
-    r"\b(?:full|complete|inline|self-contained)\s+html\b|html\s+block|```html|paste\s+.*html",
+_HTML_ARTIFACT_REQUEST_RE = re.compile(
+    r"\b(?:"
+    r"artifact|interactive|dashboard|visualization|visualisation|infographic|"
+    r"report|page|standalone|self-contained"
+    r")\b|"
+    r"\b(?:full|complete|inline|self-contained)\s+html\b|"
+    r"html\s+block|```html|paste\s+.*html",
     re.IGNORECASE,
 )
 _HTML_ARTIFACT_LIMIT = 3
@@ -124,7 +129,7 @@ _HTML_ARTIFACT_MAX_BYTES = 750_000
 
 def _hook_policy(task: str) -> HookPolicy:
     """Referenced HTML must be renderable; explicit inline requests require HTML."""
-    return HookPolicy(require_inline_html=bool(_INLINE_HTML_REQUEST_RE.search(task)))
+    return HookPolicy(require_inline_html=bool(_HTML_ARTIFACT_REQUEST_RE.search(task)))
 
 
 async def _dirty_line(workdir: Path) -> str | None:

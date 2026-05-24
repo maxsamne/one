@@ -229,3 +229,11 @@ async def test_missing_inline_html_skips_when_file_exists_in_workdir(tmp_path):
         assert fb is None
     finally:
         WORKDIR.reset(tok)
+
+
+def test_hook_policy_requires_html_for_artifact_language():
+    from core.agents import manager
+
+    assert manager._hook_policy("please give me an artifact").require_inline_html is True
+    assert manager._hook_policy("make a visualization of this").require_inline_html is True
+    assert manager._hook_policy("write a normal answer").require_inline_html is False
