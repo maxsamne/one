@@ -1607,6 +1607,7 @@ async function nlToCron() {
     }
     const { cron } = await r.json();
     cronEl.value = cron;
+    schedState.cron = cron;
     cronEl.focus();
   } finally {
     goBtn.disabled = false;
@@ -1636,6 +1637,8 @@ document.getElementById("sched-tier").addEventListener("change", (e) => { schedS
 
 document.getElementById("sched-form").addEventListener("submit", async (e) => {
   e.preventDefault();
+  schedState.cron = document.getElementById("sched-cron").value;
+  schedState.prompt = document.getElementById("sched-prompt").value;
   const body = {
     cron:    schedState.cron.trim(),
     prompt:  schedState.prompt.trim(),
