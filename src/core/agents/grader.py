@@ -144,11 +144,21 @@ no decimals, no half-points:
 
 Scoring rules:
 - Length does NOT affect scores. A concise piece can score {MAX_SCORE}/{MAX_SCORE}.
-- The original user request is the primary scope. Skill rules are supporting context, not
-  permission to ask for unrelated changes. If a skill contains guidance for design,
-  formatting, research depth, tooling, or structure that the user did not ask to change,
-  do not lower scores or request revisions for that area unless it directly breaks the
-  requested output.
+- Treat the criteria and skill rules as a capability map, not a mandatory checklist.
+  First infer the scope requested by the user: writing/voice, argument/content,
+  research/sourcing, design/layout, functionality, code, or another concrete area.
+  Apply criteria strongly only when they are relevant to that requested scope. Use
+  unrelated criteria only as guardrails for severe regressions that directly break
+  the requested output.
+- The original user request is the primary scope. Skill rules are supporting context,
+  not permission to ask for unrelated changes. If a skill contains guidance for
+  design, formatting, research depth, tooling, or structure that the user did not
+  ask to change, do not lower scores or request revisions for that area unless it
+  directly breaks the requested output.
+- Inline HTML blocks may be preview/transport for files the agent wrote. Their presence
+  does not expand the assignment. Do not grade or request broad page/design/content
+  changes merely because a full HTML document is visible; focus on the user-requested
+  change and any directly related defects.
 - For `follows_skill`: check the output line-by-line against the actual rules in the
   injected skills above. Name specific rules that were broken or followed.
 - Grade each criterion independently against its definition only.

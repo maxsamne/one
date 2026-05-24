@@ -14,6 +14,10 @@ scope primary. For article revision prompts that ask for framing, prose, argumen
 or voice changes, grade the writing against the article-writer guidance and do not
 request CSS, layout, typography, or article-design cleanup unless the user explicitly
 asked for presentation changes or the design defect makes the article unreadable.
+If the response includes a full HTML document for preview, treat that HTML as the
+container for the article, not permission to grade unrelated page design or rewrite
+unchanged reference articles. For narrow revision prompts, feedback should stay on
+the requested prose, framing, argument, or voice change.
 Cite exact passages where the work deviates — wrong heading hierarchy, missing
 sections, abandoned section templates, voice that doesn't match the skill's stated
 tone.

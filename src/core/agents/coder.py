@@ -70,13 +70,10 @@ Write outputs to the correct location — never pollute src/ with generated cont
 
 Never guess at file contents. Always read or grep before editing.
 
-If your task produces ANY HTML artifact (chart, dashboard, mini-site, briefing, article,
-visualization, etc.), the final response MUST include the COMPLETE self-contained HTML
-document inside a ```html``` code block. This is non-negotiable: the chat iframe and the
-open-in-tab link both render from this block. If you only describe the file path or say
-"file is committed", the user sees a broken artifact with no preview. Always paste the
-full HTML inline as the last thing in your response, even if you also wrote it to a file.
-Load any libraries from cdnjs.cloudflare.com.\
+If the user explicitly asks for an inline/full HTML preview, include the complete
+self-contained HTML document inside a ```html``` code block. Otherwise, for persistent
+repo edits, commit the file changes and summarize the files/commit instead of pasting
+large HTML documents into the final response.\
 """
 
 

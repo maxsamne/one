@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field
 from core.agents import coder, graders, router, skills, workdir_registry, worktree
 from core.agents.coder import _INSTRUCTIONS_BASE, _INSTRUCTIONS_PERSISTENT
 from core.agents.grader import GRADER_HOOK_RETRIES
-from core.agents.hooks import DEFAULT_HOOK_RETRIES, Hook
+from core.agents.hooks import DEFAULT_HOOK_RETRIES, Hook, html_path_refs
 from core.agents.task_ctx import PR_URL_CTX, TASK_GRADERS_CTX, TASK_IMAGES_CTX, TASK_SKILLS_CTX, TIER_CTX, current_task_id
 from core.ai_client import AiClient
 from core.ai_client.models import ImageContent, ThinkingLevel, Tool
@@ -112,6 +112,155 @@ The manager already created the correct branch and will push/open/update the PR 
 your final answer. Do not create branches, check out branches, push, or open PRs.
 Use only git_status, git_diff, git_add, git_commit, and git_log for your own changes.
 """
+
+_HTML_ARTIFACT_LIMIT = 3
+_HTML_ARTIFACT_MAX_BYTES = 750_000
+
+
+async def _dirty_line(workdir: Path) -> str | None:
+    rc, out = await worktree._git("status", "--porcelain", cwd=workdir)
+    if rc == 0 and out.strip():
+        return out.splitlines()[0]
+    return None
+
+
+def _safe_workdir_file(workdir: Path, rel: str) -> Path | None:
+    candidate = workdir / rel
+    try:
+        resolved = candidate.resolve(strict=True)
+        root = workdir.resolve()
+    except (FileNotFoundError, OSError):
+        return None
+    if not (resolved == root or root in resolved.parents):
+        return None
+    return resolved if resolved.is_file() else None
+
+
+async def _changed_html_files(workdir: Path, start_ref: str | None) -> list[Path]:
+    """HTML files created/changed in this workdir since dispatch started."""
+    changed: set[Path] = set()
+
+    if start_ref:
+        rc, out = await worktree._git("diff", "--name-only", "--diff-filter=ACMR", f"{start_ref}..HEAD", cwd=workdir)
+        if rc == 0:
+            changed.update(
+                p for rel in out.splitlines()
+                if rel.endswith(".html") and (p := _safe_workdir_file(workdir, rel))
+            )
+        rc, out = await worktree._git("diff", "--name-only", "--diff-filter=ACMR", "HEAD", cwd=workdir)
+        if rc == 0:
+            changed.update(
+                p for rel in out.splitlines()
+                if rel.endswith(".html") and (p := _safe_workdir_file(workdir, rel))
+            )
+        rc, out = await worktree._git("ls-files", "--others", "--exclude-standard", "--", "*.html", cwd=workdir)
+        if rc == 0:
+            changed.update(
+                p for rel in out.splitlines()
+                if rel.endswith(".html") and (p := _safe_workdir_file(workdir, rel))
+            )
+    else:
+        ignored = {".git", ".worktrees", ".venv", "node_modules", "__pycache__"}
+        for path in workdir.rglob("*.html"):
+            if ignored.intersection(path.relative_to(workdir).parts):
+                continue
+            if safe := _safe_workdir_file(workdir, str(path.relative_to(workdir))):
+                changed.add(safe)
+
+    return sorted(changed, key=lambda p: str(p.relative_to(workdir)))
+
+
+def _referenced_html_files(response: str, workdir: Path) -> list[Path]:
+    files: set[Path] = set()
+    for ref in html_path_refs(response):
+        candidates = (
+            [f"docs/{ref[len('/one/'):]}"]
+            if ref.startswith("/one/")
+            else [ref.lstrip("/")]
+        )
+        for rel in candidates:
+            if path := _safe_workdir_file(workdir, rel):
+                files.add(path)
+    return sorted(files, key=lambda p: str(p.relative_to(workdir)))
+
+
+def _append_html_artifacts(result: str, html_files: list[Path], workdir: Path) -> str:
+    if not html_files:
+        return result
+
+    parts = [result.rstrip()] if result.strip() else []
+    appended = 0
+    for path in html_files[:_HTML_ARTIFACT_LIMIT]:
+        try:
+            content = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if not content.strip() or content in result:
+            continue
+        if len(content.encode("utf-8")) > _HTML_ARTIFACT_MAX_BYTES:
+            _log(Category.AGENT, "html artifact skipped", path=str(path.relative_to(workdir)), reason="too large")
+            continue
+        rel = path.relative_to(workdir)
+        parts.append(f"Rendered HTML artifact from `{rel}`:\n\n```html\n{content}\n```")
+        appended += 1
+
+    omitted = len(html_files) - _HTML_ARTIFACT_LIMIT
+    if omitted > 0:
+        parts.append(f"{omitted} additional HTML artifact(s) omitted from preview.")
+    if appended:
+        _log(Category.AGENT, "html artifacts appended", count=appended)
+    return "\n\n---\n\n".join(parts)
+
+
+async def _recover_dirty_worktree(
+    *,
+    task: str,
+    task_id: str,
+    provider: str,
+    ai: AiClient,
+    thinking: ThinkingLevel,
+    tools: list[Tool],
+    instructions: str | None,
+    workdir: Path,
+) -> str:
+    dirty = await _dirty_line(workdir)
+    if not dirty:
+        return ""
+
+    _log(Category.AGENT, "dirty cleanup start", provider=provider, dirty=dirty)
+    cleanup_task = f"""\
+Your worktree still has uncommitted changes, so the manager cannot merge it yet.
+
+Original user task:
+{task}
+
+Current dirty status starts with:
+{dirty}
+
+Do not do new feature work. Inspect git_status and git_diff. If the dirty changes
+are intentional and satisfy the original request, stage and commit them with a
+clear message. If they are accidental, remove only those accidental edits. End
+with a brief summary.
+"""
+    result = await coder.run(
+        cleanup_task,
+        ai,
+        instructions=instructions,
+        thinking=thinking,
+        tools=tools,
+        workdir=workdir,
+        agent_id=f"{task_id}:{provider}:cleanup",
+        prior_history=transcript_load(task_id),
+        hooks=[],
+        hook_retries=0,
+        max_turns=3,
+    )
+
+    if still_dirty := await _dirty_line(workdir):
+        _log(Category.AGENT, "dirty cleanup incomplete", provider=provider, dirty=still_dirty)
+    else:
+        _log(Category.AGENT, "dirty cleanup complete", provider=provider)
+    return result
 
 
 def _build_instructions(base: str, skill_bodies: str, skill_index: str, date_ctx: str) -> str | None:
@@ -294,6 +443,7 @@ async def _dispatch(
     reuse_parent_branch = False
     workdir_token = None
     workdir: Path | None = None
+    start_head: str | None = None
 
     async with AsyncExitStack() as branch_stack:
         # Workspace setup based on mode.
@@ -336,6 +486,9 @@ async def _dispatch(
                  write_scope="repo_worktree")
 
         assert workdir is not None
+        if mode == TaskMode.PERSISTENT:
+            rc, out = await worktree._git("rev-parse", "HEAD", cwd=workdir)
+            start_head = out.strip() if rc == 0 and out.strip() else None
         workdir_token = WORKDIR.set(workdir)
         workdir_registry.register(task_id, workdir)
         success = False
@@ -353,6 +506,27 @@ async def _dispatch(
                 hook_retries=hook_retries,
             )
             if worktrees:
+                cleanup_result = await _recover_dirty_worktree(
+                    task=task,
+                    task_id=task_id,
+                    provider=provider,
+                    ai=ai,
+                    thinking=thinking,
+                    tools=tools,
+                    instructions=instructions,
+                    workdir=workdir,
+                )
+                if cleanup_result:
+                    result = f"{result}\n\n---\n\n{cleanup_result}"
+                html_files = {
+                    *await _changed_html_files(workdir, start_head),
+                    *_referenced_html_files(result, workdir),
+                }
+                result = _append_html_artifacts(
+                    result,
+                    sorted(html_files, key=lambda p: str(p.relative_to(workdir))),
+                    workdir,
+                )
                 merge_results = await worktree.merge(
                     task_id, base_branch, worktrees,
                     pr_base=starting_ref, pr_title=task[:70],
@@ -361,6 +535,16 @@ async def _dispatch(
                 )
             success = True
         finally:
+            if mode == TaskMode.CONVERSATIONAL and success:
+                html_files = {
+                    *await _changed_html_files(workdir, None),
+                    *_referenced_html_files(result, workdir),
+                }
+                result = _append_html_artifacts(
+                    result,
+                    sorted(html_files, key=lambda p: str(p.relative_to(workdir))),
+                    workdir,
+                )
             _persist_generated_images(task_id, workdir)
             _prune_generated_images()
             if workdir_token is not None:
