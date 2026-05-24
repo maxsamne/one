@@ -17,10 +17,12 @@ so DEFAULT_HOOKS (lint, inline-html) still run alongside.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from pydantic import BaseModel, Field
 
+from core.agents.grader_context import ChangeContext, collect_change_context
+from core.agents.grader_inspector import InspectorEvidence, run_grader_inspection, should_run_inspector
 from core.agents.hooks import Hook, HookContext
 from core.ai_client.interface import AiClient
 from core.log import Category
@@ -159,6 +161,9 @@ Scoring rules:
   does not expand the assignment. Do not grade or request broad page/design/content
   changes merely because a full HTML document is visible; focus on the user-requested
   change and any directly related defects.
+- When a diff or changed-file context is supplied below, treat it as the ground truth
+  for what changed. Do not ask the author to paste or recreate full files merely so
+  you can inspect them.
 - For `follows_skill`: check the output line-by-line against the actual rules in the
   injected skills above. Name specific rules that were broken or followed.
 - Grade each criterion independently against its definition only.
@@ -190,7 +195,7 @@ class GraderHook(Hook):
 
     async def check(self, ctx: HookContext) -> str | None:
         version = len(self._history) + 1
-        prompt = self._build_prompt(ctx.response)
+        prompt = await self._build_prompt(ctx.response)
         images = self._collect_images()
 
         try:
@@ -233,7 +238,7 @@ class GraderHook(Hook):
 
         return grade.feedback
 
-    def _build_prompt(self, response: str) -> str:
+    async def _build_prompt(self, response: str) -> str:
         from core.agents import skills as _skills
         from core.agents.task_ctx import TASK_CTX, TASK_SKILLS_CTX
 
@@ -269,10 +274,43 @@ class GraderHook(Hook):
             for snap in self._history:
                 parts.append(snap.summary(self._criteria))
 
+        change_context = await collect_change_context()
+        if change_context:
+            parts.append(
+                "\n## Changed-file context\n\n"
+                "This is deterministic context from the task workdir. Prefer it over "
+                "the author's summary when judging what changed.\n\n"
+                f"{change_context.text}"
+            )
+
+        if should_run_inspector(change_context, self._criteria, response):
+            evidence = await self._inspect(response, user_prompt, change_context)
+            if evidence:
+                parts.append(
+                    "\n## Read-only grader inspection evidence\n\n"
+                    "A read-only inspector gathered this evidence from the task workdir. "
+                    "Use it as factual input; it is not a grade.\n\n"
+                    f"```json\n{evidence.model_dump_json(indent=2)}\n```"
+                )
+
         parts.append("\n## Current draft to grade\n")
         parts.append(response)
 
         return "\n\n".join(parts)
+
+    async def _inspect(
+        self,
+        response: str,
+        user_prompt: str,
+        change_context: ChangeContext | None,
+    ) -> InspectorEvidence | None:
+        return await run_grader_inspection(
+            client=self._judge,
+            user_prompt=user_prompt,
+            criteria=self._criteria,
+            response=response,
+            change_context=change_context,
+        )
 
     def _collect_images(self) -> list:
         """Pull user-attached images from the task context. None/empty → judge runs text-only."""
