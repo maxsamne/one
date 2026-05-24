@@ -8,6 +8,7 @@ from core.agents import graders
 from core.agents.grader import Criterion, GraderHook, MAX_SCORE
 from core.agents.hooks import HookContext
 from core.agents.task_ctx import TASK_CTX, TASK_IMAGES_CTX, TaskContext
+from core.tools.ctx import WORKDIR
 
 
 def test_discover_parses_article_voice_with_inherited_judge():
@@ -76,6 +77,42 @@ async def test_grader_hook_injects_user_prompt_and_images_on_every_call():
     assert "The original user request is the primary scope" in captured["prompt"]
     assert "capability map, not a mandatory checklist" in captured["prompt"]
     assert captured["images"] == sentinel_imgs
+
+
+async def test_grader_hook_reads_referenced_html_from_workdir(tmp_path: Path):
+    captured: dict = {}
+
+    class _StubJudge:
+        async def complete(self, prompt, images=None, response_model=None, **kw):
+            captured["prompt"] = prompt
+            from core.agents.grader import _CriterionScore, _GradeResponse
+            return _GradeResponse(
+                scores=[
+                    _CriterionScore(name="user_satisfaction", score=5, justification="ok"),
+                    _CriterionScore(name="c", score=5, justification="ok"),
+                ],
+                strengths=[], outstanding=[], key_excerpts=[], feedback="",
+            )
+
+    html = tmp_path / "docs" / "yesterday-test.html"
+    html.parent.mkdir(parents=True)
+    html.write_text("<!doctype html><html><body>actual article from disk</body></html>", encoding="utf-8")
+
+    workdir_token = WORKDIR.set(tmp_path)
+    try:
+        hook = GraderHook([Criterion(name="c", description="d")], _StubJudge())
+        await hook.check(HookContext(
+            response="Done — updated `docs/yesterday-test.html`.",
+            turn=1,
+            agent_id="t1:gpt",
+            role="coder",
+        ))
+    finally:
+        WORKDIR.reset(workdir_token)
+
+    assert "Referenced file contents from disk" in captured["prompt"]
+    assert "actual article from disk" in captured["prompt"]
+    assert "Do not request that the agent paste or regenerate the full HTML" in captured["prompt"]
 
 
 def test_grader_with_own_user_satisfaction_criterion_is_not_double_added():

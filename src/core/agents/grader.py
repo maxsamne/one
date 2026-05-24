@@ -21,13 +21,16 @@ from dataclasses import dataclass, field
 
 from pydantic import BaseModel, Field
 
-from core.agents.hooks import Hook, HookContext
+from core.agents.hooks import Hook, HookContext, html_path_refs
 from core.ai_client.interface import AiClient
 from core.log import Category
 from core.log import log as _log
+from core.tools.ctx import WORKDIR
 
 GRADER_HOOK_RETRIES = 4
 MAX_SCORE = 5  # Score range is 0..MAX_SCORE inclusive. Bump here to widen the rubric.
+_REFERENCED_ARTIFACT_LIMIT = 3
+_REFERENCED_ARTIFACT_MAX_BYTES = 200_000
 
 # ---------------------------------------------------------------------------
 # Public API
@@ -159,6 +162,9 @@ Scoring rules:
   does not expand the assignment. Do not grade or request broad page/design/content
   changes merely because a full HTML document is visible; focus on the user-requested
   change and any directly related defects.
+- If the output references committed or written files, grade the file contents supplied
+  below as the actual work. Do not ask the author to paste or recreate a complete HTML
+  document merely so you can read it; the runtime renders existing files from disk.
 - For `follows_skill`: check the output line-by-line against the actual rules in the
   injected skills above. Name specific rules that were broken or followed.
 - Grade each criterion independently against its definition only.
@@ -269,6 +275,16 @@ class GraderHook(Hook):
             for snap in self._history:
                 parts.append(snap.summary(self._criteria))
 
+        referenced = _referenced_artifact_contents(response)
+        if referenced:
+            parts.append(
+                "\n## Referenced file contents from disk\n\n"
+                "The agent's response references these existing files. Treat these file "
+                "contents as the current work product for grading. Do not request that "
+                "the agent paste or regenerate the full HTML just to make it visible.\n\n"
+                + "\n\n".join(referenced)
+            )
+
         parts.append("\n## Current draft to grade\n")
         parts.append(response)
 
@@ -279,3 +295,39 @@ class GraderHook(Hook):
         from core.agents.task_ctx import TASK_IMAGES_CTX
         imgs = list(TASK_IMAGES_CTX.get() or [])
         return imgs or None
+
+
+def _safe_workdir_file(ref: str) -> Path | None:
+    workdir = WORKDIR.get()
+    rel = ref.removeprefix("/one/")
+    if rel.startswith("/"):
+        rel = rel[1:]
+    candidate = workdir / rel
+    try:
+        root = workdir.resolve()
+        resolved = candidate.resolve()
+    except OSError:
+        return None
+    if resolved == root or root not in resolved.parents:
+        return None
+    return resolved if resolved.is_file() else None
+
+
+def _referenced_artifact_contents(response: str) -> list[str]:
+    blocks: list[str] = []
+    seen: set[Path] = set()
+    for ref in html_path_refs(response):
+        if len(blocks) >= _REFERENCED_ARTIFACT_LIMIT:
+            break
+        path = _safe_workdir_file(ref)
+        if path is None or path in seen:
+            continue
+        seen.add(path)
+        try:
+            content = path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        if len(content.encode("utf-8")) > _REFERENCED_ARTIFACT_MAX_BYTES:
+            content = content[:_REFERENCED_ARTIFACT_MAX_BYTES] + "\n<!-- truncated for grader -->"
+        blocks.append(f"### `{ref}`\n\n```html\n{content}\n```")
+    return blocks
