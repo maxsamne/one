@@ -38,20 +38,12 @@ from core.tools.ctx import WORKDIR
 
 
 @dataclass(frozen=True)
-class HookPolicy:
-    """Per-run hook strictness switches."""
-    check_referenced_html: bool = True
-    require_inline_html: bool = False
-
-
-@dataclass(frozen=True)
 class HookContext:
     """Inputs every hook sees. Add fields here as more hooks need more context."""
     response: str
     turn: int            # 1-based turn number that produced the response
     agent_id: str
     role: str
-    policy: HookPolicy = HookPolicy()
 
 
 class Hook(ABC):
@@ -91,6 +83,11 @@ class HtmlLintHook(Hook):
 _HTML_PATH_RE = re.compile(r"`((?!https?://)[\w./\-]+\.html)`")
 
 
+def html_path_refs(response: str) -> list[str]:
+    """Backtick-wrapped local HTML paths referenced in an agent response."""
+    return [m.group(1) for m in _HTML_PATH_RE.finditer(response)]
+
+
 def _html_file_exists(ref: str, workdir: Path) -> bool:
     if ref.startswith("/one/"):
         candidates = [workdir / "docs" / ref[len("/one/"):], workdir / ref.lstrip("/")]
@@ -102,29 +99,23 @@ def _html_file_exists(ref: str, workdir: Path) -> bool:
 
 
 class MissingInlineHtmlHook(Hook):
-    """Ensure claimed or explicitly required HTML can be rendered."""
+    """Ensure referenced HTML files can be rendered."""
     name = "missing-inline-html"
 
     async def check(self, ctx: HookContext) -> str | None:
         if extract_html_block(ctx.response) is not None:
             return None  # inline block present, nothing to do
-        refs = [m.group(1) for m in _HTML_PATH_RE.finditer(ctx.response)]
-        if refs and ctx.policy.check_referenced_html:
-            workdir = WORKDIR.get()
-            if all(_html_file_exists(ref, workdir) for ref in refs):
-                return None  # manager will append renderable HTML from disk
-            return (
-                "Your response references an HTML file, but I cannot find that file "
-                "in the task workdir and there is no inline ```html``` block. Please "
-                "write the referenced HTML file, or include the complete HTML inside "
-                "a ```html``` block."
-            )
-        if not ctx.policy.require_inline_html:
+        refs = html_path_refs(ctx.response)
+        if not refs:
             return None
+        workdir = WORKDIR.get()
+        if all(_html_file_exists(ref, workdir) for ref in refs):
+            return None  # manager will append renderable HTML from disk
         return (
-            "This task requires a renderable HTML artifact, but your response does "
-            "not include one. Write an HTML file in the task workdir, or include the "
-            "complete HTML inside a ```html``` block."
+            "Your response references an HTML file, but I cannot find that file "
+            "in the task workdir and there is no inline ```html``` block. Please "
+            "write the referenced HTML file, or include the complete HTML inside "
+            "a ```html``` block."
         )
 
 

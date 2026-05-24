@@ -178,7 +178,7 @@ async def test_docs_image_path_satisfies_local_and_pages_hooks(tmp_path):
 
 
 async def test_missing_inline_html_fires_when_path_mentioned_but_no_block():
-    from core.agents.hooks import HookPolicy, MissingInlineHtmlHook
+    from core.agents.hooks import MissingInlineHtmlHook
     h = MissingInlineHtmlHook()
     # Mentions the file path, no ```html``` block → should fire.
     bad = "Done — I wrote `generated/reports/2026-05-10-week-ahead-briefing.html`. The file is committed."
@@ -189,25 +189,6 @@ async def test_missing_inline_html_fires_when_path_mentioned_but_no_block():
     # File mentioned AND inline block present → silent.
     good = bad + "\n\n```html\n<!doctype html><html><body>x</body></html>\n```"
     assert await h.check(HookContext(response=good, turn=1, agent_id="t", role="r")) is None
-    # Internal manager cleanup runs can opt out of artifact checks entirely.
-    cleanup_ctx = HookContext(
-        response=bad,
-        turn=1,
-        agent_id="t",
-        role="r",
-        policy=HookPolicy(check_referenced_html=False),
-    )
-    assert await h.check(cleanup_ctx) is None
-    # A future explicit "require HTML" UI checkbox can force an artifact even
-    # when the response does not mention one.
-    required_ctx = HookContext(
-        response=plain,
-        turn=1,
-        agent_id="t",
-        role="r",
-        policy=HookPolicy(require_inline_html=True),
-    )
-    assert await h.check(required_ctx) is not None
     # News URLs ending in .html in body text must NOT trigger the hook —
     # research summaries cite sources like techcrunch.com/article.html all the time.
     cite = "Source: https://techcrunch.com/2026/05/10/some-startup-raised.html and eu-startups.com/post.html."
@@ -229,11 +210,3 @@ async def test_missing_inline_html_skips_when_file_exists_in_workdir(tmp_path):
         assert fb is None
     finally:
         WORKDIR.reset(tok)
-
-
-def test_hook_policy_requires_html_for_artifact_language():
-    from core.agents import manager
-
-    assert manager._hook_policy("please give me an artifact").require_inline_html is True
-    assert manager._hook_policy("make a visualization of this").require_inline_html is True
-    assert manager._hook_policy("write a normal answer").require_inline_html is False

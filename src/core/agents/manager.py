@@ -13,7 +13,6 @@ The result: zero LLM calls inside manager when mode is unambiguous; one when not
 
 import shutil
 import time
-import re
 from contextlib import AsyncExitStack
 from dataclasses import dataclass
 from enum import StrEnum
@@ -24,7 +23,7 @@ from pydantic import BaseModel, Field
 from core.agents import coder, graders, router, skills, workdir_registry, worktree
 from core.agents.coder import _INSTRUCTIONS_BASE, _INSTRUCTIONS_PERSISTENT
 from core.agents.grader import GRADER_HOOK_RETRIES
-from core.agents.hooks import DEFAULT_HOOK_RETRIES, Hook, HookPolicy
+from core.agents.hooks import DEFAULT_HOOK_RETRIES, Hook, html_path_refs
 from core.agents.task_ctx import PR_URL_CTX, TASK_GRADERS_CTX, TASK_IMAGES_CTX, TASK_SKILLS_CTX, TIER_CTX, current_task_id
 from core.ai_client import AiClient
 from core.ai_client.models import ImageContent, ThinkingLevel, Tool
@@ -114,22 +113,8 @@ your final answer. Do not create branches, check out branches, push, or open PRs
 Use only git_status, git_diff, git_add, git_commit, and git_log for your own changes.
 """
 
-_HTML_ARTIFACT_REQUEST_RE = re.compile(
-    r"\b(?:"
-    r"artifact|interactive|dashboard|visualization|visualisation|infographic|"
-    r"report|page|standalone|self-contained"
-    r")\b|"
-    r"\b(?:full|complete|inline|self-contained)\s+html\b|"
-    r"html\s+block|```html|paste\s+.*html",
-    re.IGNORECASE,
-)
 _HTML_ARTIFACT_LIMIT = 3
 _HTML_ARTIFACT_MAX_BYTES = 750_000
-
-
-def _hook_policy(task: str) -> HookPolicy:
-    """Referenced HTML must be renderable; explicit inline requests require HTML."""
-    return HookPolicy(require_inline_html=bool(_HTML_ARTIFACT_REQUEST_RE.search(task)))
 
 
 async def _dirty_line(workdir: Path) -> str | None:
@@ -183,6 +168,20 @@ async def _changed_html_files(workdir: Path, start_ref: str | None) -> list[Path
                 changed.add(safe)
 
     return sorted(changed, key=lambda p: str(p.relative_to(workdir)))
+
+
+def _referenced_html_files(response: str, workdir: Path) -> list[Path]:
+    files: set[Path] = set()
+    for ref in html_path_refs(response):
+        candidates = (
+            [f"docs/{ref[len('/one/'):]}"]
+            if ref.startswith("/one/")
+            else [ref.lstrip("/")]
+        )
+        for rel in candidates:
+            if path := _safe_workdir_file(workdir, rel):
+                files.add(path)
+    return sorted(files, key=lambda p: str(p.relative_to(workdir)))
 
 
 def _append_html_artifacts(result: str, html_files: list[Path], workdir: Path) -> str:
@@ -255,7 +254,6 @@ with a brief summary.
         hooks=[],
         hook_retries=0,
         max_turns=3,
-        hook_policy=HookPolicy(check_referenced_html=False),
     )
 
     if still_dirty := await _dirty_line(workdir):
@@ -495,7 +493,6 @@ async def _dispatch(
         workdir_registry.register(task_id, workdir)
         success = False
         extra_hooks, hook_retries = _build_extra_hooks()
-        hook_policy = _hook_policy(task)
         try:
             result = await coder.run(
                 task, ai,
@@ -507,7 +504,6 @@ async def _dispatch(
                 prior_history=prior_history,
                 extra_hooks=extra_hooks,
                 hook_retries=hook_retries,
-                hook_policy=hook_policy,
             )
             if worktrees:
                 cleanup_result = await _recover_dirty_worktree(
@@ -522,9 +518,13 @@ async def _dispatch(
                 )
                 if cleanup_result:
                     result = f"{result}\n\n---\n\n{cleanup_result}"
+                html_files = {
+                    *await _changed_html_files(workdir, start_head),
+                    *_referenced_html_files(result, workdir),
+                }
                 result = _append_html_artifacts(
                     result,
-                    await _changed_html_files(workdir, start_head),
+                    sorted(html_files, key=lambda p: str(p.relative_to(workdir))),
                     workdir,
                 )
                 merge_results = await worktree.merge(
@@ -536,9 +536,13 @@ async def _dispatch(
             success = True
         finally:
             if mode == TaskMode.CONVERSATIONAL and success:
+                html_files = {
+                    *await _changed_html_files(workdir, None),
+                    *_referenced_html_files(result, workdir),
+                }
                 result = _append_html_artifacts(
                     result,
-                    await _changed_html_files(workdir, None),
+                    sorted(html_files, key=lambda p: str(p.relative_to(workdir))),
                     workdir,
                 )
             _persist_generated_images(task_id, workdir)

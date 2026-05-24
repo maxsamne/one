@@ -6,7 +6,7 @@ from pathlib import Path
 
 from core.agents.board import get_board
 from core.agents.compact import ConversationHistory
-from core.agents.hooks import DEFAULT_HOOK_RETRIES, DEFAULT_HOOKS, Hook, HookContext, HookPolicy, run_hooks
+from core.agents.hooks import DEFAULT_HOOK_RETRIES, DEFAULT_HOOKS, Hook, HookContext, run_hooks
 from core.agents.ledger import Ledger
 from core.agents.agent_ctx import AGENT_ID_CTX, CURRENT_TURN, ROLE_CTX, SPAWN_CTX, SUBAGENT_DEPTH, SpawnContext
 from core.agents.task_ctx import current_task_id
@@ -96,7 +96,6 @@ async def run(
     extra_hooks: list[Hook] | None = None,
     hook_retries: int = DEFAULT_HOOK_RETRIES,
     prior_history: dict | None = None,
-    hook_policy: HookPolicy | None = None,
 ) -> str:
     """Run the coder loop for a task. Returns the final response.
 
@@ -165,7 +164,6 @@ async def run(
     images = merged
     history.images = list(merged)
     response = ""
-    hook_policy = hook_policy or HookPolicy()
     effective_hooks = (list(DEFAULT_HOOKS) + list(extra_hooks or [])) if hooks is None else hooks
     hook_retries_left = hook_retries
     hook_feedback: str | None = None  # if set, used as next turn's user input
@@ -229,7 +227,6 @@ async def run(
                     ctx = HookContext(
                         response=response, turn=turn + 1,
                         agent_id=effective_agent_id, role=role,
-                        policy=hook_policy,
                     )
                     hook_feedback = await run_hooks(effective_hooks, ctx)
                     if hook_feedback:

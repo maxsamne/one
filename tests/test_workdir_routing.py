@@ -321,3 +321,17 @@ async def test_changed_html_artifact_is_appended_from_disk(tmp_path):
     assert "Rendered HTML artifact from `docs/index.html`" in result
     assert "```html" in result
     assert "<body>preview</body>" in result
+
+
+def test_referenced_html_artifact_is_appended_from_disk(tmp_path):
+    from core.agents import manager
+
+    html = tmp_path / "docs" / "index.html"
+    html.parent.mkdir(parents=True)
+    html.write_text("<!doctype html><html><body>referenced</body></html>", encoding="utf-8")
+
+    files = manager._referenced_html_files("Done — I wrote `docs/index.html`.", tmp_path)
+    result = manager._append_html_artifacts("Done — I wrote `docs/index.html`.", files, tmp_path)
+
+    assert "Rendered HTML artifact from `docs/index.html`" in result
+    assert "<body>referenced</body>" in result
