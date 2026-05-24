@@ -39,12 +39,9 @@ from core.tools.ctx import WORKDIR
 
 @dataclass(frozen=True)
 class HookPolicy:
-    """Per-run hook strictness switches.
-
-    Defaults preserve existing behavior; manager can relax specific checks for
-    persistent repo edits where the committed file/PR is the durable artifact.
-    """
-    require_inline_html: bool = True
+    """Per-run hook strictness switches."""
+    check_referenced_html: bool = True
+    require_inline_html: bool = False
 
 
 @dataclass(frozen=True)
@@ -84,9 +81,9 @@ class HtmlLintHook(Hook):
         return format_feedback(issues)
 
 
-# Detects responses that say "I wrote `path/to/foo.html`" but never include the
-# ```html``` block inline. The chat iframe + persisted /artifacts/ pipeline both
-# need the inline block — without it the user can't open the artifact at all.
+# Detects responses that say "I wrote `path/to/foo.html`" but don't provide a
+# renderable artifact. If the file exists, the manager appends it from disk; if
+# not, the hook asks the agent to write/provide the HTML.
 #
 # Match a backtick-wrapped relative path ending in .html. The leading backtick
 # is intentional — it excludes URLs in body text (e.g. "techcrunch.com/x.html")
@@ -105,27 +102,29 @@ def _html_file_exists(ref: str, workdir: Path) -> bool:
 
 
 class MissingInlineHtmlHook(Hook):
-    """If the response references writing an HTML file but doesn't include the
-    full document inline as a ```html``` block, ask the agent to paste it."""
+    """Ensure claimed or explicitly required HTML can be rendered."""
     name = "missing-inline-html"
 
     async def check(self, ctx: HookContext) -> str | None:
-        if not ctx.policy.require_inline_html:
-            return None
         if extract_html_block(ctx.response) is not None:
             return None  # inline block present, nothing to do
         refs = [m.group(1) for m in _HTML_PATH_RE.finditer(ctx.response)]
-        if not refs:
-            return None  # response doesn't claim to have written an html file
-        workdir = WORKDIR.get()
-        if all(_html_file_exists(ref, workdir) for ref in refs):
-            return None  # manager will append renderable HTML from disk
+        if refs and ctx.policy.check_referenced_html:
+            workdir = WORKDIR.get()
+            if all(_html_file_exists(ref, workdir) for ref in refs):
+                return None  # manager will append renderable HTML from disk
+            return (
+                "Your response references an HTML file, but I cannot find that file "
+                "in the task workdir and there is no inline ```html``` block. Please "
+                "write the referenced HTML file, or include the complete HTML inside "
+                "a ```html``` block."
+            )
+        if not ctx.policy.require_inline_html:
+            return None
         return (
-            "Your response references writing an HTML file but does not include the "
-            "document inline. The chat iframe and the open-in-tab link both need the "
-            "full HTML to render — paste the complete file contents inside a ```html``` "
-            "block as your final output. Do not summarize or describe — emit the full "
-            "document."
+            "This task requires a renderable HTML artifact, but your response does "
+            "not include one. Write an HTML file in the task workdir, or include the "
+            "complete HTML inside a ```html``` block."
         )
 
 

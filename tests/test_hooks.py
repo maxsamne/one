@@ -189,15 +189,25 @@ async def test_missing_inline_html_fires_when_path_mentioned_but_no_block():
     # File mentioned AND inline block present → silent.
     good = bad + "\n\n```html\n<!doctype html><html><body>x</body></html>\n```"
     assert await h.check(HookContext(response=good, turn=1, agent_id="t", role="r")) is None
-    # Persistent repo-edit runs can opt out; the committed file/PR is the artifact.
-    persistent_ctx = HookContext(
+    # Internal manager cleanup runs can opt out of artifact checks entirely.
+    cleanup_ctx = HookContext(
         response=bad,
         turn=1,
         agent_id="t",
         role="r",
-        policy=HookPolicy(require_inline_html=False),
+        policy=HookPolicy(check_referenced_html=False),
     )
-    assert await h.check(persistent_ctx) is None
+    assert await h.check(cleanup_ctx) is None
+    # A future explicit "require HTML" UI checkbox can force an artifact even
+    # when the response does not mention one.
+    required_ctx = HookContext(
+        response=plain,
+        turn=1,
+        agent_id="t",
+        role="r",
+        policy=HookPolicy(require_inline_html=True),
+    )
+    assert await h.check(required_ctx) is not None
     # News URLs ending in .html in body text must NOT trigger the hook —
     # research summaries cite sources like techcrunch.com/article.html all the time.
     cite = "Source: https://techcrunch.com/2026/05/10/some-startup-raised.html and eu-startups.com/post.html."

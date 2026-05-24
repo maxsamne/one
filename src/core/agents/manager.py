@@ -122,11 +122,9 @@ _HTML_ARTIFACT_LIMIT = 3
 _HTML_ARTIFACT_MAX_BYTES = 750_000
 
 
-def _hook_policy(task: str, mode: TaskMode) -> HookPolicy:
-    """Persistent repo edits are the artifact unless the user asks for inline HTML."""
-    return HookPolicy(
-        require_inline_html=mode == TaskMode.CONVERSATIONAL or bool(_INLINE_HTML_REQUEST_RE.search(task)),
-    )
+def _hook_policy(task: str) -> HookPolicy:
+    """Referenced HTML must be renderable; explicit inline requests require HTML."""
+    return HookPolicy(require_inline_html=bool(_INLINE_HTML_REQUEST_RE.search(task)))
 
 
 async def _dirty_line(workdir: Path) -> str | None:
@@ -252,7 +250,7 @@ with a brief summary.
         hooks=[],
         hook_retries=0,
         max_turns=3,
-        hook_policy=HookPolicy(require_inline_html=False),
+        hook_policy=HookPolicy(check_referenced_html=False),
     )
 
     if still_dirty := await _dirty_line(workdir):
@@ -492,7 +490,7 @@ async def _dispatch(
         workdir_registry.register(task_id, workdir)
         success = False
         extra_hooks, hook_retries = _build_extra_hooks()
-        hook_policy = _hook_policy(task, mode)
+        hook_policy = _hook_policy(task)
         try:
             result = await coder.run(
                 task, ai,
