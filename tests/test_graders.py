@@ -272,6 +272,30 @@ async def test_grader_hook_falls_back_to_touched_files_without_git(tmp_path: Pat
     assert "scratch artifact" in captured["prompt"]
 
 
+async def test_grader_retry_feedback_names_failing_criteria_even_when_judge_says_done():
+    class _StubJudge:
+        async def complete(self, prompt, images=None, response_model=None, **kw):
+            from core.agents.grader import _CriterionScore, _GradeResponse
+            return _GradeResponse(
+                scores=[
+                    _CriterionScore(name="user_satisfaction", score=5, justification="ok"),
+                    _CriterionScore(name="craft", score=4, justification="needs one stronger detail"),
+                ],
+                strengths=["aligned"], outstanding=[],
+                key_excerpts=["Done."],
+                feedback="The changes look superb. No further revisions are needed.",
+            )
+
+    hook = GraderHook([Criterion(name="craft", description="Has a considered craft detail.")], _StubJudge())
+    feedback = await hook.check(HookContext(response="Done.", turn=1, agent_id="t1:gpt", role="coder"))
+
+    assert feedback is not None
+    assert "did not score this as optimal" in feedback
+    assert "Revise the actual task output" in feedback
+    assert "craft: 4/5" in feedback
+    assert "No further revisions are needed" in feedback
+
+
 async def test_grader_inspector_tools_are_read_only():
     calls: list[list[str]] = []
 

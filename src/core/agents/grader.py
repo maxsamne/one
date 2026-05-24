@@ -234,9 +234,31 @@ class GraderHook(Hook):
                 f"Try a fundamentally different approach: restructure the argument, "
                 f"rewrite the opening from scratch, or reframe the section entirely."
             )
-            return grade.feedback + plateau_note
+            return self._retry_feedback(grade, scores) + plateau_note
 
-        return grade.feedback
+        return self._retry_feedback(grade, scores)
+
+    def _retry_feedback(self, grade: _GradeResponse, scores: dict[str, int]) -> str:
+        missing = [c for c in self._criteria if scores.get(c.name, 0) < MAX_SCORE]
+        lines = [
+            "### grader",
+            "",
+            f"The grader did not score this as optimal. Revise the actual task output before responding; do not just acknowledge this message.",
+            "",
+            "Criteria below maximum:",
+        ]
+        for criterion in missing:
+            score = scores.get(criterion.name, 0)
+            lines.append(f"- {criterion.name}: {score}/{MAX_SCORE} — {criterion.description}")
+
+        if grade.outstanding:
+            lines.extend(["", "Outstanding issues:"])
+            lines.extend(f"- {issue}" for issue in grade.outstanding[:3])
+
+        if grade.feedback.strip():
+            lines.extend(["", "Judge feedback:", grade.feedback.strip()])
+
+        return "\n".join(lines)
 
     async def _build_prompt(self, response: str) -> str:
         from core.agents import skills as _skills
