@@ -747,18 +747,32 @@ def _inject_html_bg_fix(html: str) -> str:
 async def save_artifact(req: ArtifactRequest) -> ArtifactResponse:
     if not req.content.strip():
         raise HTTPException(status_code=400, detail="content cannot be empty")
+    if not _TASK_ID_RE.fullmatch(req.task_id):
+        raise HTTPException(status_code=400, detail="invalid task_id")
     slug = (req.slug or "artifact").lower().strip().replace(" ", "-")
     slug = _SLUG_RE.sub("", slug)[:40] or "artifact"
     _ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
-    # Allow multiple artifacts per task — index by sequential number.
+    content = _inject_html_bg_fix(req.content)
+    prefix = req.task_id[:8]
+    for existing in sorted(_ARTIFACTS_DIR.glob(f"{prefix}-*-{slug}.html")):
+        try:
+            if existing.read_text(encoding="utf-8") == content:
+                return ArtifactResponse(
+                    url=f"/artifacts/{existing.name}",
+                    path=str(existing.relative_to(_REPO_ROOT)),
+                )
+        except OSError:
+            continue
+
+    # Allow multiple different artifacts per task — index by sequential number.
     n = 1
     while True:
-        filename = f"{req.task_id[:8]}-{n}-{slug}.html"
+        filename = f"{prefix}-{n}-{slug}.html"
         path = _ARTIFACTS_DIR / filename
         if not path.exists():
             break
         n += 1
-    path.write_text(_inject_html_bg_fix(req.content), encoding="utf-8")
+    path.write_text(content, encoding="utf-8")
     _log(Category.GATEWAY, "artifact saved", filename=filename, bytes=len(req.content))
     return ArtifactResponse(url=f"/artifacts/{filename}", path=str(path.relative_to(_REPO_ROOT)))
 
