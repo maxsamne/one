@@ -8,8 +8,8 @@ from contextvars import ContextVar
 
 from pydantic import BaseModel, Field, ValidationError
 
-from core.agents.compact import ConversationHistory
 from core.agents.grader_context import ChangeContext, changed_files_tool
+from core.agents.loop import run_agent_loop
 from core.ai_client.interface import AiClient
 from core.ai_client.models import ThinkingLevel, Tool
 from core.log import Category
@@ -93,6 +93,16 @@ def _parse_evidence(text: str) -> InspectorEvidence:
     return InspectorEvidence.model_validate_json(payload)
 
 
+def _merge_subagent_reports(evidence: InspectorEvidence, reports: list[SubagentReport]) -> InspectorEvidence:
+    if not reports:
+        return evidence
+    existing = {(r.scope, r.summary) for r in evidence.subagent_reports}
+    for report in reports:
+        if (report.scope, report.summary) not in existing:
+            evidence.subagent_reports.append(report)
+    return evidence
+
+
 def _read_only_tools(allow_subagents: bool) -> list[Tool]:
     allowed = {"read_file", "grep_file", "list_dir", "git_status", "git_diff", "git_log"}
     tools = [t for t in [*FS_TOOLS, *GIT_TOOLS] if t.name in allowed and t.is_read_only]
@@ -144,40 +154,31 @@ async def run_grader_inspection(
         response=response,
         change_context=change_context,
     )
-    history = ConversationHistory(
-        goal=goal,
-        window=context_window,
-        compact_instructions=_COMPACT_INSTRUCTIONS,
-    )
     tools = _read_only_tools(allow_subagents and _INSPECTOR_DEPTH.get() == 0)
     depth_token = _INSPECTOR_DEPTH.set(_INSPECTOR_DEPTH.get())
     client_token = _INSPECTOR_CLIENT.set(client)
     reports: list[SubagentReport] = []
     reports_token = _SUBAGENT_REPORTS.set(reports)
-    last_text = ""
     try:
-        for turn in range(max_turns):
-            request = goal if turn == 0 else "Continue read-only inspection. Return valid JSON when evidence is sufficient."
-            history.add("user", request)
-            prompt = await history.next_prompt(client)
-            last_text = await client.complete(
-                prompt,
-                instructions=_INSPECTOR_INSTRUCTIONS,
-                thinking=ThinkingLevel.LOW,
-                extra_tools=tools,
-            )
-            history.add("assistant", last_text)
-            try:
-                evidence = _parse_evidence(last_text)
-            except (ValidationError, json.JSONDecodeError, ValueError):
-                continue
-            if reports:
-                existing = {(r.scope, r.summary) for r in evidence.subagent_reports}
-                for report in reports:
-                    if (report.scope, report.summary) not in existing:
-                        evidence.subagent_reports.append(report)
-            _log(Category.AGENT, "grader inspector evidence", files=len(evidence.inspected_files), evidence=len(evidence.evidence))
-            return evidence
+        result = await run_agent_loop(
+            goal=goal,
+            client=client,
+            instructions=_INSPECTOR_INSTRUCTIONS,
+            tools=tools,
+            thinking=ThinkingLevel.LOW,
+            max_turns=max_turns,
+            context_window=context_window,
+            compact_instructions=_COMPACT_INSTRUCTIONS,
+            turn_input=_turn_input,
+            parse_response=_parse_evidence,
+            retry_parse_exceptions=(ValidationError, json.JSONDecodeError, ValueError),
+            log_label="grader inspector loop",
+        )
+        if result.value is None:
+            return None
+        evidence = _merge_subagent_reports(result.value, reports)
+        _log(Category.AGENT, "grader inspector evidence", files=len(evidence.inspected_files), evidence=len(evidence.evidence))
+        return evidence
     except Exception as e:
         _log(Category.AGENT, "grader inspector error", error=str(e)[:200])
         return None
@@ -186,17 +187,11 @@ async def run_grader_inspection(
         _INSPECTOR_CLIENT.reset(client_token)
         _INSPECTOR_DEPTH.reset(depth_token)
 
-    try:
-        evidence = _parse_evidence(last_text)
-        reports = _SUBAGENT_REPORTS.get([])
-        if reports:
-            existing = {(r.scope, r.summary) for r in evidence.subagent_reports}
-            for report in reports:
-                if (report.scope, report.summary) not in existing:
-                    evidence.subagent_reports.append(report)
-        return evidence
-    except Exception:
-        return None
+
+def _turn_input(goal: str, turn: int) -> str:
+    if turn == 0:
+        return goal
+    return "Continue read-only inspection. Return valid JSON when evidence is sufficient."
 
 
 async def _spawn_readonly_subagent(scope: str, question: str) -> str:

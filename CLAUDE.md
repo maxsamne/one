@@ -299,6 +299,12 @@ Multiple hooks combine their feedback into one message so the agent fixes everyt
 
 ---
 
+## Agent Loop Primitives
+
+`src/core/agents/loop.py` defines a small reusable loop for internal sub-workflows that need model turns, a fixed tool set, token-aware compaction, and optional structured-result parsing. It is deliberately not a replacement for `coder.run()`: the coder loop keeps its task-specific responsibilities, including write tools, hooks, board updates, todo state, images, transcript persistence, and managed git conventions. Use the lightweight loop for grader-like inspectors, reviewers, verifiers, and other bounded sub-workflows.
+
+---
+
 ## Graders (LLM-as-judge hooks)
 
 `src/core/agents/grader.py` defines `GraderHook` — a stateful LLM-as-judge hook that scores each criterion 0–`MAX_SCORE` (currently 5) and returns actionable feedback until every criterion hits the top score or the shared `hook_retries` budget runs out. Plateau detection (identical scores to prior round) appends a "try a fundamentally different approach" nudge.
@@ -313,7 +319,7 @@ Multiple hooks combine their feedback into one message so the agent fixes everyt
 
 **Changed-file context** — before calling the judge, `GraderHook` adds deterministic task-output context when available. Persistent tasks get a capped git diff from the task's starting HEAD through committed and dirty tracked changes; conversational tasks fall back to capped contents of files touched through write/edit tools. This lets graders inspect what actually changed without asking coders to paste or recreate full HTML/files just for evaluation.
 
-**Read-only grader inspection loop** — capped diff context stays as the cheap/default evidence path. When that context is truncated, omits touched files, spans many files, or points at criteria that need file-level inspection, `GraderHook` first runs `core/agents/grader_inspector.py`. The inspector is an evidence gatherer, not a judge: it gets only read-only file/git tools plus `changed_files` and bounded read-only sub-agents, uses coder-style auto-compaction with inspection-specific summary instructions, and returns structured JSON evidence. The final judge prompt receives that evidence under "Read-only grader inspection evidence" and remains responsible for scoring.
+**Read-only grader inspection loop** — capped diff context stays as the cheap/default evidence path. When that context is truncated, omits touched files, spans many files, or points at criteria that need file-level inspection, `GraderHook` first runs `core/agents/grader_inspector.py`. The inspector is an evidence gatherer, not a judge: it runs on the lightweight loop primitive, gets only read-only file/git tools plus `changed_files` and bounded read-only sub-agents, uses coder-style auto-compaction with inspection-specific summary instructions, and returns structured JSON evidence. The final judge prompt receives that evidence under "Read-only grader inspection evidence" and remains responsible for scoring.
 
 **Suggestions** — `GET /graders/suggest?skills=path1,path2` returns graders whose `suggested_for_skills` overlaps the given skills. UI surfaces them as "add grader?" chips when the user attaches a skill.
 
