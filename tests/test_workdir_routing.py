@@ -63,6 +63,53 @@ def test_gateway_image_route_serves_from_registry(tmp_path):
         workdir_registry.unregister("gw_test")
 
 
+def test_artifact_save_reuses_identical_content(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    artifacts = repo / "generated" / "artifacts"
+    artifacts.mkdir(parents=True)
+    monkeypatch.setattr(gateway_server, "_REPO_ROOT", repo)
+    monkeypatch.setattr(gateway_server, "_ARTIFACTS_DIR", artifacts)
+
+    client = TestClient(app)
+    body = {
+        "task_id": "abc12345",
+        "slug": "Example Artifact",
+        "content": "<html><head></head><body>Hello</body></html>",
+    }
+
+    first = client.post("/artifacts", json=body)
+    second = client.post("/artifacts", json=body)
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert second.json()["url"] == first.json()["url"]
+    assert len(list(artifacts.glob("*.html"))) == 1
+
+
+def test_artifact_save_indexes_different_content(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    artifacts = repo / "generated" / "artifacts"
+    artifacts.mkdir(parents=True)
+    monkeypatch.setattr(gateway_server, "_REPO_ROOT", repo)
+    monkeypatch.setattr(gateway_server, "_ARTIFACTS_DIR", artifacts)
+
+    client = TestClient(app)
+    body = {
+        "task_id": "abc12345",
+        "slug": "Example Artifact",
+        "content": "<html><head></head><body>Hello</body></html>",
+    }
+
+    first = client.post("/artifacts", json=body)
+    second = client.post("/artifacts", json={**body, "content": "<html><body>Changed</body></html>"})
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert first.json()["url"].endswith("/abc12345-1-example-artifact.html")
+    assert second.json()["url"].endswith("/abc12345-2-example-artifact.html")
+    assert len(list(artifacts.glob("*.html"))) == 2
+
+
 def test_artifact_docs_image_route_serves_task_branch_docs_assets(tmp_path, monkeypatch):
     repo = tmp_path / "repo"
     repo.mkdir()
