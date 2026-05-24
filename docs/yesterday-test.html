@@ -292,9 +292,13 @@
 
     <p>The analogy to ordinary ML is real. In both cases, the core gift of backtesting is the same: it gives you many cheap failures before you pay for one live mistake.</p>
 
-    <p>That is why the idea is so powerful. If you want to build an investment agent, a diligence agent, or a research assistant, it is not enough to ask whether it can produce elegant prose. You want to know whether, on March 1st 2024, with only March 1st 2024 information, it would have found the right documents, surfaced the right uncertainties, and made a better call than your current workflow.</p>
+    <p>That is why the idea is so powerful. If you want to build an investment agent, a diligence agent, or a research assistant, it is not enough to ask whether it can produce elegant prose. You want to know whether, on March 1st 2024, with only March 1st 2024 information, it would have found the right documents, surfaced the right uncertainties, and made a better call than your current workflow. These are not edge cases. They are central use cases for serious deployment.</p>
 
     <p>But this is also where the easy analogy ends. In classical ML, a time split mostly solved the problem. In LLMs, the model itself is already contaminated. The future is in the weights.</p>
+
+    <p>An agent is not just scoring rows from a table. It is searching, retrieving, planning, browsing, calling tools, writing notes, revising hypotheses, and sometimes taking actions that alter the very world it is reasoning about. The relevant input is no longer a static feature vector. It is an evolving environment.</p>
+
+    <p>That makes leakage easier to miss and more consequential when it happens. A benchmark can look historical while the retrieval layer serves a later page version, a browser tool surfaces a quietly updated database, or a search API ranks documents using signals unavailable at the time. In other words, an agent can fail the yesterday test without anyone noticing.</p>
 
     <div class="note">
       <p><strong>The engineering target is stricter than archived search.</strong> A backtestable agent needs aligned boundaries across the stack: a model boundary, so the weights are frozen at time <em>T</em>; a corpus boundary, so tools expose only pre-cutoff material; a claim boundary, so reasoning steps can be checked for post-cutoff leakage; and a policy boundary, so the agent can actually be improved offline rather than merely inspected.</p>
@@ -401,7 +405,9 @@
 
     <p>The real world is harder in precisely the opposite way. Public information changes continuously. Human behavior shifts in response to news, incentives, and each other. Our own actions can alter the state we are trying to predict. A memo, a policy, or a recommendation does not merely describe the environment; it can redirect it. In those settings, we can often judge an output qualitatively. It is much harder to prove whether the system would actually have helped us make a better decision before the outcome was known.</p>
 
-    <p>And that difficulty compounds. Small judgments can produce downstream consequences, second-order effects, and eventually wider changes in the system the agent is supposed to understand. With more autonomous agents, the issue gets sharper still: one action changes the next state, the next decision is then made inside that changed state, and the chain can keep propagating for dozens of steps. The question is not just whether the answer looked reasonable in the moment. The real challenge is whether the system made a sound call inside the historical world it actually inhabited, while correctly handling the consequences of its own prior moves.</p>
+    <p>And that difficulty compounds. Small judgments can produce downstream consequences, second-order effects, and eventually wider changes in the system the agent is supposed to understand. With more autonomous agents, the issue gets sharper still: one action changes the next state, the next decision is then made inside that changed state, and the chain can keep propagating for dozens of steps. You are no longer evaluating an isolated answer. You are evaluating a policy moving through time.</p>
+
+    <p>That is exactly why replay matters so much. A mistaken search query shapes the evidence set. A bad retrieval path narrows the plan. A premature email changes the counterpart's behavior. A code edit alters the repository that later tools inspect. The question is not just whether the answer looked reasonable in the moment. The real challenge is whether the system made a sound call inside the historical world it actually inhabited, while correctly handling the consequences of its own prior moves.</p>
 
     <h2>Where the analogy breaks</h2>
 
