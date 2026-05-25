@@ -73,7 +73,7 @@ _helper_mini = create_client(ModelProvider.OPENAI, model_name="gpt-5.4-mini")
 
 _LIBRARIANS: dict[str, LibrarianAgent] = {
     "ultra_cheap": LibrarianAgent(embedding_client=_embedder, ai_client=_ollama,      dimensions=768),
-    "cheap":       LibrarianAgent(embedding_client=_embedder, ai_client=_helper_mini, dimensions=768),
+    "cheap":       LibrarianAgent(embedding_client=_embedder, ai_client=_lib_nano,    dimensions=768),
     "default":     LibrarianAgent(embedding_client=_embedder, ai_client=_lib_nano,    dimensions=768),
     "pro":         LibrarianAgent(embedding_client=_embedder, ai_client=_lib_gemini,  dimensions=768),
 }
