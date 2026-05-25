@@ -24,9 +24,17 @@ A single HTML page. Tone: **distilled, plain language, confident, specific**. No
 Structure (adapt section count + naming to the topic):
 
 1. **Hero** — `<topic> · <weekday> <date>` mono caption (use today's date from the system prompt) + serif H1 with one calm framing sentence (e.g. *"Wednesday — three rounds, two announcements, one quiet macro."*). Below: a one-line lede summarising the most important thing from the last 36 hours.
-   - **Generate one hero image.** Call `generate_image(prompt, size="1536x1024")` with a prompt that captures the day's *mood* — atmospheric, abstract, no text, matches the warm-cream + single-accent palette. Examples:
-     - `"abstract atmospheric morning light, faint warm cream and pale mint, soft horizontal composition, no text, no logos, no people, minimalist, editorial-style"`
-     - `"isometric geometric scene of a single forest-green diamond floating over pale-mint surfaces, low contrast, no text"`
+   - **Generate one hero image.** Call `generate_image(prompt, size="1536x1024")` with a prompt that captures the day's *mood* — atmospheric, abstract, no text, consistent with the warm-cream + single-accent palette.
+
+  - **Pick a design flavor (to switch things up).** Choose one of the following visual themes, based on the brief topic (or randomly if it’s generic):
+    - **Silicon Sociology flavor:** clean editorial tone, subtle typographic/grid vibes, calm cream background with a gentle light texture, one soft green accent element; composition feels like a cover page.
+    - **Yesterday Test flavor:** slightly more “systems diagram” energy—structured geometry/frames, a time-forward arrow vibe, gentle linework-like texture; still abstract with no text.
+    - **Neutral warm-cream editorial:** soft morning light abstraction, minimal composition, faint mint/green emphasis.
+
+  - Then write the actual `generate_image` prompt from that flavor. Examples:
+    - Silicon Sociology flavor: `"editorial cover abstraction, warm cream paper texture, faint grid/noise suggestion, single soft forest-green geometric form, calm composition, no text, no logos, no people, minimalist"`
+    - Yesterday Test flavor: `"abstract systems diagram mood, structured frame geometry, subtle time-arrow implication via shapes, warm cream with pale mint and one deep green accent, low contrast, no text, no logos, no people, minimalist"`
+    - Neutral warm-cream editorial: `"abstract atmospheric morning light, faint warm cream and pale mint, soft horizontal composition, no text, no logos, no people, minimalist, editorial-style"`
    - Drop the returned URL straight into the hero card: `<img src="<returned URL>" alt="" style="width:100%;height:220px;object-fit:cover;border-radius:14px;">`.
    - **One hero image only, and up to 2 extra supporting images (optional).** The supporting images are genuinely optional — skip them entirely unless they earn their place. When you do include them, they must be *relevant* to the brief's content and *consistent* with its aesthetic (same warm-cream + single-accent palette, same atmospheric/abstract mood, no text/logos/people). Each supporting image should either anchor a specific section it sits next to (then it should reflect that section's subject) or set a general mood that complements the overall piece. Never generate per-section images mechanically — the brief is meant to be scanned, not browsed.
 
