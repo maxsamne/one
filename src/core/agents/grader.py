@@ -1,13 +1,12 @@
-"""Grader hook — LLM-as-judge post-response hook that optimises output toward MAX_SCORE on every criterion.
+"""Grader hook — LLM-as-judge post-response hook that gates output quality.
 
-Not a pass/fail gate. Drives the coder toward the highest possible quality by:
-  1. Scoring each criterion 0–MAX_SCORE (integer, no decimals).
-  2. Injecting the actual bodies of all attached skills so the judge checks real rules.
-  3. Accumulating a compact GradeSnapshot per round — scores + 3–5 verbatim excerpts
-     the judge selected — so history is trackable without storing full prior drafts.
-  4. Detecting plateau (identical scores to the previous round) and issuing different
-     feedback: "you haven't moved on X — try a fundamentally different approach."
-  5. Returning None only when all criteria reach MAX_SCORE.
+The grader is a pass/fail reviewer, not a numeric scorer. It:
+  1. Inspects the response against the original request, attached skills, criteria,
+     and deterministic changed-file context.
+  2. Returns one boolean verdict: `optimal`.
+  3. If `optimal=false`, returns concrete `required_changes` for the next coder turn.
+  4. Accumulates compact verdict history so follow-up grader rounds can see what was
+     previously accepted or blocked without replaying full old drafts.
 
 Instances are stateful — one per `coder.run()` call. The registry in
 `core.agents.graders` builds them from markdown files; the manager wires them
@@ -29,7 +28,6 @@ from core.log import Category
 from core.log import log as _log
 
 GRADER_HOOK_RETRIES = 4
-MAX_SCORE = 5  # Score range is 0..MAX_SCORE inclusive. Bump here to widen the rubric.
 
 # ---------------------------------------------------------------------------
 # Public API
@@ -59,7 +57,7 @@ _USER_SATISFACTION = Criterion(
         "composition, density, palette and type voice must be visibly inspired by them — "
         "translated through the design system, not copied, but the family resemblance must be "
         "obvious at a glance. A response that follows the skill rules perfectly but ignores "
-        "the user's literal request or attached references is a low score. Cite the specific "
+        "the user's literal request or attached references is not optimal. Cite the specific "
         "part of the prompt or the specific reference element that was missed."
     ),
 )
@@ -73,32 +71,22 @@ def _with_baseline(criteria: list[Criterion]) -> list[Criterion]:
 
 
 @dataclass
-class GradeSnapshot:
+class VerdictSnapshot:
     """Compact record of one grader run — passed as history to subsequent runs."""
     version: int
-    scores: dict[str, int]    # criterion.name → 0..MAX_SCORE
-    strengths: list[str]      # 2–3 bullets of what's working
-    outstanding: list[str]    # what still needs improvement
-    excerpts: list[str]       # short representative quotes the judge pulled from the draft
+    optimal: bool
+    reason: str
+    required_changes: list[str]
+    evidence: list[str]
 
-    def is_optimal(self, criteria: list[Criterion]) -> bool:
-        return all(self.scores.get(c.name, 0) == MAX_SCORE for c in criteria)
-
-    def plateau_vs(self, prev: GradeSnapshot) -> bool:
-        return self.scores == prev.scores
-
-    def summary(self, criteria: list[Criterion]) -> str:
-        lines = [f"--- Version {self.version} ---"]
-        for c in criteria:
-            lines.append(f"  {c.name}: {self.scores.get(c.name, '?')}/{MAX_SCORE}")
-        if self.strengths:
-            lines.append("  Strengths: " + "; ".join(self.strengths))
-        if self.outstanding:
-            lines.append("  Outstanding: " + "; ".join(self.outstanding))
-        if self.excerpts:
-            lines.append("  Key excerpts from this draft:")
-            for ex in self.excerpts:
-                lines.append(f"    > {ex}")
+    def summary(self) -> str:
+        lines = [f"--- Version {self.version} ---", f"  optimal: {self.optimal}", f"  Reason: {self.reason}"]
+        if self.required_changes:
+            lines.append("  Required changes: " + "; ".join(self.required_changes))
+        if self.evidence:
+            lines.append("  Evidence:")
+            for item in self.evidence:
+                lines.append(f"    - {item}")
         return "\n".join(lines)
 
 
@@ -106,46 +94,42 @@ class GradeSnapshot:
 # Internal Pydantic response model for the judge call
 # ---------------------------------------------------------------------------
 
-class _CriterionScore(BaseModel):
-    name: str
-    score: int        # 0..MAX_SCORE
-    justification: str
-
-
 class _GradeResponse(BaseModel):
-    scores: list[_CriterionScore]
-    strengths: list[str]
-    outstanding: list[str]
-    key_excerpts: list[str] = Field(
+    optimal: bool = Field(
         description=(
-            "3–5 short verbatim quotes from the current draft that are most diagnostic — "
-            "a passage that exemplifies a strength, one that exemplifies a weakness, "
-            "the opening sentence, or any excerpt that captures the current state well. "
-            "Each under 80 words. These travel in the snapshot history so future grader "
-            "rounds can see how the writing evolved without re-reading full old drafts."
+            "True only when the work is good enough to ship for the original request, "
+            "attached skills, criteria, and changed-file evidence. False means the coder "
+            "should get another turn if retry budget remains."
         )
     )
-    feedback: str     # actionable improvement instructions returned to the coder
+    reason: str = Field(description="Concise explanation of the verdict.")
+    required_changes: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Concrete changes the coder must make before the work is acceptable. "
+            "Must be non-empty when optimal=false; should be empty when optimal=true."
+        ),
+    )
+    evidence: list[str] = Field(
+        default_factory=list,
+        description="Brief factual notes, with file paths or excerpts when useful, supporting the verdict.",
+    )
 
 
 # ---------------------------------------------------------------------------
 # Hook
 # ---------------------------------------------------------------------------
 
-_RUBRIC_PREAMBLE = f"""\
-You are a rigorous editor grading a piece of work against the injected skill rules and
-the explicit criteria below. Score each criterion on a 0–{MAX_SCORE} integer scale —
-no decimals, no half-points:
+_RUBRIC_PREAMBLE = """\
+You are a rigorous reviewer judging whether a piece of work is good enough to ship.
+Return one boolean verdict: `optimal`.
 
-  0 = fails criterion entirely
-  1 = barely present — token attempt at best
-  2 = partially meets — present but weak or inconsistent
-  3 = mostly meets — solid with one notable gap
-  4 = strongly meets — minor polish remaining
-  5 = fully meets — nothing meaningful to improve on this dimension
-
-Scoring rules:
-- Length does NOT affect scores. A concise piece can score {MAX_SCORE}/{MAX_SCORE}.
+Verdict rules:
+- `optimal=true` means there is nothing meaningful left to fix for the user's actual
+  request. Small subjective preferences are not enough to block.
+- `optimal=false` means at least one concrete issue remains that the coder can and
+  should fix in another turn.
+- Do not produce numeric scores.
 - Treat the criteria and skill rules as a capability map, not a mandatory checklist.
   First infer the scope requested by the user: writing/voice, argument/content,
   research/sourcing, design/layout, functionality, code, or another concrete area.
@@ -155,7 +139,7 @@ Scoring rules:
 - The original user request is the primary scope. Skill rules are supporting context,
   not permission to ask for unrelated changes. If a skill contains guidance for
   design, formatting, research depth, tooling, or structure that the user did not
-  ask to change, do not lower scores or request revisions for that area unless it
+  ask to change, do not block or request revisions for that area unless it
   directly breaks the requested output.
 - Inline HTML blocks may be preview/transport for files the agent wrote. Their presence
   does not expand the assignment. Do not grade or request broad page/design/content
@@ -166,32 +150,31 @@ Scoring rules:
   you can inspect them.
 - For `follows_skill`: check the output line-by-line against the actual rules in the
   injected skills above. Name specific rules that were broken or followed.
-- Grade each criterion independently against its definition only.
 - Do not let your general preferences or aesthetic opinions override the criteria.
-- Be calibrated: a {MAX_SCORE} should be genuinely hard to earn.
 
-After scoring:
-- List 2–3 concrete strengths with specific references.
-- List up to 3 outstanding issues with specific references.
-- Select 3–5 key_excerpts: short verbatim quotes from the draft that are most
-  diagnostic of the current state (openings, weak passages, strong passages).
-- Write `feedback`: specific, actionable instructions the author should follow in the
-  next draft. Reference exact passages. No vague encouragements.
+After judging:
+- Set `optimal`.
+- Write `reason`: concise, specific, and grounded in the request and evidence.
+- If `optimal=false`, list concrete `required_changes` the coder must make. These
+  are the retry instructions, so they must be actionable and bounded.
+- If `optimal=true`, `required_changes` should be empty.
+- List brief `evidence` notes with file paths, changed-file facts, or short excerpts
+  when useful. Prefer exact evidence over the author's summary.
 """
 
 
 class GraderHook(Hook):
-    """Optimising LLM-as-judge hook. Drives scores toward 3/3 on every criterion.
+    """LLM-as-judge hook that retries until the grader accepts the work or budget ends.
 
     Reads attached skill bodies from TASK_SKILLS_CTX so the judge checks actual
-    injected rules, not general knowledge. Drives scores toward 5/5.
+    injected rules, not general knowledge.
     """
     name = "grader"
 
     def __init__(self, criteria: list[Criterion], judge: AiClient) -> None:
         self._criteria = _with_baseline(criteria)
         self._judge = judge
-        self._history: list[GradeSnapshot] = []
+        self._history: list[VerdictSnapshot] = []
 
     async def check(self, ctx: HookContext) -> str | None:
         version = len(self._history) + 1
@@ -208,35 +191,47 @@ class GraderHook(Hook):
             _log(Category.AGENT, "grader error", error=str(e)[:200], agent=ctx.agent_id)
             return None  # don't block on judge failure
 
-        scores = {s.name: max(0, min(MAX_SCORE, s.score)) for s in grade.scores}
-        snapshot = GradeSnapshot(
+        snapshot = VerdictSnapshot(
             version=version,
-            scores=scores,
-            strengths=grade.strengths[:3],
-            outstanding=grade.outstanding[:3],
-            excerpts=grade.key_excerpts[:5],
+            optimal=grade.optimal,
+            reason=grade.reason.strip(),
+            required_changes=[c.strip() for c in grade.required_changes[:5] if c.strip()],
+            evidence=[e.strip() for e in grade.evidence[:5] if e.strip()],
         )
         self._history.append(snapshot)
 
-        _log(Category.AGENT, "grader scored",
-             version=version, scores=scores, agent=ctx.agent_id,
-             optimal=snapshot.is_optimal(self._criteria))
+        _log(
+            Category.AGENT, "grader verdict",
+            version=version,
+            optimal=snapshot.optimal,
+            required_changes=len(snapshot.required_changes),
+            agent=ctx.agent_id,
+        )
 
-        if snapshot.is_optimal(self._criteria):
+        if snapshot.optimal:
             return None
 
-        # Plateau: same scores as previous round — in-place editing isn't working
-        if len(self._history) >= 2 and snapshot.plateau_vs(self._history[-2]):
-            stuck = [c.name for c in self._criteria if scores.get(c.name, 0) < MAX_SCORE]
-            plateau_note = (
-                f"\n\n**Plateau detected** — scores on {', '.join(stuck)} are unchanged "
-                f"from the previous draft. Incremental editing is not working. "
-                f"Try a fundamentally different approach: restructure the argument, "
-                f"rewrite the opening from scratch, or reframe the section entirely."
-            )
-            return grade.feedback + plateau_note
+        return self._retry_feedback(snapshot)
 
-        return grade.feedback
+    def _retry_feedback(self, snapshot: VerdictSnapshot) -> str:
+        lines = [
+            "The grader did not accept the work yet. Revise the actual task output before responding.",
+            "",
+            f"Reason: {snapshot.reason or 'The grader marked the work as not optimal.'}",
+        ]
+        if snapshot.required_changes:
+            lines.extend(["", "Required changes:"])
+            lines.extend(f"- {change}" for change in snapshot.required_changes)
+        else:
+            lines.extend([
+                "",
+                "Required changes:",
+                "- Re-inspect the original request, changed-file context, and grader criteria; make a concrete fix for the issue described in the reason.",
+            ])
+        if snapshot.evidence:
+            lines.extend(["", "Evidence:"])
+            lines.extend(f"- {item}" for item in snapshot.evidence)
+        return "\n".join(lines)
 
     async def _build_prompt(self, response: str) -> str:
         from core.agents import skills as _skills
@@ -270,9 +265,9 @@ class GraderHook(Hook):
             parts.append(f"**{c.name}** — {c.description}")
 
         if self._history:
-            parts.append("\n## History of previous drafts\n")
+            parts.append("\n## History of previous grader verdicts\n")
             for snap in self._history:
-                parts.append(snap.summary(self._criteria))
+                parts.append(snap.summary())
 
         change_context = await collect_change_context()
         if change_context:

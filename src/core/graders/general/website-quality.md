@@ -14,7 +14,7 @@ Does every element render without overflow, clipping, or breakage? Check:
 - Navigation and footer: no wrapping or collapsing on a standard viewport (~1200px wide).
 - Images and media: constrained with `max-width: 100%`; nothing bleeds past the article column.
 - Long strings (URLs, code, labels): break or truncate rather than forcing horizontal scroll.
-Cite the specific element and symptom for any failure. A single confirmed overflow is a score of 1 or lower.
+Cite the specific element and symptom for any failure. A single confirmed overflow should block acceptance until fixed.
 
 ### design_alignment (weight: 2)
 Does the output faithfully follow the design system defined in the website-design skill and the DESIGN_SPEC?
@@ -27,7 +27,7 @@ Penalise any deviation from the above, even if the result looks "fine" — consi
 
 ### aesthetic_distinctiveness (weight: 1)
 Does the page feel intentional and visually confident, or does it look like a template?
-A high score means: at least one moment of considered craft (a typographic choice, a restrained use of the accent colour, a layout decision that wouldn't appear by default). A low score means: generic, interchangeable, could be any bland personal site. Do not penalise restraint — sparse and deliberate is better than decorated and generic.
+An optimal result has at least one moment of considered craft (a typographic choice, a restrained use of the accent colour, a layout decision that wouldn't appear by default). Block only when the result feels generic, interchangeable, or like any bland personal site. Do not penalise restraint — sparse and deliberate is better than decorated and generic.
 
 ### functional_integrity (weight: 2)
 Does every interactive element on the page actually do something?
@@ -38,7 +38,7 @@ The site is static HTML on GitHub Pages — there is no backend. So any element 
 - Comment boxes, like buttons, upvote controls, or any reaction UI.
 - "Send" / "submit" buttons whose only behaviour is hover styling.
 - Inputs that visually resemble live fields but have no handler.
-Cosmetic-only UI is fine: tabs that navigate between real pages, image carousels, theme toggles, animated decorations, badges, status pills used as labels. The test is: *would a reasonable visitor type or click this and expect a response?* If yes and nothing happens, score 1 or lower and cite the offending element. A single non-functional interactive element is enough to fail this criterion.
+Cosmetic-only UI is fine: tabs that navigate between real pages, image carousels, theme toggles, animated decorations, badges, status pills used as labels. The test is: *would a reasonable visitor type or click this and expect a response?* If yes and nothing happens, cite the offending element and block acceptance. A single non-functional interactive element is enough to fail this criterion.
 
 ### security_hygiene (weight: 2)
 Does the committed HTML contain anything that should not be public?
@@ -47,4 +47,4 @@ Check for:
 - Internal company names, fund names, portfolio company names, or proprietary business logic not intended for public disclosure.
 - Personal data (email addresses, phone numbers, private identifiers) beyond what the owner has chosen to display.
 - Hardcoded internal URLs, staging endpoints, or environment-specific configuration.
-A single confirmed leak is an automatic score of 0 and must block the PR.
+A single confirmed leak must block the PR.

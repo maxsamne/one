@@ -35,7 +35,7 @@ a dependent clause, or a concrete observation that leads to the judgment.
 
 ### intellectual_depth (weight: 2)
 Does the piece make non-obvious connections, show genuine curiosity, and reward a
-careful reader? Length does NOT matter — a concise piece can score 5/5. Look for:
+careful reader? Length does NOT matter — a concise piece can still be optimal. Look for:
 specificity over abstraction, surprising-but-defensible claims, examples that
 actually illustrate the point. Penalize: restating the prompt, padding, lists of
 generic facts the reader could have produced themselves.

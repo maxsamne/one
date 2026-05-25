@@ -9,7 +9,7 @@ morning brief, morning briefing, daily brief, daily briefing, brief, briefing, n
 - **Output:** complete self-contained HTML emitted **inline** as a final ```html``` code block in your response — never via `write_file`. The gateway renders from the response block, not from files on disk. If you only write to a file, the user sees nothing.
 - **Token budget:** if the full HTML would exceed ~6000 tokens, trim sections (fewer entries per section, shorter lede) rather than writing to file. A trimmed brief is better than a broken one.
 - **Preferred thinking:** `medium` (multiple web searches, synthesis, structured layout).
-- **Always also load:** `general/artifact-design/SKILL.md` if not already attached. Use its design language (warm-cream light mode, Inter at 300/400/500, Fraunces for the one display headline, JetBrains Mono for eyebrows + tags).
+- **Always also load:** `general/artifact-design/SKILL.md` and `general/design-spec/SKILL.md` if not already attached. The agent should load the design spec to pick a design theme (preset) from it — such as Neon Foundry, Porcelain Ops, Atelier Ledger, Signal Glyph, or Monument Press — to switch things up and apply its typography, colours, and layout styling to the brief's HTML, rather than always defaulting to the same warm-cream light mode.
 
 ## How to read the request
 
@@ -24,9 +24,15 @@ A single HTML page. Tone: **distilled, plain language, confident, specific**. No
 Structure (adapt section count + naming to the topic):
 
 1. **Hero** — `<topic> · <weekday> <date>` mono caption (use today's date from the system prompt) + serif H1 with one calm framing sentence (e.g. *"Wednesday — three rounds, two announcements, one quiet macro."*). Below: a one-line lede summarising the most important thing from the last 36 hours.
-   - **Generate one hero image.** Call `generate_image(prompt, size="1536x1024")` with a prompt that captures the day's *mood* — atmospheric, abstract, no text, matches the warm-cream + single-accent palette. Examples:
-     - `"abstract atmospheric morning light, faint warm cream and pale mint, soft horizontal composition, no text, no logos, no people, minimalist, editorial-style"`
-     - `"isometric geometric scene of a single forest-green diamond floating over pale-mint surfaces, low contrast, no text"`
+   - **Generate one hero image.** Call `generate_image(prompt, size="1536x1024")` with a prompt that captures the day's *mood* — atmospheric, abstract or scenic, highly textured, rich, and exciting.
+   - **Style Inspiration:** Do not use flat, smooth, sterile digital vectors or generic vector gradients. Use the visual styles from the *Silicon Sociology* and *Yesterday Test* articles as inspiration for the kind of rich, textured, exciting styles we want:
+     - **Detailed 16-bit/32-bit Retro Pixel-Art style** (e.g. nostalgic, highly detailed pixel landscape at sunrise/sunset, blending nature and technology with atmospheric lighting, like wildflowers, hills, water, and vintage tech elements).
+     - **Archival Technical/Scientific Painterly style** (e.g. textured oil-on-canvas, rustic wooden scaffolding, classical or historical technology prototype, dusty sunset/dawn lighting, overlaid with delicate blueprint lines, schematics, or hand-drawn notes on aged paper/canvas texture).
+     - **High-texture Abstract/Artisanal style** (e.g. heavy painterly brushstrokes, mixed-media paper collages, raw charcoal sketches, or weathered blueprints with high tactile feel and moody depth).
+   - Write a highly specific, concrete `generate_image` prompt matching the chosen style and matching the selected design spec theme's colour palette. Ensure the prompt describes fine textures, rich lighting, and detailed compositions. Examples:
+     - Pixel-art inspiration: `"detailed 16-bit pixel art of Stockholm city skyline across water at sunrise, viewed from a grassy hill with wildflowers, an open laptop showing lines of code on the grass, a closed leather notebook next to it, warm golden hour peach and soft blue sky, nostalgic, highly detailed, atmospheric, retro"`
+     - Archival painterly inspiration: `"oil painting style, an early vintage rocket prototype on a rustic wooden scaffold at dawn, warm golden sunrise light, dusty air, faint technical blueprint lines and architectural drawings overlaid in the sky, aged paper texture, fine canvas weave visible, historical scientific journal aesthetic, masterpiece"`
+     - Textured abstract/artisanal inspiration: `"textured mixed-media painting, abstract composition of charcoal lines and a block of textured forest green pigment on heavily aged, weathered paper, rough tactile brushstrokes, no flat vector shapes, minimalist and moody, editorial-style"`
    - Drop the returned URL straight into the hero card: `<img src="<returned URL>" alt="" style="width:100%;height:220px;object-fit:cover;border-radius:14px;">`.
    - **One hero image only, and up to 2 extra supporting images (optional).** The supporting images are genuinely optional — skip them entirely unless they earn their place. When you do include them, they must be *relevant* to the brief's content and *consistent* with its aesthetic (same warm-cream + single-accent palette, same atmospheric/abstract mood, no text/logos/people). Each supporting image should either anchor a specific section it sits next to (then it should reflect that section's subject) or set a general mood that complements the overall piece. Never generate per-section images mechanically — the brief is meant to be scanned, not browsed.
 
