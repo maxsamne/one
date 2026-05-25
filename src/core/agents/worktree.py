@@ -16,6 +16,7 @@ _GIT_RESOURCE = "git:repo"
 
 # Open a draft PR on origin after a successful merge+push.
 AUTO_OPEN_PR = True
+DEFAULT_TASK_BASE_BRANCH = "main"
 
 
 @dataclass(frozen=True)
@@ -92,7 +93,10 @@ async def setup(
     """Create the task's base branch + one worktree per provider.
 
     Returns (starting_ref, base_branch, worktrees). starting_ref is the branch
-    the task forked off — the natural PR target. Holds the repo lock for the
+    the task forked off — the natural PR target. Fresh tasks default to
+    DEFAULT_TASK_BASE_BRANCH rather than the current checkout, so app tasks do
+    not accidentally stack PRs on whatever feature branch the developer is using.
+    Holds the repo lock for the
     whole setup so concurrent tasks don't fight over branch creation.
 
     `reuse_base_branch=True` (single-provider follow-up mode): the worktree
@@ -111,7 +115,7 @@ async def setup(
         starting_ref = base_ref
     else:
         base_branch = f"task/{task_id}"
-        starting_ref = base_ref or await _current_branch()
+        starting_ref = base_ref or DEFAULT_TASK_BASE_BRANCH
 
     async with get_ledger().lock(_GIT_RESOURCE, agent_id=f"{task_id}:setup"):
         if not reuse_base_branch and base_ref is None:
