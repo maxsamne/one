@@ -5,10 +5,13 @@ from typing import Any
 
 from exa_py import AsyncExa
 
+from core.text import tokens as _count_tokens
+
 logger = logging.getLogger(__name__)
 
 _NUM_RESULTS = 8
 _MAX_HIGHLIGHT_CHARS = 2_000
+_MAX_WEB_SEARCH_OUTPUT_TOKENS = 10_000
 _LOW_BUDGET_WARNING = 5
 
 
@@ -72,6 +75,54 @@ async def _call_exa(exa: AsyncExa, query: str) -> str:
         num_results=_NUM_RESULTS,
         contents={"highlights": {"max_characters": _MAX_HIGHLIGHT_CHARS}},
     )
-    return json.dumps(
-        [{"title": r.title, "url": r.url, "highlights": r.highlights or []} for r in resp.results]
-    )
+    return json.dumps(_format_results(resp.results), ensure_ascii=False)
+
+
+def _truncate_highlight(text: str, max_chars: int) -> str:
+    if max_chars <= 0:
+        return "[highlight omitted to fit web_search output budget]"
+    if len(text) <= max_chars:
+        return text
+    omitted = len(text) - max_chars
+    keep = max(0, max_chars - 32)
+    return text[:keep].rstrip() + f" [...{omitted} chars truncated]"
+
+
+def _apply_highlight_cap(items: list[dict[str, Any]], max_chars: int) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for item in items:
+        highlights = item["highlights"]
+        capped = [_truncate_highlight(h, max_chars) for h in highlights]
+        out.append({**item, "highlights": capped})
+    return out
+
+
+def _format_results(
+    results: list[Any],
+    *,
+    max_output_tokens: int = _MAX_WEB_SEARCH_OUTPUT_TOKENS,
+) -> list[dict[str, Any]]:
+    items: list[dict[str, Any]] = []
+    for r in results:
+        item: dict[str, Any] = {
+            "title": getattr(r, "title", None),
+            "url": getattr(r, "url", None),
+            "highlights": [str(h) for h in (getattr(r, "highlights", None) or [])],
+        }
+        items.append(item)
+
+    if _count_tokens(json.dumps(items, ensure_ascii=False)) <= max_output_tokens:
+        return items
+
+    longest = max((len(h) for item in items for h in item["highlights"]), default=0)
+    lo, hi = 0, min(longest, _MAX_HIGHLIGHT_CHARS)
+    best = _apply_highlight_cap(items, 0)
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        candidate = _apply_highlight_cap(items, mid)
+        if _count_tokens(json.dumps(candidate, ensure_ascii=False)) <= max_output_tokens:
+            best = candidate
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return best

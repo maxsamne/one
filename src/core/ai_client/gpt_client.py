@@ -29,6 +29,7 @@ def _user_input(prompt: str, images: list[ImageContent]) -> Any:
         content.append({"type": "input_image", "image_url": data_uri})
     return [{"role": "user", "content": content}]
 
+
 _MAX_TURNS = 200
 
 
@@ -106,8 +107,11 @@ class GptClient(AiClient):
             return resp.output_text or "", inp, out, cached
 
         tool_map = {t.name: t for t in tools}
-        # For tool loop, input_list seeds with the same multimodal user message.
-        input_list: list[Any] = list(user_input) if isinstance(user_input, list) else [{"role": "user", "content": prompt}]
+        input_list: list[Any] = (
+            list(user_input)
+            if isinstance(user_input, list)
+            else [{"role": "user", "content": prompt}]
+        )
         input_tokens = resp.usage.input_tokens if resp.usage else 0
         completion_tokens = resp.usage.output_tokens if resp.usage else 0
         cached_total = _cached(resp.usage)
@@ -142,12 +146,30 @@ class GptClient(AiClient):
             calls = [(fc.name, json.loads(fc.arguments) if isinstance(fc.arguments, str) else fc.arguments) for fc in fn_calls]
             results = await _execute_tools(tool_map, calls)
             for fc, result in zip(fn_calls, results):
-                input_list.append({"type": "function_call_output", "call_id": fc.call_id, "output": result})
+                item = {
+                    "type": "function_call_output",
+                    "call_id": fc.call_id,
+                    "output": result,
+                }
+                input_list.append(item)
             pending_images = pop_pending_multimodal()
             if pending_images:
-                input_list.extend(_user_input("Use these loaded website images as visual references for the next step.", pending_images))
+                image_input = _user_input(
+                    "Use these loaded website images as visual references for the next step.",
+                    pending_images,
+                )
+                image_items = (
+                    list(image_input)
+                    if isinstance(image_input, list)
+                    else [{"role": "user", "content": image_input}]
+                )
+                input_list.extend(image_items)
 
-            resp = await self._client.responses.create(**base, input=input_list, instructions=instructions)
+            resp = await self._client.responses.create(
+                **base,
+                input=input_list,
+                instructions=instructions,
+            )
             iter_input = resp.usage.input_tokens if resp.usage else 0
             iter_output = resp.usage.output_tokens if resp.usage else 0
             iter_cached = _cached(resp.usage)
@@ -155,7 +177,9 @@ class GptClient(AiClient):
             completion_tokens += iter_output
             cached_total += iter_cached
             transcripts.dump(model=self.model_name, iteration=i + 1,
-                             instructions=instructions, input_payload=input_list, output=resp.output,
+                             instructions=instructions,
+                             input_payload=input_list,
+                             output=resp.output,
                              usage={"input": iter_input, "cached": iter_cached, "output": iter_output})
 
         raise RuntimeError(f"Tool loop exceeded {_MAX_TURNS} turns")

@@ -8,6 +8,7 @@ from typing import Any, TypeVar, cast, overload
 from pydantic import BaseModel, ValidationError
 
 from core.ai_client.models import CodeExecution, ImageContent, ThinkingLevel, Tool, WebSearch
+from core.ai_client.tool_output import truncate_tool_results
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -213,7 +214,7 @@ async def _execute_tools(
         _, result = await _run(i)
         results[i] = result
 
-    return results
+    return truncate_tool_results(results)
 
 
 async def _with_retry(
