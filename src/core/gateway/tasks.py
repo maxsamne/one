@@ -32,6 +32,8 @@ class TaskRecord:
     parent_task_id: str | None = None
     # null = let manager auto-classify; "conversational" / "persistent" = force.
     mode_override: str | None = None
+    # Effective mode the manager actually ran with.
+    mode: str | None = None
     _task: asyncio.Task | None = field(default=None, repr=False)
 
     def elapsed(self) -> float | None:
@@ -58,6 +60,7 @@ class TaskRecord:
             "skills":          list(self.skills),
             "graders":         list(self.graders),
             "mode_override":   self.mode_override,
+            "mode":            self.mode,
         }
 
 

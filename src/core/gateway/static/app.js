@@ -1213,9 +1213,10 @@ function selectParentFromDropdown(taskId) {
     if (parent.tier) { state.tier = parent.tier; state.tierManual = true; }
     if (parent.skills?.length)  state.attachedSkills  = [...parent.skills];
     if (parent.graders?.length) state.attachedGraders = [...parent.graders];
-    if (parent.mode_override) {
-      state.mode = parent.mode_override;
-      document.getElementById("mode-select").value = parent.mode_override;
+    const inheritedMode = parent.mode || parent.mode_override;
+    if (inheritedMode) {
+      state.mode = inheritedMode;
+      document.getElementById("mode-select").value = inheritedMode;
     }
   }
   // Strip the trailing `@<query>` token from the textarea so the prompt is clean.

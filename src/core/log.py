@@ -121,6 +121,7 @@ def _get_con() -> sqlite3.Connection:
             "ALTER TABLE tasks ADD COLUMN skills_json TEXT NOT NULL DEFAULT '[]'",
             "ALTER TABLE tasks ADD COLUMN graders_json TEXT NOT NULL DEFAULT '[]'",
             "ALTER TABLE tasks ADD COLUMN mode_override TEXT",
+            "ALTER TABLE tasks ADD COLUMN mode TEXT",
             "ALTER TABLE tasks ADD COLUMN pr_url TEXT",
             "ALTER TABLE schedules ADD COLUMN mode TEXT",
             "ALTER TABLE schedules ADD COLUMN graders_json TEXT NOT NULL DEFAULT '[]'",
@@ -403,6 +404,19 @@ def task_pr_url(task_id: str) -> str | None:
     return row[0] if row and row[0] else None
 
 
+def task_inherited_pr_url(task_id: str | None) -> str | None:
+    """Return the nearest PR URL on a task or its ancestors."""
+    seen: set[str] = set()
+    current = task_id
+    while current and current not in seen:
+        seen.add(current)
+        url = task_pr_url(current)
+        if url:
+            return url
+        current = task_parent_id(current)
+    return None
+
+
 def task_parent_id(task_id: str) -> str | None:
     """Return the parent task id for a follow-up task, if one exists."""
     try:
@@ -411,6 +425,33 @@ def task_parent_id(task_id: str) -> str | None:
     except Exception:
         return None
     return row[0] if row and row[0] else None
+
+
+def task_mode(task_id: str) -> str | None:
+    """Return the effective mode for a task, falling back to explicit override for old rows."""
+    try:
+        with _lock:
+            row = _get_con().execute(
+                "SELECT mode, mode_override FROM tasks WHERE task_id = ?", [task_id],
+            ).fetchone()
+    except Exception:
+        return None
+    if not row:
+        return None
+    return row[0] or row[1] or None
+
+
+def task_inherited_mode(task_id: str | None) -> str | None:
+    """Return the nearest effective mode on a task or its ancestors."""
+    seen: set[str] = set()
+    current = task_id
+    while current and current not in seen:
+        seen.add(current)
+        mode = task_mode(current)
+        if mode:
+            return mode
+        current = task_parent_id(current)
+    return None
 
 
 def tasks_mark_orphaned_cancelled() -> int:
@@ -449,7 +490,7 @@ def tasks_history(status: str | None = "done", limit: int = 20) -> list[dict]:
         rows = _get_con().execute(
             f"""SELECT task_id, prompt, status, submitted_at, finished_at,
                        elapsed_s, parent_task_id, schedule_id, result, tier,
-                       skills_json, graders_json, mode_override, pr_url
+                       skills_json, graders_json, mode_override, mode, pr_url
                 FROM tasks {where} ORDER BY submitted_at DESC LIMIT ?""",
             params,
         ).fetchall()
@@ -464,7 +505,8 @@ def tasks_history(status: str | None = "done", limit: int = 20) -> list[dict]:
             "skills":   json.loads(r[10] or "[]"),
             "graders":  json.loads(r[11] or "[]"),
             "mode_override": r[12],
-            "pr_url": r[13],
+            "mode": r[13],
+            "pr_url": r[14],
         }
         for r in rows
     ]
@@ -515,6 +557,7 @@ def tasks_update(
     error: str | None = None,
     result: str | None = None,
     pr_url: str | None = None,
+    mode: str | None = None,
 ) -> None:
     try:
         with _lock:
@@ -528,9 +571,10 @@ def tasks_update(
                        words_out = COALESCE(?, words_out),
                        error = COALESCE(?, error),
                        result = COALESCE(?, result),
-                       pr_url = COALESCE(?, pr_url)
+                       pr_url = COALESCE(?, pr_url),
+                       mode = COALESCE(?, mode)
                    WHERE task_id = ?""",
-                [status, started_at, finished_at, elapsed_s, tokens_out, words_out, error, result, pr_url, task_id],
+                [status, started_at, finished_at, elapsed_s, tokens_out, words_out, error, result, pr_url, mode, task_id],
             )
             _get_con().commit()
     except Exception:
