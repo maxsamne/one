@@ -6,7 +6,7 @@ import subprocess
 import pytest
 
 from core.agents import graders
-from core.agents.grader import Criterion, GraderHook, MAX_SCORE
+from core.agents.grader import Criterion, GraderHook
 from core.agents.grader_inspector import InspectorEvidence, run_grader_inspection
 from core.agents.hooks import HookContext
 from core.agents.task_ctx import GRADER_DIFF_BASE_CTX, TASK_CTX, TASK_IMAGES_CTX, TaskContext
@@ -33,11 +33,6 @@ def test_suggest_for_skills_matches_attached_skill():
     assert graders.suggest_for_skills(["nonsense/fake.md"]) == []
 
 
-def test_max_score_is_5_for_optimal_check():
-    # MAX_SCORE drives the rubric range; lifting it should not need code changes elsewhere.
-    assert MAX_SCORE == 5
-
-
 def test_instantiate_unknown_grader_raises():
     with pytest.raises(ValueError, match="unknown grader"):
         graders.instantiate("does/not/exist.md")
@@ -53,13 +48,12 @@ async def test_grader_hook_injects_user_prompt_and_images_on_every_call():
         async def complete(self, prompt, images=None, response_model=None, **kw):
             captured["prompt"] = prompt
             captured["images"] = images
-            from core.agents.grader import _CriterionScore, _GradeResponse
+            from core.agents.grader import _GradeResponse
             return _GradeResponse(
-                scores=[
-                    _CriterionScore(name="user_satisfaction", score=5, justification="ok"),
-                    _CriterionScore(name="c", score=5, justification="ok"),
-                ],
-                strengths=[], outstanding=[], key_excerpts=[], feedback="",
+                optimal=True,
+                reason="ok",
+                required_changes=[],
+                evidence=[],
             )
 
     sentinel_imgs = [{"fake": "image"}]
@@ -78,6 +72,7 @@ async def test_grader_hook_injects_user_prompt_and_images_on_every_call():
     assert "user_satisfaction" in captured["prompt"]
     assert "The original user request is the primary scope" in captured["prompt"]
     assert "capability map, not a mandatory checklist" in captured["prompt"]
+    assert "Do not produce numeric scores" in captured["prompt"]
     assert captured["images"] == sentinel_imgs
 
 
@@ -99,13 +94,12 @@ async def test_grader_hook_injects_persistent_task_diff(tmp_path: Path):
     class _StubJudge:
         async def complete(self, prompt, images=None, response_model=None, **kw):
             captured["prompt"] = prompt
-            from core.agents.grader import _CriterionScore, _GradeResponse
+            from core.agents.grader import _GradeResponse
             return _GradeResponse(
-                scores=[
-                    _CriterionScore(name="user_satisfaction", score=5, justification="ok"),
-                    _CriterionScore(name="c", score=5, justification="ok"),
-                ],
-                strengths=[], outstanding=[], key_excerpts=[], feedback="",
+                optimal=True,
+                reason="ok",
+                required_changes=[],
+                evidence=[],
             )
 
     _git(tmp_path, "init", "-q")
@@ -152,13 +146,12 @@ async def test_small_diff_does_not_invoke_grader_inspector(tmp_path: Path, monke
     class _StubJudge:
         async def complete(self, prompt, images=None, response_model=None, **kw):
             captured["prompt"] = prompt
-            from core.agents.grader import _CriterionScore, _GradeResponse
+            from core.agents.grader import _GradeResponse
             return _GradeResponse(
-                scores=[
-                    _CriterionScore(name="user_satisfaction", score=5, justification="ok"),
-                    _CriterionScore(name="c", score=5, justification="ok"),
-                ],
-                strengths=[], outstanding=[], key_excerpts=[], feedback="",
+                optimal=True,
+                reason="ok",
+                required_changes=[],
+                evidence=[],
             )
 
     _git(tmp_path, "init", "-q")
@@ -202,13 +195,12 @@ async def test_truncated_diff_invokes_grader_inspector(tmp_path: Path, monkeypat
                     '"open_questions":[]}'
                 )
             captured["prompt"] = prompt
-            from core.agents.grader import _CriterionScore, _GradeResponse
+            from core.agents.grader import _GradeResponse
             return _GradeResponse(
-                scores=[
-                    _CriterionScore(name="user_satisfaction", score=5, justification="ok"),
-                    _CriterionScore(name="c", score=5, justification="ok"),
-                ],
-                strengths=[], outstanding=[], key_excerpts=[], feedback="",
+                optimal=True,
+                reason="ok",
+                required_changes=[],
+                evidence=[],
             )
 
     _git(tmp_path, "init", "-q")
@@ -242,13 +234,12 @@ async def test_grader_hook_falls_back_to_touched_files_without_git(tmp_path: Pat
     class _StubJudge:
         async def complete(self, prompt, images=None, response_model=None, **kw):
             captured["prompt"] = prompt
-            from core.agents.grader import _CriterionScore, _GradeResponse
+            from core.agents.grader import _GradeResponse
             return _GradeResponse(
-                scores=[
-                    _CriterionScore(name="user_satisfaction", score=5, justification="ok"),
-                    _CriterionScore(name="c", score=5, justification="ok"),
-                ],
-                strengths=[], outstanding=[], key_excerpts=[], feedback="",
+                optimal=True,
+                reason="ok",
+                required_changes=[],
+                evidence=[],
             )
 
     path = tmp_path / "report.html"
@@ -272,28 +263,44 @@ async def test_grader_hook_falls_back_to_touched_files_without_git(tmp_path: Pat
     assert "scratch artifact" in captured["prompt"]
 
 
-async def test_grader_retry_feedback_names_failing_criteria_even_when_judge_says_done():
+async def test_grader_hook_returns_required_changes_when_not_optimal():
     class _StubJudge:
         async def complete(self, prompt, images=None, response_model=None, **kw):
-            from core.agents.grader import _CriterionScore, _GradeResponse
+            from core.agents.grader import _GradeResponse
             return _GradeResponse(
-                scores=[
-                    _CriterionScore(name="user_satisfaction", score=5, justification="ok"),
-                    _CriterionScore(name="craft", score=4, justification="needs one stronger detail"),
-                ],
-                strengths=["aligned"], outstanding=[],
-                key_excerpts=["Done."],
-                feedback="The changes look superb. No further revisions are needed.",
+                optimal=False,
+                reason="The new node is present but visually bolted on.",
+                required_changes=["Integrate the new node more intentionally into the diagram."],
+                evidence=["docs/index.html adds a small Yesterday Test node."],
             )
 
     hook = GraderHook([Criterion(name="craft", description="Has a considered craft detail.")], _StubJudge())
     feedback = await hook.check(HookContext(response="Done.", turn=1, agent_id="t1:gpt", role="coder"))
 
     assert feedback is not None
-    assert "did not score this as optimal" in feedback
-    assert "Revise the actual task output" in feedback
-    assert "craft: 4/5" in feedback
-    assert "No further revisions are needed" in feedback
+    assert "did not accept the work yet" in feedback
+    assert "The new node is present but visually bolted on." in feedback
+    assert "Integrate the new node more intentionally into the diagram." in feedback
+    assert "docs/index.html adds a small Yesterday Test node." in feedback
+
+
+async def test_grader_hook_handles_missing_required_changes_when_not_optimal():
+    class _StubJudge:
+        async def complete(self, prompt, images=None, response_model=None, **kw):
+            from core.agents.grader import _GradeResponse
+            return _GradeResponse(
+                optimal=False,
+                reason="The work misses the requested article link.",
+                required_changes=[],
+                evidence=[],
+            )
+
+    hook = GraderHook([Criterion(name="links", description="Links are correct.")], _StubJudge())
+    feedback = await hook.check(HookContext(response="Done.", turn=1, agent_id="t1:gpt", role="coder"))
+
+    assert feedback is not None
+    assert "The work misses the requested article link." in feedback
+    assert "make a concrete fix" in feedback
 
 
 async def test_grader_inspector_tools_are_read_only():
@@ -375,13 +382,12 @@ async def test_subagent_evidence_is_included_in_final_grader_prompt(tmp_path: Pa
     class _StubJudge:
         async def complete(self, prompt, images=None, response_model=None, **kw):
             captured["prompt"] = prompt
-            from core.agents.grader import _CriterionScore, _GradeResponse
+            from core.agents.grader import _GradeResponse
             return _GradeResponse(
-                scores=[
-                    _CriterionScore(name="user_satisfaction", score=5, justification="ok"),
-                    _CriterionScore(name="layout", score=5, justification="ok"),
-                ],
-                strengths=[], outstanding=[], key_excerpts=[], feedback="",
+                optimal=True,
+                reason="ok",
+                required_changes=[],
+                evidence=[],
             )
 
     _git(tmp_path, "init", "-q")
