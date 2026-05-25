@@ -1,4 +1,5 @@
 const TIERS = ["ultra_cheap", "cheap", "default", "pro"];
+const MODES = ["persistent", "conversational"];
 
 let _markedInstance = null;
 function getMarked() {
@@ -75,7 +76,7 @@ function clampPromptHeight() {
 }
 
 function promptHighlightedHtml(text) {
-  const re = /\/(ultra_cheap|cheap|default|pro)\b/gi;
+  const re = /\/(ultra_cheap|cheap|default|pro)\b|--\s*(persistent|conversational)\b/gi;
   let out = "";
   let last = 0;
   let m;
@@ -126,6 +127,7 @@ function parseTierPrefix(raw) {
 }
 
 const AT_TIER_RE = /\/(ultra_cheap|cheap|default|pro)\b/gi;
+const MODE_FLAG_RE = /--\s*(persistent|conversational)\b/gi;
 
 function lastAtTierInText(text) {
   let m;
@@ -166,9 +168,36 @@ function syncTierFromPrompt() {
   }
 }
 
+function lastModeFlagInText(text) {
+  let m;
+  let last = null;
+  MODE_FLAG_RE.lastIndex = 0;
+  while ((m = MODE_FLAG_RE.exec(text)) !== null) {
+    last = m[1].toLowerCase();
+  }
+  return last;
+}
+
+function syncModeFromPrompt() {
+  const text = document.getElementById("prompt").value;
+  const mode = lastModeFlagInText(text);
+  if (!mode || !MODES.includes(mode)) return;
+  if (mode !== state.mode) {
+    state.mode = mode;
+    document.getElementById("mode-select").value = mode;
+  }
+}
+
 function stripTierMentions(text) {
   return text
     .replace(/\/(ultra_cheap|cheap|default|pro)\b/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function stripModeMentions(text) {
+  return text
+    .replace(/--\s*(persistent|conversational)\b/gi, "")
     .replace(/\s{2,}/g, " ")
     .trim();
 }
@@ -877,6 +906,7 @@ function stripSlashTokenIfPresent(query) {
   // without their next character butting up against the previous word.
   ta.value = ta.value.replace(re, "").replace(/[ \t]{2,}/g, " ").replace(/^\s+/, "");
   syncTierFromPrompt();
+  syncModeFromPrompt();
   clampPromptHeight();
 }
 
@@ -949,6 +979,7 @@ async function submit() {
   if (!raw) return;
 
   syncTierFromPrompt();
+  syncModeFromPrompt();
 
   const parsed = parseTierPrefix(raw);
   if (parsed.tier) {
@@ -959,9 +990,12 @@ async function submit() {
     raw = parsed.task.trim();
   }
   raw = stripTierMentions(raw).trim();
+  raw = stripModeMentions(raw).trim();
   if (!raw) {
     ta.value = "";
     state.tierManual = false;
+    state.mode = "";
+    document.getElementById("mode-select").value = "";
     syncTierFromPrompt();
     clampPromptHeight();
     return;
@@ -1026,6 +1060,7 @@ document.getElementById("chip-add-grader").addEventListener("click", () => {
 const promptEl = document.getElementById("prompt");
 promptEl.addEventListener("input", async () => {
   syncTierFromPrompt();
+  syncModeFromPrompt();
   clampPromptHeight();
   const text = promptEl.value;
   // `@<query>` opens the parent-task picker (DB-backed, restart-safe).
