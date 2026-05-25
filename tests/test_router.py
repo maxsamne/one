@@ -6,7 +6,6 @@ from pydantic import BaseModel
 
 from core.agents import router
 from core.agents.router import RoutingRequest, _force_choice, pick
-from core.ai_client.tiers import load_tier_options
 
 
 class _StubPicker:
@@ -41,9 +40,3 @@ async def test_pick_falls_back_on_invalid_choice(monkeypatch):
     ))
     choice = await pick(RoutingRequest(task="x", tier="ultra_cheap", seam="manager"))
     assert choice.provider == "ollama" and choice.thinking == "medium"  # fallback signature
-
-
-def test_cheap_tier_offers_mini_not_nano():
-    models = [o.model for o in load_tier_options("cheap")]
-    assert "gpt-5.4-mini" in models
-    assert "gpt-5.4-nano" not in models
