@@ -24,12 +24,12 @@ from core.agents import coder, graders, router, skills, workdir_registry, worktr
 from core.agents.coder import _INSTRUCTIONS_BASE, _INSTRUCTIONS_PERSISTENT
 from core.agents.grader import GRADER_HOOK_RETRIES
 from core.agents.hooks import DEFAULT_HOOK_RETRIES, Hook, html_path_refs
-from core.agents.task_ctx import GRADER_DIFF_BASE_CTX, PR_URL_CTX, TASK_GRADERS_CTX, TASK_IMAGES_CTX, TASK_SKILLS_CTX, TIER_CTX, current_task_id
+from core.agents.task_ctx import GRADER_DIFF_BASE_CTX, PR_URL_CTX, TASK_EFFECTIVE_MODE_CTX, TASK_GRADERS_CTX, TASK_IMAGES_CTX, TASK_SKILLS_CTX, TIER_CTX, current_task_id
 from core.ai_client import AiClient
 from core.ai_client.models import ImageContent, ThinkingLevel, Tool
 from core.log import Category
 from core.log import log as _log
-from core.log import task_parent_id, task_pr_url
+from core.log import task_inherited_pr_url, task_parent_id
 from core.log import transcript_load
 from core.prompt import date_context
 from core.tools.calc import CALC_TOOLS
@@ -380,6 +380,7 @@ async def run(
         mode = TaskMode(mode_override) if not isinstance(mode_override, TaskMode) else mode_override
     else:
         mode = await _classify_mode(task, orchestrator)
+    TASK_EFFECTIVE_MODE_CTX.set(mode.value)
     prior_history = transcript_load(parent_task_id) if parent_task_id else None
     if parent_task_id and prior_history is None:
         _log(Category.AGENT, "parent transcript missing", parent=parent_task_id)
@@ -469,7 +470,7 @@ async def _dispatch(
             if reuse_parent_branch and parent_base:
                 await branch_stack.enter_async_context(worktree.branch_lock(parent_base, agent_id=f"{task_id}:follow-up"))
             if parent_task_id:
-                parent_url = task_pr_url(parent_task_id)
+                parent_url = task_inherited_pr_url(parent_task_id)
                 if reuse_parent_branch and parent_url:
                     PR_URL_CTX.set(parent_url)
                 _log(Category.AGENT, "follow-up base",

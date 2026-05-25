@@ -76,3 +76,8 @@ TASK_USAGE_LOG: ContextVar[list[tuple[str, int, int, int]]] = ContextVar("task_u
 
 # Set once when a draft PR is opened for a task; read by server.py after manager.run().
 PR_URL_CTX: ContextVar[str | None] = ContextVar("pr_url_ctx", default=None)
+
+
+# Effective mode selected by manager after auto-classification / override resolution.
+# Persisted by the gateway so follow-ups can inherit persistent vs conversational behavior.
+TASK_EFFECTIVE_MODE_CTX: ContextVar[str | None] = ContextVar("task_effective_mode_ctx", default=None)

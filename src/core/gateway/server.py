@@ -24,13 +24,13 @@ from sse_starlette.sse import EventSourceResponse
 
 from core.agents import graders as graders_mod
 from core.agents import manager, skills
-from core.agents.task_ctx import EXA_CALL_LOG, PR_URL_CTX, TASK_CTX, TASK_GRADERS_CTX, TASK_IMAGES_CTX, TASK_SKILLS_CTX, TASK_USAGE_LOG, TIER_CTX, TaskContext, new_task_id
+from core.agents.task_ctx import EXA_CALL_LOG, PR_URL_CTX, TASK_CTX, TASK_EFFECTIVE_MODE_CTX, TASK_GRADERS_CTX, TASK_IMAGES_CTX, TASK_SKILLS_CTX, TASK_USAGE_LOG, TIER_CTX, TaskContext, new_task_id
 from core import presets as presets_mod
 from core.ai_client import AiClient, EmbeddingModel, ImageContent, ModelProvider, create_client, create_embedding_client
 from core.ai_client.fallback_client import is_unavailable
 from core.events import publish, subscribe, unsubscribe
 from core.gateway.tasks import TaskRecord, TaskStatus, get, list_all, register
-from core.log import Category, recent, task_id_exists, task_parent_id, tasks_history, tasks_insert, tasks_mark_orphaned_cancelled, tasks_update
+from core.log import Category, recent, task_id_exists, task_inherited_mode, task_parent_id, tasks_history, tasks_insert, tasks_mark_orphaned_cancelled, tasks_update
 from core.log import log as _log
 from core.log import stat_inc
 from core.scheduler import runner as scheduler_runner
@@ -123,6 +123,7 @@ class TaskResponse(BaseModel):
     skills: list[str] = []
     graders: list[str] = []
     mode_override: str | None = None
+    mode: str | None = None
 
 
 # --- Background runner ---
@@ -142,6 +143,7 @@ async def _run(record: TaskRecord) -> None:
     usage_log: list[tuple[str, int, int, int]] = []
     usage_token = TASK_USAGE_LOG.set(usage_log)
     pr_token = PR_URL_CTX.set(None)
+    mode_token = TASK_EFFECTIVE_MODE_CTX.set(None)
     tier = _get_tier(record.tier)
     _log(Category.GATEWAY, "task started", task=record.prompt[:120], tier=record.tier)
     stat_inc("gateway.tasks")
@@ -167,6 +169,7 @@ async def _run(record: TaskRecord) -> None:
                 raise
         record.result = result
         record.pr_url = PR_URL_CTX.get()
+        record.mode = TASK_EFFECTIVE_MODE_CTX.get()
         record.status = "done"
     except asyncio.CancelledError:
         record.status = "cancelled"
@@ -185,7 +188,11 @@ async def _run(record: TaskRecord) -> None:
         TASK_CTX.reset(task_token)
         EXA_CALL_LOG.reset(exa_token)
         TASK_USAGE_LOG.reset(usage_token)
+        effective_mode = record.mode or TASK_EFFECTIVE_MODE_CTX.get()
+        if effective_mode:
+            record.mode = effective_mode
         PR_URL_CTX.reset(pr_token)
+        TASK_EFFECTIVE_MODE_CTX.reset(mode_token)
         elapsed = round(record.finished_at - (record.started_at or record.finished_at), 2)
         ts = text_stats(record.result or "")
         total_in = sum(inp for _, inp, _, _ in usage_log)
@@ -203,6 +210,7 @@ async def _run(record: TaskRecord) -> None:
             error=record.error,
             result=record.result,
             pr_url=record.pr_url,
+            mode=record.mode,
         )
         # Sentinel: wake up any SSE consumers waiting on this task.
         publish(record.task_id, {"type": "done", "status": record.status,
@@ -335,11 +343,15 @@ async def submit_task(req: TaskRequest) -> TaskSubmitted:
     if req.mode is not None and req.mode not in _VALID_MODES:
         raise HTTPException(status_code=400, detail=f"mode must be one of {sorted(_VALID_MODES)} or null")
 
+    mode = req.mode
+    if mode is None and req.parent_task_id:
+        mode = task_inherited_mode(req.parent_task_id)
+
     record = _spawn_task(
         prompt=req.task, tier=req.tier, skills_paths=list(req.skills),
         graders_paths=list(req.graders),
         images=images, parent_task_id=req.parent_task_id,
-        mode_override=req.mode,
+        mode_override=mode,
     )
     return TaskSubmitted(task_id=record.task_id)
 
@@ -450,6 +462,7 @@ class TaskHistoryItem(BaseModel):
     skills: list[str] = []
     graders: list[str] = []
     mode_override: str | None = None
+    mode: str | None = None
     pr_url: str | None = None
 
 
