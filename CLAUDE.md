@@ -84,7 +84,12 @@ tool = Tool(name="x", description="...", parameters={...}, fn=my_fn,
             is_read_only=True, is_concurrency_safe=True)
 ```
 
-Safe tools run in parallel within a turn; unsafe tools run serially.
+Safe tools run in parallel within a turn; unsafe tools run serially. `_execute_tools`
+automatically caps the returned tool-output batch before any provider feeds it
+back to the model: 8k tokens per individual result and 12k tokens per parallel-call
+batch, preserving head/tail content and marking truncation. Tool authors should
+still prefer targeted ranges, pagination, and path-only search modes so the
+model receives the most relevant slice instead of a truncated dump.
 
 ### Exa web search (as tool)
 
@@ -116,7 +121,7 @@ from core.tools.web import make_web_search_tool
 All paths relative to `WORKDIR` (ContextVar, defaults to repo root — overridden per worktree).
 
 **FS:** `read_file`, `write_file`, `edit_file`, `grep_file`, `list_dir`, `delete_file`
-  · `grep_file` accepts a directory (or empty path = repo root) and recurses, skipping `.git`/`node_modules`/`.venv`/etc.
+  · `grep_file` accepts a file or directory (empty path = repo root), defaults to matching file paths, and supports `output_mode="content"` for line-numbered matches with 3 context lines or `output_mode="count"` for per-file counts.
 **Shell:** `run_shell` — arbitrary shell commands in the workdir
 **Git:** `git_status`, `git_diff`, `git_log`, `git_add`, `git_commit`, `git_push`, `git_create_branch`, `git_checkout`
 **Calc:** `calculate` (safe AST math, supports `^`), `months_between` (ISO dates or `"today"`)

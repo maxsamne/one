@@ -2,6 +2,7 @@
 
 from core.tools.ctx import WORKDIR
 from core.tools.fs import read_file
+from core.text import tokens
 
 
 async def test_read_file_full_includes_total_lines_header(tmp_path):
@@ -40,7 +41,22 @@ async def test_read_file_expands_tiny_ranges_in_large_files(tmp_path):
         WORKDIR.reset(tok)
     header, _, rest = out.partition("\n")
     note, _, body = rest.partition("\n")
-    assert header == "[large.txt · lines 3-52 of 100]"
-    assert note == "[read_file expanded requested lines 3-5 to 3-52; minimum targeted read is 50 lines]"
+    assert header == "[large.txt · lines 3-32 of 100]"
+    assert note == "[read_file expanded requested lines 3-5 to 3-32; minimum targeted read is 30 lines]"
     assert body.startswith("3\n4\n5\n")
-    assert body.endswith("52\n")
+    assert body.endswith("32\n")
+
+
+async def test_read_file_full_large_file_is_token_capped(tmp_path):
+    f = tmp_path / "huge.txt"
+    f.write_text("HEAD\n" + ("middle words\n" * 20_000) + "TAIL\n", encoding="utf-8")
+    tok = WORKDIR.set(tmp_path)
+    try:
+        out = await read_file("huge.txt")
+    finally:
+        WORKDIR.reset(tok)
+
+    assert "[read_file truncated full-file output to 8000 tokens" in out
+    assert "HEAD" in out
+    assert "TAIL" in out
+    assert tokens(out) <= 8_200
