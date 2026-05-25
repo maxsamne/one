@@ -207,6 +207,22 @@ async def test_new_task_setup_fast_forwards_current_branch_from_origin(repo):
         await worktree.cleanup(wts)
 
 
+async def test_new_task_setup_defaults_to_main_even_from_feature_branch(repo):
+    _run(["git", "checkout", "-q", "-b", "codex/local-feature"], repo)
+    (repo / "feature.txt").write_text("feature-only\n")
+    _run(["git", "add", "feature.txt"], repo)
+    _run(["git", "commit", "-q", "-m", "feature-only commit"], repo)
+
+    starting_ref, base_branch, wts = await worktree.setup("child", ["fakeprov"])
+    try:
+        assert starting_ref == "main"
+        assert base_branch == "task/child"
+        assert not (wts[0].path / "feature.txt").exists()
+        assert (wts[0].path / "README.md").read_text() == "seed\n"
+    finally:
+        await worktree.cleanup(wts)
+
+
 async def test_reuse_base_branch_reports_branch_mismatch(repo):
     _, parent_base, parent_wts = await worktree.setup("parent", ["fakeprov"])
     await worktree.merge("parent", parent_base, parent_wts, push=False)
