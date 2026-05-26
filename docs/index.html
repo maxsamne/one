@@ -30,10 +30,6 @@
       --glass-blur: 4px;
       --glass-saturate: 1.22;
       --glass-brightness: 1.01;
-      --liquid-glass-tint: rgba(255, 253, 248, 0.18);
-      --liquid-glass-haze: rgba(255, 253, 248, 0.22);
-      --liquid-glass-edge: rgba(255, 255, 255, 0.5);
-      --liquid-glass-shadow: 0 18px 38px rgba(38, 37, 33, 0.11), 0 5px 14px rgba(38, 37, 33, 0.04);
       --cover-filter: none;
       
       /* Crisp, tight corners instead of large bubbly rounded ones */
@@ -65,10 +61,6 @@
         --glass-blur: 6px;
         --glass-saturate: 1.18;
         --glass-brightness: 1.0;
-        --liquid-glass-tint: rgba(12, 12, 11, 0.52);
-        --liquid-glass-haze: rgba(215, 215, 210, 0.06);
-        --liquid-glass-edge: rgba(232, 232, 226, 0.24);
-        --liquid-glass-shadow: 0 20px 42px rgba(0, 0, 0, 0.34), 0 7px 18px rgba(0, 0, 0, 0.2);
         --cover-filter: saturate(0.92) brightness(0.84) contrast(0.98);
       }
     }
@@ -95,10 +87,6 @@
       --glass-blur: 6px;
       --glass-saturate: 1.18;
       --glass-brightness: 1.0;
-      --liquid-glass-tint: rgba(12, 12, 11, 0.52);
-      --liquid-glass-haze: rgba(215, 215, 210, 0.06);
-      --liquid-glass-edge: rgba(232, 232, 226, 0.24);
-      --liquid-glass-shadow: 0 20px 42px rgba(0, 0, 0, 0.34), 0 7px 18px rgba(0, 0, 0, 0.2);
       --cover-filter: saturate(0.92) brightness(0.84) contrast(0.98);
     }
     :root[data-theme="light"] {
@@ -123,10 +111,6 @@
       --glass-blur: 4px;
       --glass-saturate: 1.22;
       --glass-brightness: 1.01;
-      --liquid-glass-tint: rgba(255, 253, 248, 0.18);
-      --liquid-glass-haze: rgba(255, 253, 248, 0.22);
-      --liquid-glass-edge: rgba(255, 255, 255, 0.5);
-      --liquid-glass-shadow: 0 18px 38px rgba(38, 37, 33, 0.11), 0 5px 14px rgba(38, 37, 33, 0.04);
       --cover-filter: none;
     }
 
@@ -617,76 +601,28 @@
       font-weight: 500;
     }
 
-    /* Liquid glass shelf pocket */
+    /* Glass Shelf Pocket - Less rounded, sharper structure */
     .book-glass-pocket {
       position: absolute;
-      bottom: 2px;
-      left: 24px;
-      right: 24px;
-      height: 108px;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 36%),
-        linear-gradient(180deg, var(--liquid-glass-haze), var(--liquid-glass-tint));
-      border: 1px solid var(--liquid-glass-edge);
-      border-top-color: rgba(255, 255, 255, 0.5);
+      bottom: 0;
+      left: 10px;
+      right: 10px;
+      height: 110px;
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-edge);
+      border-top: 1px solid var(--glass-top);
       border-radius: var(--radius-md);
-      backdrop-filter: blur(14px) saturate(1.12) brightness(0.96);
-      -webkit-backdrop-filter: blur(14px) saturate(1.12) brightness(0.96);
+      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
       box-shadow: 
-        inset 0 1px 0.8px rgba(255, 255, 255, 0.46),
-        inset 0 -1px 1px rgba(0, 0, 0, 0.08),
-        inset 10px 0 20px rgba(255, 255, 255, 0.04),
-        inset -12px 0 22px rgba(0, 0, 0, 0.06),
-        var(--liquid-glass-shadow);
+        inset 0 1px 0.8px var(--glass-inset),
+        inset 0 -1px 1px rgba(0, 0, 0, 0.04),
+        var(--glass-shadow);
       z-index: 5;
       pointer-events: none;
       transform: perspective(800px) rotateX(3deg);
       overflow: hidden;
       isolation: isolate;
-    }
-
-    .book-glass-pocket::before,
-    .book-glass-pocket::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-    }
-
-    .book-glass-pocket::before {
-      background:
-        radial-gradient(ellipse at 16% 0%, rgba(127, 184, 157, 0.16), transparent 34%),
-        radial-gradient(ellipse at 68% 0%, rgba(247, 192, 105, 0.14), transparent 30%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 42%);
-      opacity: 0.5;
-    }
-
-    .book-glass-pocket::after {
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.13), transparent 26%),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.06), transparent 10% 90%, rgba(255, 255, 255, 0.04));
-      backdrop-filter: blur(3px) saturate(1.22) brightness(1.06);
-      -webkit-backdrop-filter: blur(3px) saturate(1.22) brightness(1.06);
-      opacity: 0.48;
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.5),
-        inset 1px 0 0 rgba(255, 255, 255, 0.12),
-        inset -1px 0 0 rgba(255, 255, 255, 0.1),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.14);
-    }
-
-    :root[data-theme="dark"] .book-glass-pocket {
-      border-top-color: rgba(255, 255, 255, 0.28);
-      backdrop-filter: blur(16px) saturate(1.08) brightness(0.84);
-      -webkit-backdrop-filter: blur(16px) saturate(1.08) brightness(0.84);
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme="light"]) .book-glass-pocket {
-        border-top-color: rgba(255, 255, 255, 0.28);
-        backdrop-filter: blur(16px) saturate(1.08) brightness(0.84);
-        -webkit-backdrop-filter: blur(16px) saturate(1.08) brightness(0.84);
-      }
     }
 
     .shelf-caption-link {
@@ -803,6 +739,7 @@
   </style>
 </head>
 <body>
+
   <nav class="theme-dock" id="theme-dock" aria-label="Site controls">
     <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode" title="Switch to dark mode">
       <span class="theme-toggle__icon" aria-hidden="true">◐</span>
@@ -943,7 +880,7 @@
             <h3 class="book-title">Silicon Sociology</h3>
           </div>
           <div class="book-cover-container">
-            <img class="book-cover" src="images/silicon-sociology-cover.png" alt="Silicon Sociology Cover">
+            <img class="book-cover" src="/one/images/silicon-sociology-cover.png" alt="Silicon Sociology Cover">
           </div>
           <div class="book-footer">
             <span>by M. Samne</span>
@@ -956,7 +893,7 @@
             <h3 class="book-title">The Yesterday Test</h3>
           </div>
           <div class="book-cover-container">
-            <img class="book-cover" src="images/the-yesterday-test-cover.png" alt="Editorial cover image of an early rocket or proto-aircraft being tested at dawn, with subtle archival engineering overlays.">
+            <img class="book-cover" src="/one/images/the-yesterday-test-cover.png" alt="Editorial cover image of an early rocket or proto-aircraft being tested at dawn, with subtle archival engineering overlays.">
           </div>
           <div class="book-footer">
             <span>by M. Samne</span>
@@ -1056,7 +993,6 @@
     window.addEventListener('scroll', updateFloatingPill, { passive: true });
     window.addEventListener('resize', updateFloatingPill);
     updateFloatingPill();
-
   </script>
   <script src="scripts/theme.js"></script>
 </body>
