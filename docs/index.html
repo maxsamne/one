@@ -1087,7 +1087,7 @@
       const rect = themeDock.getBoundingClientRect();
       const centerX = x + rect.width / 2;
       const centerY = y + rect.height / 2;
-      const gridOriginX = window.innerWidth / 2;
+      const gridOriginX = (window.innerWidth - THEME_GRID_SIZE) / 2;
       const snappedCenterX = gridOriginX + Math.round((centerX - gridOriginX) / THEME_GRID_SIZE) * THEME_GRID_SIZE;
       const snappedCenterY = Math.round(centerY / THEME_GRID_SIZE) * THEME_GRID_SIZE;
       return setThemeDockPosition(snappedCenterX - rect.width / 2, snappedCenterY - rect.height / 2);
