@@ -46,10 +46,10 @@
         --shadow-card: 0 14px 40px rgba(0, 0, 0, 0.3), 0 2px 10px rgba(0, 0, 0, 0.18);
         --shadow-card-hover: 0 20px 52px rgba(0, 0, 0, 0.38), 0 4px 14px rgba(0, 0, 0, 0.24);
         --grid-line: rgba(255, 255, 255, 0.05);
-        --glass-surface: rgba(255, 253, 248, 0.22);
-        --glass-edge: rgba(255, 255, 255, 0.4);
-        --glass-top: rgba(255, 255, 255, 0.7);
-        --glass-inset: rgba(255, 255, 255, 0.5);
+        --glass-surface: rgba(16, 16, 15, 0.58);
+        --glass-edge: rgba(255, 255, 255, 0.16);
+        --glass-top: rgba(255, 255, 255, 0.35);
+        --glass-inset: rgba(255, 255, 255, 0.16);
         --cover-filter: saturate(0.92) brightness(0.84) contrast(0.98);
       }
     }
@@ -67,10 +67,10 @@
       --shadow-card: 0 14px 40px rgba(0, 0, 0, 0.3), 0 2px 10px rgba(0, 0, 0, 0.18);
       --shadow-card-hover: 0 20px 52px rgba(0, 0, 0, 0.38), 0 4px 14px rgba(0, 0, 0, 0.24);
       --grid-line: rgba(255, 255, 255, 0.05);
-      --glass-surface: rgba(255, 253, 248, 0.22);
-      --glass-edge: rgba(255, 255, 255, 0.4);
-      --glass-top: rgba(255, 255, 255, 0.7);
-      --glass-inset: rgba(255, 255, 255, 0.5);
+      --glass-surface: rgba(16, 16, 15, 0.58);
+      --glass-edge: rgba(255, 255, 255, 0.16);
+      --glass-top: rgba(255, 255, 255, 0.35);
+      --glass-inset: rgba(255, 255, 255, 0.16);
       --cover-filter: saturate(0.92) brightness(0.84) contrast(0.98);
     }
     :root[data-theme="light"] {
@@ -763,7 +763,7 @@
       color: var(--ink);
       border-radius: 5px;
       padding: 0;
-      cursor: grab;
+      cursor: pointer;
       box-shadow:
         0 10px 26px rgba(0, 0, 0, 0.16),
         inset 0 1px 1px var(--glass-inset);
@@ -774,6 +774,9 @@
     .theme-toggle:hover {
       transform: translateY(-1px) scale(1.02);
       background: rgba(255, 253, 248, 0.3);
+    }
+    :root[data-theme="dark"] .theme-toggle:hover {
+      background: rgba(22, 22, 20, 0.72);
     }
     .theme-toggle:focus-visible {
       outline: 3px solid var(--accent);
@@ -1053,6 +1056,7 @@
     const themeToggle = document.getElementById('theme-toggle');
     const THEME_KEY = 'one-theme';
     const THEME_POSITION_KEY = 'one-theme-toggle-position';
+    const THEME_GRID_SIZE = 24;
 
     function applyTheme(theme) {
       document.documentElement.dataset.theme = theme;
@@ -1079,15 +1083,25 @@
       return { x: nextX, y: nextY };
     }
 
+    function snapThemeDockPosition(x, y) {
+      const rect = themeDock.getBoundingClientRect();
+      const centerX = x + rect.width / 2;
+      const centerY = y + rect.height / 2;
+      const gridOriginX = window.innerWidth / 2;
+      const snappedCenterX = gridOriginX + Math.round((centerX - gridOriginX) / THEME_GRID_SIZE) * THEME_GRID_SIZE;
+      const snappedCenterY = Math.round(centerY / THEME_GRID_SIZE) * THEME_GRID_SIZE;
+      return setThemeDockPosition(snappedCenterX - rect.width / 2, snappedCenterY - rect.height / 2);
+    }
+
     function restoreThemeDockPosition() {
       try {
         const saved = JSON.parse(localStorage.getItem(THEME_POSITION_KEY) || 'null');
         if (saved && Number.isFinite(saved.x) && Number.isFinite(saved.y)) {
-          setThemeDockPosition(saved.x, saved.y);
+          snapThemeDockPosition(saved.x, saved.y);
           return;
         }
       } catch (e) {}
-      setThemeDockPosition(window.innerWidth - 49, 24);
+      snapThemeDockPosition(window.innerWidth - 49, 24);
     }
 
     restoreThemeDockPosition();
@@ -1120,7 +1134,7 @@
 
     function finishThemeDockDrag(event, pointerId) {
       if (!dragState || dragState.pointerId !== pointerId) return;
-      const finalPosition = setThemeDockPosition(
+      const finalPosition = snapThemeDockPosition(
         dragState.left + event.clientX - dragState.startX,
         dragState.top + event.clientY - dragState.startY
       );
@@ -1142,7 +1156,7 @@
     window.addEventListener('mouseup', (event) => finishThemeDockDrag(event, 'mouse'));
     window.addEventListener('resize', () => {
       const rect = themeDock.getBoundingClientRect();
-      const finalPosition = setThemeDockPosition(rect.left, rect.top);
+      const finalPosition = snapThemeDockPosition(rect.left, rect.top);
       try { localStorage.setItem(THEME_POSITION_KEY, JSON.stringify(finalPosition)); } catch (e) {}
     });
 
