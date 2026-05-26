@@ -108,9 +108,10 @@ Output strictly:
 
 Heuristics:
 - Ultra-cheap tier → default to thinking=none. Pick minimal/low only when the task clearly benefits from extra planning, and medium/high only for genuinely deep reasoning or robust multi-step action planning.
-- Quick lookups, simple Q&A → none/minimal + the cheapest/fastest option.
-- Non-ultra-cheap code generation, refactors, multi-step tool use → medium + a stronger option.
+- Quick lookups, simple Q&A, short summarization, and tiny mundane edits → none/minimal + the cheapest/fastest option.
+- Non-ultra-cheap code generation, refactors, web search, multi-step tool use, and serious research → medium + a stronger option.
 - Non-ultra-cheap complex architecture, hard math, deep analysis → high + the strongest option.
+- Treat gpt-5.4-nano as the cheapest option for only the most basic, low-stakes tasks; otherwise bias to gpt-5.4-mini or Claude Haiku for reliability.
 - Sub-agents in read_only mode are usually lookups → bias cheap.
 - Sub-agents in worktree mode are usually real coding → bias stronger.
 - Default-tier long-form article writing, essays, editorial drafts, and tasks using the article-writer skill → prefer the OpenAI `gpt-5.4` option with medium thinking. Use Gemini for article work only when unusually long-context synthesis or multimodal reference handling is the dominant need.

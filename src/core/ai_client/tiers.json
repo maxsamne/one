@@ -29,9 +29,11 @@
     "coder":   {"provider": "openai", "model": "gpt-5.4-mini"},
     "image_gen": {"provider": "openai", "model": "gpt-image-2"},
     "options": [
-      {"provider": "openai", "model": "gpt-5.4-mini",     "desc": "Fast, cheap default.",
+      {"provider": "openai", "model": "gpt-5.4-nano",  "desc": "Ultra-cheap. Use for very basic, mundane tasks only: tiny code edits, simple research, short summarization, and other low-stakes one-off work.",
+       "fallback": {"provider": "openai", "model": "gpt-5.4-mini"}},
+      {"provider": "openai", "model": "gpt-5.4-mini",   "desc": "Cheap generalist. Use for serious coding, non-trivial research, web search, and multi-step reasoning when reliability matters.",
        "fallback": {"provider": "ollama", "model": "qwen3.5:9b"}},
-      {"provider": "claude", "model": "claude-haiku-4-5", "desc": "Best code editing.",
+      {"provider": "claude", "model": "claude-haiku-4-5", "desc": "Paused for router selection due to reliability. Treat as effectively unavailable to the router unless explicitly forced; prefer gpt-5.4-mini instead.",
        "fallback": {"provider": "openai", "model": "gpt-5.4-mini"}}
     ],
     "fallback": {
