@@ -305,17 +305,17 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 18px;
-      height: 18px;
+      width: 24px;
+      height: 24px;
       border: 1px solid var(--glass-edge);
       border-top-color: var(--glass-top);
       background: var(--glass-surface);
       color: var(--ink);
-      border-radius: 4px;
+      border-radius: 5px;
       padding: 0;
       cursor: grab;
       box-shadow:
-        0 7px 18px rgba(0, 0, 0, 0.14),
+        0 10px 26px rgba(0, 0, 0, 0.16),
         inset 0 1px 1px var(--glass-inset);
       backdrop-filter: blur(18px) saturate(1.08);
       -webkit-backdrop-filter: blur(18px) saturate(1.08);
@@ -338,7 +338,7 @@
       transition: none;
     }
     .theme-toggle .theme-toggle__icon {
-      font-size: 13px;
+      font-size: 15px;
       line-height: 1;
       display: inline-flex;
       align-items: center;
@@ -574,8 +574,8 @@
 
     function setThemeDockPosition(x, y) {
       const rect = themeDock.getBoundingClientRect();
-      const maxX = Math.max(0, window.innerWidth - rect.width);
-      const maxY = Math.max(0, window.innerHeight - rect.height);
+      const maxX = Math.max(0, document.documentElement.clientWidth - rect.width);
+      const maxY = Math.max(0, document.documentElement.clientHeight - rect.height);
       const nextX = Math.min(Math.max(0, x), maxX);
       const nextY = Math.min(Math.max(0, y), maxY);
       themeDock.style.setProperty('--theme-toggle-x', `${nextX}px`);
@@ -584,7 +584,7 @@
     }
 
     function snapThemeDockPosition(x, y) {
-      const gridOriginX = (window.innerWidth - THEME_GRID_SIZE) / 2;
+      const gridOriginX = (document.documentElement.clientWidth - THEME_GRID_SIZE) / 2;
       const snappedX = gridOriginX + Math.round((x - gridOriginX) / THEME_GRID_SIZE) * THEME_GRID_SIZE;
       const snappedY = Math.round(y / THEME_GRID_SIZE) * THEME_GRID_SIZE;
       return setThemeDockPosition(snappedX, snappedY);
@@ -598,7 +598,7 @@
           return;
         }
       } catch (e) {}
-      snapThemeDockPosition(window.innerWidth - 48, 24);
+      snapThemeDockPosition(document.documentElement.clientWidth - 48, 24);
     }
 
     restoreThemeDockPosition();
