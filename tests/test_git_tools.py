@@ -38,22 +38,26 @@ async def test_git_diff_timeline_shows_commit_by_commit_patches(tmp_path):
     assert "+blur: glass" in out
 
 
-async def test_git_diff_timeline_stat_mode_omits_patch(tmp_path):
+async def test_git_diff_timeline_bounds_commit_count(tmp_path):
     _git(tmp_path, "init", "-b", "main")
     _git(tmp_path, "config", "user.email", "test@example.com")
     _git(tmp_path, "config", "user.name", "Test User")
     (tmp_path / "a.txt").write_text("a\n", encoding="utf-8")
     _commit(tmp_path, "Initial")
     _git(tmp_path, "checkout", "-b", "feature")
-    (tmp_path / "a.txt").write_text("b\n", encoding="utf-8")
-    _commit(tmp_path, "Change a")
+    for idx in range(3):
+        (tmp_path / "a.txt").write_text(f"{idx}\n", encoding="utf-8")
+        _commit(tmp_path, f"Change {idx}")
 
     tok = WORKDIR.set(tmp_path)
     try:
-        out = await git_diff_timeline(base="main", output_mode="stat")
+        out = await git_diff_timeline(base="main", n=2)
     finally:
         WORKDIR.reset(tok)
 
-    assert "Change a" in out
-    assert "a.txt" in out
-    assert "```diff" not in out
+    assert "showing 2 of 3 commit(s)" in out
+    assert "1 older commit(s) omitted" in out
+    assert "Change 0" not in out
+    assert "Change 1" in out
+    assert "Change 2" in out
+    assert "```diff" in out

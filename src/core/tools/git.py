@@ -91,15 +91,10 @@ def _clip_text(text: str, max_bytes: int) -> str:
 async def git_diff_timeline(
     base: str = "main",
     n: int = _TIMELINE_DEFAULT_COMMITS,
-    output_mode: str = "patch",
     path: str | None = None,
 ) -> str:
-    """Show per-commit branch history, oldest to newest, with bounded diffs."""
-    args = {"base": base, "n": n, "output_mode": output_mode, "path": path or ""}
-    if output_mode not in {"stat", "patch"}:
-        result = "FATAL: invalid output_mode; use 'stat' or 'patch'"
-        log_call("git_diff_timeline", args, result)
-        return result
+    """Show recent branch commits since a base ref, oldest to newest, with bounded diffs."""
+    args = {"base": base, "n": n, "path": path or ""}
     n = max(1, min(int(n or _TIMELINE_DEFAULT_COMMITS), _TIMELINE_MAX_COMMITS))
 
     rc, merge_base = await _git_raw("merge-base", base, "HEAD")
@@ -149,17 +144,16 @@ async def git_diff_timeline(
         rc, stat = await _git_raw("show", "--stat", "--format=", commit, *pathspec)
         stat = stat or "(no matching file changes)"
         section = [f"## {idx}. {title}", "```text", stat, "```"]
-        if output_mode == "patch":
-            rc, patch = await _git_raw(
-                "show",
-                "--format=",
-                "--find-renames",
-                "--unified=2",
-                commit,
-                *pathspec,
-            )
-            patch = _clip_text(patch or "(no matching patch)", _TIMELINE_PER_COMMIT_PATCH_BYTES)
-            section.extend(["```diff", patch, "```"])
+        rc, patch = await _git_raw(
+            "show",
+            "--format=",
+            "--find-renames",
+            "--unified=2",
+            commit,
+            *pathspec,
+        )
+        patch = _clip_text(patch or "(no matching patch)", _TIMELINE_PER_COMMIT_PATCH_BYTES)
+        section.extend(["```diff", patch, "```"])
         sections.append("\n".join(section))
 
     result = _clip_text("\n\n".join(sections), _TIMELINE_MAX_BYTES)
@@ -308,7 +302,7 @@ GIT_LOG = Tool(
 GIT_DIFF_TIMELINE = Tool(
     name="git_diff_timeline",
     description=(
-        "Show commit-by-commit diffs for the current branch since a base ref. "
+        "Show the latest branch commits since a base ref, oldest to newest, with bounded per-commit diffs. "
         "Use this on follow-up PR tasks, regressions, or when the user refers to an earlier version "
         "so you can see how the branch evolved instead of only the final flattened diff."
     ),
@@ -319,19 +313,11 @@ GIT_DIFF_TIMELINE = Tool(
             "n": {
                 "type": "integer",
                 "description": (
-                    "Number of latest branch commits to show, oldest to newest. "
+                    "How many latest branch commits to show since the base ref, oldest to newest. "
                     f"Default {_TIMELINE_DEFAULT_COMMITS}, max {_TIMELINE_MAX_COMMITS}."
                 ),
             },
-            "output_mode": {
-                "type": "string",
-                "enum": ["stat", "patch"],
-                "description": (
-                    "stat = per-commit file stats only; "
-                    "patch = include bounded per-commit patches (default)"
-                ),
-            },
-            "path": {"type": "string", "description": "Optional path filter, e.g. 'docs/index.html'"},
+            "path": {"type": "string", "description": "Optional file or directory path filter, e.g. 'docs/index.html' or 'src/'"},
         },
         "required": [],
     },
