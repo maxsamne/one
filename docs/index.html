@@ -741,13 +741,14 @@
     .theme-dock {
       position: fixed;
       top: var(--theme-toggle-y, 24px);
-      left: var(--theme-toggle-x, calc(100vw - 49px));
+      left: var(--theme-toggle-x, calc(100vw - 48px));
       z-index: 1000;
       max-width: none;
       margin: 0;
       padding: 0;
       display: block;
       font-family: 'Inter', sans-serif;
+      line-height: 0;
       touch-action: none;
     }
 
@@ -755,8 +756,8 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 25px;
-      height: 25px;
+      width: 24px;
+      height: 24px;
       border: 1px solid var(--glass-edge);
       border-top-color: var(--glass-top);
       background: var(--glass-surface);
@@ -1075,23 +1076,20 @@
 
     function setThemeDockPosition(x, y) {
       const rect = themeDock.getBoundingClientRect();
-      const maxX = Math.max(0, window.innerWidth - rect.width - 8);
-      const maxY = Math.max(0, window.innerHeight - rect.height - 8);
-      const nextX = Math.min(Math.max(8, x), maxX);
-      const nextY = Math.min(Math.max(8, y), maxY);
+      const maxX = Math.max(0, window.innerWidth - rect.width);
+      const maxY = Math.max(0, window.innerHeight - rect.height);
+      const nextX = Math.min(Math.max(0, x), maxX);
+      const nextY = Math.min(Math.max(0, y), maxY);
       themeDock.style.setProperty('--theme-toggle-x', `${nextX}px`);
       themeDock.style.setProperty('--theme-toggle-y', `${nextY}px`);
       return { x: nextX, y: nextY };
     }
 
     function snapThemeDockPosition(x, y) {
-      const rect = themeDock.getBoundingClientRect();
-      const centerX = x + rect.width / 2;
-      const centerY = y + rect.height / 2;
       const gridOriginX = (window.innerWidth - THEME_GRID_SIZE) / 2;
-      const snappedCenterX = gridOriginX + Math.round((centerX - gridOriginX) / THEME_GRID_SIZE) * THEME_GRID_SIZE;
-      const snappedCenterY = Math.round(centerY / THEME_GRID_SIZE) * THEME_GRID_SIZE;
-      return setThemeDockPosition(snappedCenterX - rect.width / 2, snappedCenterY - rect.height / 2);
+      const snappedX = gridOriginX + Math.round((x - gridOriginX) / THEME_GRID_SIZE) * THEME_GRID_SIZE;
+      const snappedY = Math.round(y / THEME_GRID_SIZE) * THEME_GRID_SIZE;
+      return setThemeDockPosition(snappedX, snappedY);
     }
 
     function restoreThemeDockPosition() {
@@ -1102,7 +1100,7 @@
           return;
         }
       } catch (e) {}
-      snapThemeDockPosition(window.innerWidth - 49, 24);
+      snapThemeDockPosition(window.innerWidth - 48, 24);
     }
 
     restoreThemeDockPosition();
