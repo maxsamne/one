@@ -172,6 +172,36 @@ async def _changed_html_files(workdir: Path, start_ref: str | None) -> list[Path
     return sorted(changed, key=lambda p: str(p.relative_to(workdir)))
 
 
+async def _changed_docs_preview_html_files(workdir: Path, start_ref: str | None) -> list[Path]:
+    """HTML files to render when docs-site files changed.
+
+    Direct HTML edits render that file. Asset-only docs edits render docs/index.html
+    as the site shell, letting the preview load changed CSS/JS/images from disk.
+    """
+    changed = set(await _changed_html_files(workdir, start_ref))
+    if not start_ref:
+        return sorted(changed, key=lambda p: str(p.relative_to(workdir)))
+
+    changed_rels: set[str] = set()
+    for args in (
+        ("diff", "--name-only", "--diff-filter=ACMR", f"{start_ref}..HEAD"),
+        ("diff", "--name-only", "--diff-filter=ACMR", "HEAD"),
+        ("ls-files", "--others", "--exclude-standard", "--", "docs"),
+    ):
+        rc, out = await worktree._git(*args, cwd=workdir)
+        if rc == 0:
+            changed_rels.update(rel for rel in out.splitlines() if rel.startswith("docs/"))
+
+    docs_asset_changed = any(
+        not rel.endswith(".html") and (workdir / rel).is_file()
+        for rel in changed_rels
+    )
+    if docs_asset_changed and (index := _safe_workdir_file(workdir, "docs/index.html")):
+        changed.add(index)
+
+    return sorted(changed, key=lambda p: str(p.relative_to(workdir)))
+
+
 def _referenced_html_files(response: str, workdir: Path) -> list[Path]:
     files: set[Path] = set()
     for ref in html_path_refs(response):
@@ -529,7 +559,7 @@ async def _dispatch(
                 if cleanup_result:
                     result = f"{result}\n\n---\n\n{cleanup_result}"
                 html_files = {
-                    *await _changed_html_files(workdir, start_head),
+                    *await _changed_docs_preview_html_files(workdir, start_head),
                     *_referenced_html_files(result, workdir),
                 }
                 result = _append_html_artifacts(
@@ -547,7 +577,7 @@ async def _dispatch(
         finally:
             if mode == TaskMode.CONVERSATIONAL and success:
                 html_files = {
-                    *await _changed_html_files(workdir, None),
+                    *await _changed_docs_preview_html_files(workdir, None),
                     *_referenced_html_files(result, workdir),
                 }
                 result = _append_html_artifacts(
