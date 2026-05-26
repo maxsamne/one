@@ -204,7 +204,16 @@ async def _execute_tools(
 
     async def _run(i: int) -> tuple[int, str]:
         name, args = calls[i]
-        res = await tool_map[name].fn(**args) if name in tool_map else f"Unknown tool: {name}"
+        if name not in tool_map:
+            return i, f"Unknown tool: {name}"
+        tool = tool_map[name]
+        normalized_args, error = _normalize_tool_args(tool, args)
+        if error:
+            return i, error
+        try:
+            res = await tool.fn(**normalized_args)
+        except TypeError as e:
+            res = _retryable_tool_arg_error(tool, str(e))
         return i, res
 
     for idx, result in await asyncio.gather(*[_run(i) for i in safe_idx]):
@@ -215,6 +224,30 @@ async def _execute_tools(
         results[i] = result
 
     return truncate_tool_results(results)
+
+
+def _normalize_tool_args(tool: Tool, args: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
+    args = dict(args)
+    required = list(tool.parameters.get("required") or [])
+    if tool.name == "grep_file" and "path" in required and "path" not in args:
+        args["path"] = ""
+    missing = [name for name in required if name not in args]
+    if missing:
+        missing_list = ", ".join(missing)
+        return args, _retryable_tool_arg_error(tool, f"missing required argument(s): {missing_list}")
+    return args, None
+
+
+def _retryable_tool_arg_error(tool: Tool, error: str) -> str:
+    required = ", ".join(tool.parameters.get("required") or []) or "(none)"
+    schema = json.dumps(tool.parameters, sort_keys=True)
+    return (
+        f"RETRYABLE: tool {tool.name} arguments are invalid: {error}\n"
+        f"Required arguments: {required}\n"
+        f"Tool description: {tool.description}\n"
+        f"Tool parameters schema: {schema}\n"
+        f"Retry the tool call using this schema."
+    )
 
 
 async def _with_retry(

@@ -43,17 +43,21 @@ class RoutingRequest:
 class RouterChoice(BaseModel):
     provider: str
     model: str
-    thinking: str = Field(description="One of: minimal, low, medium, high")
+    thinking: str = Field(default="none", description="One of: none, minimal, low, medium, high")
 
-    @field_validator("thinking")
+    @field_validator("thinking", mode="before")
     @classmethod
-    def _norm_thinking(cls, v: str) -> str:
-        v = v.lower().strip()
-        if v not in ("minimal", "low", "medium", "high"):
-            raise ValueError(f"thinking must be one of minimal/low/medium/high, got {v!r}")
+    def _norm_thinking(cls, v: object) -> str:
+        if v is None:
+            return "none"
+        v = str(v).lower().strip()
+        if v not in ("none", "minimal", "low", "medium", "high"):
+            raise ValueError(f"thinking must be one of none/minimal/low/medium/high, got {v!r}")
         return v
 
-    def thinking_level(self) -> ThinkingLevel:
+    def thinking_level(self) -> ThinkingLevel | None:
+        if self.thinking == "none":
+            return None
         return ThinkingLevel(self.thinking)
 
 
@@ -100,16 +104,17 @@ You pick the model and thinking level for the next agent step.
 Output strictly:
 - provider: must match one of the listed options exactly (e.g. "openai", "ollama").
 - model: must match one of the listed options exactly.
-- thinking: minimal | low | medium | high.
+- thinking: none | minimal | low | medium | high. Use none to disable provider reasoning/thinking.
 
 Heuristics:
-- Quick lookups, simple Q&A → minimal/low + the cheapest/fastest option.
-- Code generation, refactors, multi-step tool use → medium + a stronger option.
-- Complex architecture, hard math, deep analysis → high + the strongest option.
+- Ultra-cheap tier → default to thinking=none. Pick minimal/low only when the task clearly benefits from extra planning, and medium/high only for genuinely deep reasoning or robust multi-step action planning.
+- Quick lookups, simple Q&A → none/minimal + the cheapest/fastest option.
+- Non-ultra-cheap code generation, refactors, multi-step tool use → medium + a stronger option.
+- Non-ultra-cheap complex architecture, hard math, deep analysis → high + the strongest option.
 - Sub-agents in read_only mode are usually lookups → bias cheap.
 - Sub-agents in worktree mode are usually real coding → bias stronger.
 - Default-tier long-form article writing, essays, editorial drafts, and tasks using the article-writer skill → prefer the OpenAI `gpt-5.4` option with medium thinking. Use Gemini for article work only when unusually long-context synthesis or multimodal reference handling is the dominant need.
-- If the task mentions an "artifact", "report", "dashboard", "page", "infographic", "interactive", or "visualization" — the deliverable is a structured HTML document with multiple compliance rules (HTML wrapping, image embedding, no markdown leaks). Lean to at least `low` thinking (never `minimal`) and prefer a mid-tier model option.
+- Outside ultra-cheap, if the task mentions an "artifact", "report", "dashboard", "page", "infographic", "interactive", or "visualization" — the deliverable is a structured HTML document with multiple compliance rules (HTML wrapping, image embedding, no markdown leaks). Lean to at least `low` thinking (never `minimal`) and prefer a mid-tier model option.
 
 You MUST pick an option from the list verbatim. Do not invent provider/model names.\
 """
@@ -127,7 +132,7 @@ def _force_choice() -> RouterChoice | None:
     if len(parts) < 2:
         return None
     provider = parts[0]
-    valid_thinking = {"minimal", "low", "medium", "high"}
+    valid_thinking = {"none", "minimal", "low", "medium", "high"}
     if parts[-1].lower() in valid_thinking and len(parts) > 2:
         thinking = parts[-1].lower()
         model = ":".join(parts[1:-1])
@@ -140,7 +145,7 @@ def _force_choice() -> RouterChoice | None:
 async def pick(req: RoutingRequest) -> RouterChoice:
     """Pick (provider, model, thinking) for this delegation seam.
 
-    Falls back to the band's first option with thinking=medium on any failure."""
+    Falls back to the band's first option with thinking=none on any failure."""
     forced = _force_choice()
     if forced is not None:
         _log(Category.AGENT, "router forced", **forced.model_dump())
@@ -181,7 +186,7 @@ async def pick(req: RoutingRequest) -> RouterChoice:
         return choice
     except Exception as e:
         first = options[0]
-        fallback = RouterChoice(provider=first.provider.value, model=first.model, thinking="medium")
+        fallback = RouterChoice(provider=first.provider.value, model=first.model)
         _log(Category.AGENT, "router fallback",
              seam=req.seam, tier=req.tier, error=str(e)[:200], **fallback.model_dump())
         return fallback

@@ -347,7 +347,7 @@ def _build_extra_hooks() -> tuple[list[Hook], int]:
     return grader_hooks, max(GRADER_HOOK_RETRIES, DEFAULT_HOOK_RETRIES)
 
 
-async def _route(task: str, pre_loaded_paths: list[str]) -> tuple[AiClient, ThinkingLevel, str]:
+async def _route(task: str, pre_loaded_paths: list[str]) -> tuple[AiClient, ThinkingLevel | None, str]:
     """Pick (client, thinking, provider_name) via DispatchRouter for the manager → coder seam."""
     choice = await router.pick(router.RoutingRequest(
         task=task, tier=TIER_CTX.get(), seam="manager", skills=pre_loaded_paths,
