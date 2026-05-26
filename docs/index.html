@@ -738,28 +738,51 @@
       color: var(--accent-dark, #3b6b55);
     }
 
+    .theme-dock {
+      position: fixed;
+      top: var(--theme-toggle-y, 24px);
+      left: var(--theme-toggle-x, calc(100vw - 49px));
+      z-index: 1000;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      display: block;
+      font-family: 'Inter', sans-serif;
+      touch-action: none;
+    }
+
     .theme-toggle {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       width: 25px;
       height: 25px;
-      border: 1px solid var(--border);
-      background: var(--surface);
+      border: 1px solid var(--glass-edge);
+      border-top-color: var(--glass-top);
+      background: var(--glass-surface);
       color: var(--ink);
       border-radius: 5px;
       padding: 0;
-      cursor: pointer;
-      box-shadow: var(--shadow-soft);
-      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      cursor: grab;
+      box-shadow:
+        0 10px 26px rgba(0, 0, 0, 0.16),
+        inset 0 1px 1px var(--glass-inset);
+      backdrop-filter: blur(18px) saturate(1.08);
+      -webkit-backdrop-filter: blur(18px) saturate(1.08);
+      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
     }
     .theme-toggle:hover {
-      transform: translateY(-1px);
-      background: var(--tag-bg);
+      transform: translateY(-1px) scale(1.02);
+      background: rgba(255, 253, 248, 0.3);
     }
     .theme-toggle:focus-visible {
       outline: 3px solid var(--accent);
       outline-offset: 3px;
+    }
+    .theme-dock.is-dragging .theme-toggle {
+      cursor: grabbing;
+      transform: scale(1.04);
+      transition: none;
     }
     .theme-toggle .theme-toggle__icon {
       font-size: 15px;
@@ -772,7 +795,7 @@
 </head>
 <body>
 
-  <nav aria-label="Site controls">
+  <nav class="theme-dock" id="theme-dock" aria-label="Site controls">
     <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode" title="Switch to dark mode">
       <span class="theme-toggle__icon" aria-hidden="true">◐</span>
     </button>
@@ -1026,8 +1049,10 @@
     window.addEventListener('scroll', updateFloatingPill, { passive: true });
     window.addEventListener('resize', updateFloatingPill);
     updateFloatingPill();
+    const themeDock = document.getElementById('theme-dock');
     const themeToggle = document.getElementById('theme-toggle');
     const THEME_KEY = 'one-theme';
+    const THEME_POSITION_KEY = 'one-theme-toggle-position';
 
     function applyTheme(theme) {
       document.documentElement.dataset.theme = theme;
@@ -1043,7 +1068,89 @@
     const initialTheme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     applyTheme(initialTheme);
 
-    themeToggle.addEventListener('click', () => {
+    function setThemeDockPosition(x, y) {
+      const rect = themeDock.getBoundingClientRect();
+      const maxX = Math.max(0, window.innerWidth - rect.width - 8);
+      const maxY = Math.max(0, window.innerHeight - rect.height - 8);
+      const nextX = Math.min(Math.max(8, x), maxX);
+      const nextY = Math.min(Math.max(8, y), maxY);
+      themeDock.style.setProperty('--theme-toggle-x', `${nextX}px`);
+      themeDock.style.setProperty('--theme-toggle-y', `${nextY}px`);
+      return { x: nextX, y: nextY };
+    }
+
+    function restoreThemeDockPosition() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(THEME_POSITION_KEY) || 'null');
+        if (saved && Number.isFinite(saved.x) && Number.isFinite(saved.y)) {
+          setThemeDockPosition(saved.x, saved.y);
+          return;
+        }
+      } catch (e) {}
+      setThemeDockPosition(window.innerWidth - 49, 24);
+    }
+
+    restoreThemeDockPosition();
+
+    let dragState = null;
+    function startThemeDockDrag(event, pointerId) {
+      if (dragState && dragState.pointerId !== 'pointer') return;
+      const rect = themeDock.getBoundingClientRect();
+      dragState = {
+        pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        left: rect.left,
+        top: rect.top,
+        moved: false,
+      };
+      if (event.pointerId !== undefined && themeDock.setPointerCapture) {
+        try { themeDock.setPointerCapture(event.pointerId); } catch (e) {}
+      }
+      themeDock.classList.add('is-dragging');
+    }
+
+    function moveThemeDock(event, pointerId) {
+      if (!dragState || dragState.pointerId !== pointerId) return;
+      const dx = event.clientX - dragState.startX;
+      const dy = event.clientY - dragState.startY;
+      if (Math.abs(dx) + Math.abs(dy) > 4) dragState.moved = true;
+      setThemeDockPosition(dragState.left + dx, dragState.top + dy);
+    }
+
+    function finishThemeDockDrag(event, pointerId) {
+      if (!dragState || dragState.pointerId !== pointerId) return;
+      const finalPosition = setThemeDockPosition(
+        dragState.left + event.clientX - dragState.startX,
+        dragState.top + event.clientY - dragState.startY
+      );
+      if (dragState.moved) {
+        themeDock.dataset.dragged = 'true';
+        try { localStorage.setItem(THEME_POSITION_KEY, JSON.stringify(finalPosition)); } catch (e) {}
+      }
+      themeDock.classList.remove('is-dragging');
+      dragState = null;
+      window.setTimeout(() => { delete themeDock.dataset.dragged; }, 0);
+    }
+
+    themeDock.addEventListener('pointerdown', (event) => startThemeDockDrag(event, 'pointer'));
+    themeDock.addEventListener('pointermove', (event) => moveThemeDock(event, 'pointer'));
+    themeDock.addEventListener('pointerup', (event) => finishThemeDockDrag(event, 'pointer'));
+    themeDock.addEventListener('pointercancel', (event) => finishThemeDockDrag(event, 'pointer'));
+    themeDock.addEventListener('mousedown', (event) => startThemeDockDrag(event, 'mouse'));
+    window.addEventListener('mousemove', (event) => moveThemeDock(event, 'mouse'));
+    window.addEventListener('mouseup', (event) => finishThemeDockDrag(event, 'mouse'));
+    window.addEventListener('resize', () => {
+      const rect = themeDock.getBoundingClientRect();
+      const finalPosition = setThemeDockPosition(rect.left, rect.top);
+      try { localStorage.setItem(THEME_POSITION_KEY, JSON.stringify(finalPosition)); } catch (e) {}
+    });
+
+    themeToggle.addEventListener('click', (event) => {
+      if (themeDock.dataset.dragged === 'true') {
+        event.preventDefault();
+        return;
+      }
       const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
       try { localStorage.setItem(THEME_KEY, nextTheme); } catch (e) {}
       applyTheme(nextTheme);
