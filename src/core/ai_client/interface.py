@@ -213,10 +213,7 @@ async def _execute_tools(
         try:
             res = await tool.fn(**normalized_args)
         except TypeError as e:
-            res = (
-                f"RETRYABLE: tool {name} arguments are invalid: {e}. "
-                f"Retry the tool call with the required argument names from its schema."
-            )
+            res = _retryable_tool_arg_error(tool, str(e))
         return i, res
 
     for idx, result in await asyncio.gather(*[_run(i) for i in safe_idx]):
@@ -237,11 +234,20 @@ def _normalize_tool_args(tool: Tool, args: dict[str, Any]) -> tuple[dict[str, An
     missing = [name for name in required if name not in args]
     if missing:
         missing_list = ", ".join(missing)
-        return args, (
-            f"RETRYABLE: tool {tool.name} is missing required argument(s): {missing_list}. "
-            f"Retry the call with these exact argument name(s)."
-        )
+        return args, _retryable_tool_arg_error(tool, f"missing required argument(s): {missing_list}")
     return args, None
+
+
+def _retryable_tool_arg_error(tool: Tool, error: str) -> str:
+    required = ", ".join(tool.parameters.get("required") or []) or "(none)"
+    schema = json.dumps(tool.parameters, sort_keys=True)
+    return (
+        f"RETRYABLE: tool {tool.name} arguments are invalid: {error}\n"
+        f"Required arguments: {required}\n"
+        f"Tool description: {tool.description}\n"
+        f"Tool parameters schema: {schema}\n"
+        f"Retry the tool call using this schema."
+    )
 
 
 async def _with_retry(

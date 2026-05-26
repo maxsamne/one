@@ -92,7 +92,46 @@ async def test_execute_tools_returns_retryable_hint_for_missing_required_arg():
 
     out = await _execute_tools({"needs_name": tool}, [("needs_name", {})])
 
-    assert out == [
-        "RETRYABLE: tool needs_name is missing required argument(s): name. "
-        "Retry the call with these exact argument name(s)."
-    ]
+    assert len(out) == 1
+    assert out[0].startswith("RETRYABLE: tool needs_name arguments are invalid: missing required argument(s): name")
+    assert "Required arguments: name" in out[0]
+    assert "Tool description: needs name" in out[0]
+    assert '"required": ["name"]' in out[0]
+    assert out[0].endswith("Retry the tool call using this schema.")
+
+
+async def test_execute_tools_returns_retryable_hint_for_grep_file_missing_pattern():
+    out = await _execute_tools({"grep_file": GREP_FILE}, [("grep_file", {})])
+
+    assert len(out) == 1
+    assert out[0].startswith("RETRYABLE: tool grep_file arguments are invalid: missing required argument(s): pattern")
+    assert "Required arguments: path, pattern" in out[0]
+    assert f"Tool description: {GREP_FILE.description}" in out[0]
+    assert '"pattern"' in out[0]
+    assert '"path"' in out[0]
+
+
+async def test_execute_tools_returns_retryable_hint_for_runtime_type_error():
+    async def needs_name(name: str) -> str:
+        return name
+
+    tool = Tool(
+        name="needs_name",
+        description="needs name",
+        parameters={
+            "type": "object",
+            "properties": {"name": {"type": "string"}},
+            "required": ["name"],
+        },
+        fn=needs_name,
+        is_read_only=True,
+        is_concurrency_safe=True,
+    )
+
+    out = await _execute_tools({"needs_name": tool}, [("needs_name", {"name": "Ada", "extra": True})])
+
+    assert len(out) == 1
+    assert out[0].startswith("RETRYABLE: tool needs_name arguments are invalid:")
+    assert "unexpected keyword argument 'extra'" in out[0]
+    assert "Required arguments: name" in out[0]
+    assert "Tool description: needs name" in out[0]
