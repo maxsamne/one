@@ -1196,6 +1196,13 @@ body.modal-open { overflow: hidden; }
   background: white; border-radius: 6px; cursor: pointer;
 }
 .sched-form button[type="button"]:hover { background: rgba(0, 0, 0, 0.04); }
+.sched-check {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 8px; border: 1px solid var(--border, #d6cdc1);
+  border-radius: 6px; background: white;
+  font-size: 0.78rem; white-space: nowrap; cursor: pointer;
+}
+.sched-check input { margin: 0; }
 .sched-skills-summary {
   flex: 1; font-size: 0.78rem; color: var(--ink-dim, #807666);
   font-style: italic;
@@ -1232,6 +1239,11 @@ body.modal-open { overflow: hidden; }
   font-size: 0.7rem; text-transform: lowercase;
   padding: 2px 6px; background: rgba(140, 110, 60, 0.14);
   color: #6c5430; border-radius: 4px;
+}
+.sched-catch-tag {
+  font-size: 0.7rem; text-transform: lowercase;
+  padding: 2px 6px; background: rgba(120, 120, 120, 0.12);
+  color: #5f5a52; border-radius: 4px;
 }
 @media (max-width: 720px) {
   .sched-grid { grid-template-columns: minmax(0, 1fr); }

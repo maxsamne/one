@@ -107,6 +107,7 @@ def _get_con() -> sqlite3.Connection:
                 skills_json  TEXT NOT NULL DEFAULT '[]',
                 graders_json TEXT NOT NULL DEFAULT '[]',
                 enabled      INTEGER NOT NULL DEFAULT 1,
+                catch_up     INTEGER NOT NULL DEFAULT 1,
                 created_at   REAL NOT NULL,
                 last_run_at  REAL,
                 mode         TEXT
@@ -125,6 +126,7 @@ def _get_con() -> sqlite3.Connection:
             "ALTER TABLE tasks ADD COLUMN pr_url TEXT",
             "ALTER TABLE schedules ADD COLUMN mode TEXT",
             "ALTER TABLE schedules ADD COLUMN graders_json TEXT NOT NULL DEFAULT '[]'",
+            "ALTER TABLE schedules ADD COLUMN catch_up INTEGER NOT NULL DEFAULT 1",
         ):
             try:
                 _con.execute(col_def)

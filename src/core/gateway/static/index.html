@@ -78,6 +78,10 @@
                   <option value="conversational">conversational</option>
                   <option value="persistent">persistent</option>
                 </select>
+                <label class="sched-check" title="Run once immediately if a scheduled fire was missed while the gateway was down">
+                  <input type="checkbox" id="sched-catch-up" checked />
+                  <span>catch up</span>
+                </label>
               </div>
               <textarea id="sched-prompt" placeholder="prompt (what should fire)" required rows="2"></textarea>
               <div class="sched-row sched-row-end">

@@ -6,6 +6,7 @@ import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
+from core import log as log_mod
 from core.gateway.server import _parse_data_uri, app
 
 
@@ -52,3 +53,29 @@ def test_graders_and_presets_endpoints():
     assert article is not None
     assert "general/article-writer/SKILL.md" in article["skills"]
     assert "general/article-voice.md" in article["graders"]
+
+
+def test_schedule_catch_up_roundtrip(tmp_path, monkeypatch):
+    with log_mod._lock:
+        if log_mod._con is not None:
+            log_mod._con.close()
+        log_mod._con = None
+        monkeypatch.setattr(log_mod, "_DB_PATH", tmp_path / ".agent.db")
+    try:
+        client = TestClient(app)
+        created = client.post(
+            "/schedules",
+            json={"cron": "10 10 * * 1-5", "prompt": "brief", "catch_up": False},
+        )
+        assert created.status_code == 201
+        body = created.json()
+        assert body["catch_up"] is False
+
+        patched = client.patch(f"/schedules/{body['id']}", json={"catch_up": True})
+        assert patched.status_code == 200
+        assert patched.json()["catch_up"] is True
+    finally:
+        with log_mod._lock:
+            if log_mod._con is not None:
+                log_mod._con.close()
+            log_mod._con = None

@@ -26,13 +26,13 @@ def _isolated_scheduler_db(tmp_path, monkeypatch):
 
 def test_create_get_update_delete_roundtrip():
     s = store.create(cron="*/5 * * * *", prompt="poll", tier="cheap", skills=["general/python.md"])
-    assert s.id.startswith("sch_") and s.enabled and s.last_run_at is None
+    assert s.id.startswith("sch_") and s.enabled and s.catch_up and s.last_run_at is None
 
     fetched = store.get(s.id)
     assert fetched is not None and fetched.prompt == "poll" and fetched.skills == ["general/python.md"]
 
-    updated = store.update(s.id, enabled=False, prompt="poll v2")
-    assert updated is not None and updated.enabled is False and updated.prompt == "poll v2"
+    updated = store.update(s.id, enabled=False, catch_up=False, prompt="poll v2")
+    assert updated is not None and updated.enabled is False and updated.catch_up is False and updated.prompt == "poll v2"
 
     assert store.delete(s.id) is True
     assert store.get(s.id) is None
@@ -68,6 +68,57 @@ async def test_runner_fires_due_schedule_and_updates_last_run_at():
     assert fired_with == [s.id]
     refreshed = store.get(s.id)
     assert refreshed is not None and refreshed.last_run_at is not None
+
+
+async def test_runner_skips_old_missed_fire_when_catch_up_disabled():
+    now = time.time()
+    s = store.create(cron="* * * * *", prompt="hi", catch_up=False)
+    from core.log import _get_con, _lock
+    with _lock:
+        _get_con().execute(
+            "UPDATE schedules SET created_at = ? WHERE id = ?",
+            [now - 600, s.id],
+        )
+        _get_con().commit()
+
+    fired_with: list[str] = []
+
+    async def cb(sched):
+        fired_with.append(sched.id)
+        return "task_xyz"
+
+    runner._fire_cb = cb
+    with patch("core.scheduler.runner.time.time", return_value=now):
+        await runner._tick_once()
+
+    assert fired_with == []
+    refreshed = store.get(s.id)
+    assert refreshed is not None and refreshed.last_run_at == now
+
+
+async def test_runner_fires_recent_due_schedule_even_when_catch_up_disabled():
+    now = time.time()
+    s = store.create(cron="* * * * *", prompt="hi", catch_up=False)
+    from core.log import _get_con, _lock
+    with _lock:
+        _get_con().execute(
+            "UPDATE schedules SET created_at = ? WHERE id = ?",
+            [now - 61, s.id],
+        )
+        _get_con().commit()
+
+    due_at = runner.next_fire_at(store.get(s.id))
+    fired_with: list[str] = []
+
+    async def cb(sched):
+        fired_with.append(sched.id)
+        return "task_xyz"
+
+    runner._fire_cb = cb
+    with patch("core.scheduler.runner.time.time", return_value=due_at + runner.TICK_S - 1):
+        await runner._tick_once()
+
+    assert fired_with == [s.id]
 
 
 async def test_runner_skips_disabled():

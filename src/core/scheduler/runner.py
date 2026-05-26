@@ -1,9 +1,4 @@
-"""Background scheduler — ticks every TICK_S, fires due schedules via callback.
-
-In-process by design: the gateway is the always-on service. No catch-up for missed
-fires while the gateway was down (an enabled schedule whose next-fire time elapsed
-during downtime simply skips ahead to its next future fire).
-"""
+"""Background scheduler — ticks every TICK_S, fires due schedules via callback."""
 
 from __future__ import annotations
 
@@ -36,10 +31,9 @@ _fire_cb: FireCallback | None = None
 
 def next_fire_at(sched: store.Schedule, now: float | None = None) -> float:
     """When this schedule should next fire — the first cron match strictly after
-    `last_run_at` (or `created_at` if it has never fired). May be in the past;
-    the runner treats any `<= now` value as "fire now" and writes back
-    `last_run_at = now`, which naturally collapses multiple missed windows into
-    a single catch-up fire.
+    `last_run_at` (or `created_at` if it has never fired). May be in the past.
+    The runner either fires one catch-up run or skips the missed window depending
+    on the schedule's `catch_up` setting, then writes back `last_run_at = now`.
 
     Cron is interpreted in `SCHEDULE_TZ` (Europe/Stockholm) so the user types
     schedules in their wall-clock time. zoneinfo handles DST transparently."""
@@ -61,6 +55,10 @@ async def _tick_once() -> None:
             _log(Category.GATEWAY, "schedule next-fire failed", id=sched.id, error=str(e)[:200])
             continue
         if due_at > now:
+            continue
+        if not sched.catch_up and due_at < now - TICK_S:
+            store.update(sched.id, last_run_at=now)
+            _log(Category.GATEWAY, "schedule missed fire skipped", id=sched.id, due_at=due_at)
             continue
         # Mark fired BEFORE invoking, so a slow callback can't double-fire next tick.
         store.update(sched.id, last_run_at=now)

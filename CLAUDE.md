@@ -414,10 +414,12 @@ hook — the new task's coder seeds its loop from the parent's persisted transcr
 In-process scheduler started by the gateway lifespan. State lives in `.agent.db`'s `schedules`
 table. `core.scheduler.runner` ticks every 30 s, computes `next_fire_at` for each enabled
 schedule via `croniter`, and fires anything `<= now` exactly once (sets `last_run_at = now`,
-collapsing missed windows into a single catch-up). Fires call into the same `_spawn_task`
+collapsing missed windows into a single catch-up) when `catch_up=true`. With
+`catch_up=false`, missed fires older than one scheduler tick are skipped and the schedule
+advances to the next future fire. Fires call into the same `_spawn_task`
 path as `POST /task`, with `schedule_id` set on the resulting `TaskRecord` for join-back.
 
-Schedule fields: `id, cron, prompt, tier, skills[], enabled, mode, created_at, last_run_at`.
+Schedule fields: `id, cron, prompt, tier, skills[], enabled, catch_up, mode, created_at, last_run_at`.
 `mode` (`null | "conversational" | "persistent"`) bypasses manager classification when set.
 Cron strings are validated via `croniter` at create/update time — bad expressions → 400.
 `POST /cron-from-nl` translates plain English ("every weekday at 9am") via `gpt-5.4-mini`,

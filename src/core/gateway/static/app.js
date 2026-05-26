@@ -1401,6 +1401,7 @@ const schedState = {
   prompt:  "",
   mode:    "",
   tier:    "ultra_cheap",
+  catchUp: true,
   // Attachment lists (already state-owned).
   schedSkills:   [],
   schedGraders:  [],
@@ -1421,6 +1422,7 @@ function syncSchedFormToDOM() {
   document.getElementById("sched-prompt").value = schedState.prompt;
   document.getElementById("sched-mode").value   = schedState.mode;
   document.getElementById("sched-tier").value   = schedState.tier;
+  document.getElementById("sched-catch-up").checked = schedState.catchUp;
 }
 
 function resetSchedForm() {
@@ -1429,6 +1431,7 @@ function resetSchedForm() {
   schedState.prompt     = "";
   schedState.mode       = "";
   schedState.tier       = "ultra_cheap";
+  schedState.catchUp    = true;
   schedState.schedSkills  = [];
   schedState.schedGraders = [];
   syncSchedFormToDOM();
@@ -1444,6 +1447,7 @@ function startEditSchedule(s) {
   schedState.prompt       = s.prompt  || "";
   schedState.mode         = s.mode    || "";
   schedState.tier         = s.tier    || "ultra_cheap";
+  schedState.catchUp      = s.catch_up !== false;
   schedState.schedSkills  = [...(s.skills   || [])];
   schedState.schedGraders = [...(s.graders  || [])];
   syncSchedFormToDOM();
@@ -1550,11 +1554,13 @@ async function loadSchedules() {
       const li = document.createElement("li");
       li.className = "sched-item" + (s.enabled ? "" : " disabled");
       const modeTag = s.mode ? `<span class="sched-mode-tag">${escapeHtml(s.mode)}</span>` : "";
+      const catchTag = s.catch_up === false ? `<span class="sched-catch-tag">no catch-up</span>` : "";
       li.innerHTML = `
         <div class="sched-item-head">
           <code class="sched-cron" title="${escapeHtml(describeCron(s.cron))}">${escapeHtml(s.cron)}</code>
           <span class="sched-tier-tag">${escapeHtml(s.tier.replace(/_/g, " "))}</span>
           ${modeTag}
+          ${catchTag}
           <span class="sched-times">last ${fmtTimeAgo(s.last_run_at)} · next ${fmtTimeUntil(s.next_run_at)}</span>
           <div class="sched-actions">
             <button type="button" data-edit="${escapeHtml(s.id)}">edit</button>
@@ -1670,6 +1676,7 @@ document.addEventListener("keydown", (e) => {
 );
 document.getElementById("sched-mode").addEventListener("change", (e) => { schedState.mode = e.target.value; });
 document.getElementById("sched-tier").addEventListener("change", (e) => { schedState.tier = e.target.value; });
+document.getElementById("sched-catch-up").addEventListener("change", (e) => { schedState.catchUp = e.target.checked; });
 
 document.getElementById("sched-form").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -1681,6 +1688,7 @@ document.getElementById("sched-form").addEventListener("submit", async (e) => {
     tier:    schedState.tier,
     skills:  [...schedState.schedSkills],
     graders: [...schedState.schedGraders],
+    catch_up: schedState.catchUp,
     mode:    schedState.mode || null,
   };
   if (!body.cron || !body.prompt) {

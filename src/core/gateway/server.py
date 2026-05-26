@@ -538,6 +538,7 @@ class ScheduleCreate(BaseModel):
     skills: list[str] = []
     graders: list[str] = []
     enabled: bool = True
+    catch_up: bool = True
     mode: str | None = None  # null = auto-classify; "conversational" / "persistent" = force
 
 
@@ -548,6 +549,7 @@ class ScheduleUpdate(BaseModel):
     skills: list[str] | None = None
     graders: list[str] | None = None
     enabled: bool | None = None
+    catch_up: bool | None = None
     mode: str | None = None
 
 
@@ -559,6 +561,7 @@ class ScheduleResponse(BaseModel):
     skills: list[str]
     graders: list[str]
     enabled: bool
+    catch_up: bool
     created_at: float
     last_run_at: float | None
     next_run_at: float | None
@@ -573,7 +576,8 @@ def _schedule_to_response(s: scheduler_store.Schedule) -> ScheduleResponse:
     return ScheduleResponse(
         id=s.id, cron=s.cron, prompt=s.prompt, tier=s.tier,
         skills=s.skills, graders=s.graders,
-        enabled=s.enabled, created_at=s.created_at, last_run_at=s.last_run_at,
+        enabled=s.enabled, catch_up=s.catch_up,
+        created_at=s.created_at, last_run_at=s.last_run_at,
         next_run_at=nxt, mode=s.mode,
     )
 
@@ -665,7 +669,7 @@ async def create_schedule(req: ScheduleCreate) -> ScheduleResponse:
     sched = scheduler_store.create(
         cron=req.cron, prompt=req.prompt, tier=req.tier,
         skills=req.skills, graders=req.graders,
-        enabled=req.enabled, mode=req.mode,
+        enabled=req.enabled, catch_up=req.catch_up, mode=req.mode,
     )
     return _schedule_to_response(sched)
 
