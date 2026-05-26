@@ -400,14 +400,30 @@ window.addEventListener("message", (e) => {
   f.style.height = `${h}px`;
 });
 
-function injectIframeScript(html) {
-  // Inject <base href> so root-relative paths (e.g. /images/...) resolve against
-  // the gateway origin. Chrome does not inherit the parent's base URL in sandboxed
-  // srcdoc iframes without allow-same-origin — explicit <base> fixes this.
-  const base = `<base href="${window.location.origin}/">`;
-  if (/<head(\s[^>]*)?>/i.test(html)) {
+function artifactDocsBase(taskId) {
+  return taskId
+    ? `${window.location.origin}/artifact-docs/${encodeURIComponent(taskId)}/`
+    : `${window.location.origin}/`;
+}
+
+function rewriteGithubPagesPaths(html, taskId) {
+  if (!taskId) return html;
+  const assetBase = `/artifact-docs/${encodeURIComponent(taskId)}/`;
+  return html
+    .replaceAll('"/one/', `"${assetBase}`)
+    .replaceAll("'/one/", `'${assetBase}`)
+    .replaceAll("(/one/", `(${assetBase}`);
+}
+
+function injectIframeScript(html, taskId) {
+  // Inject <base href> so docs-relative paths (styles/site.css, scripts/theme.js,
+  // images/...) resolve against the task-scoped docs asset route. Chrome does not
+  // inherit the parent's base URL in sandboxed srcdoc iframes without
+  // allow-same-origin, so the base must be explicit.
+  const base = `<base href="${artifactDocsBase(taskId)}">`;
+  if (!/<base\s/i.test(html) && /<head(\s[^>]*)?>/i.test(html)) {
     html = html.replace(/<head(\s[^>]*)?>/i, (m) => m + base);
-  } else {
+  } else if (!/<base\s/i.test(html)) {
     html = base + html;
   }
   // Insert resize script before </body> (or at end if no </body>).
@@ -415,18 +431,12 @@ function injectIframeScript(html) {
   return html + _IFRAME_RESIZE_SCRIPT;
 }
 
-function rewriteGithubPagesImagePaths(html, taskId) {
-  if (!taskId) return html;
-  const assetBase = `/artifact-docs/${encodeURIComponent(taskId)}/images/`;
-  return html.replaceAll("/one/images/", assetBase);
-}
-
 async function renderHtmlBlocks(container, taskId) {
   const blocks = container.querySelectorAll("pre code.language-html, pre code.hljs.language-html");
   for (const code of blocks) {
     const html = code.textContent;
     if (!html.trim()) continue;
-    const previewHtml = rewriteGithubPagesImagePaths(html, taskId);
+    const previewHtml = rewriteGithubPagesPaths(html, taskId);
     const wrap = document.createElement("div");
     wrap.className = "html-artifact";
 
@@ -438,7 +448,7 @@ async function renderHtmlBlocks(container, taskId) {
     iframe.className = "html-artifact-frame";
     iframe.setAttribute("sandbox", "allow-scripts allow-popups allow-forms");
     iframe.name = `one-iframe-${++_iframeSeq}`;  // identifier for postMessage routing
-    iframe.srcdoc = injectIframeScript(previewHtml);
+    iframe.srcdoc = injectIframeScript(previewHtml, taskId);
 
     wrap.appendChild(header);
     wrap.appendChild(iframe);

@@ -86,6 +86,27 @@ def test_artifact_save_reuses_identical_content(tmp_path, monkeypatch):
     assert len(list(artifacts.glob("*.html"))) == 1
 
 
+def test_artifact_save_injects_docs_base_without_clearing_background_image(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    artifacts = repo / "generated" / "artifacts"
+    artifacts.mkdir(parents=True)
+    monkeypatch.setattr(gateway_server, "_REPO_ROOT", repo)
+    monkeypatch.setattr(gateway_server, "_ARTIFACTS_DIR", artifacts)
+
+    client = TestClient(app)
+    r = client.post("/artifacts", json={
+        "task_id": "abc12345",
+        "slug": "Docs Page",
+        "content": '<html><head><link rel="stylesheet" href="styles/site.css"></head><body>Hello</body></html>',
+    })
+
+    assert r.status_code == 200
+    saved = next(artifacts.glob("*.html")).read_text(encoding="utf-8")
+    assert '<head><base href="/artifact-docs/abc12345/"><link' in saved
+    assert "html{background-color:var(--bg,#f4f0eb);}" in saved
+    assert "html{background:var(--bg,#f4f0eb);}" not in saved
+
+
 def test_artifact_save_indexes_different_content(tmp_path, monkeypatch):
     repo = tmp_path / "repo"
     artifacts = repo / "generated" / "artifacts"
@@ -137,6 +158,20 @@ def test_artifact_docs_image_route_serves_task_branch_docs_assets(tmp_path, monk
 
     assert client.get("/artifact-docs/docs_task/images/../hero.png").status_code == 404
     assert client.get("/one/images/hero.png").status_code == 404
+
+
+def test_artifact_docs_route_serves_repo_docs_stylesheet(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    css = repo / "docs" / "styles" / "site.css"
+    css.parent.mkdir(parents=True)
+    css.write_text("html { background-image: linear-gradient(red 1px, transparent 1px); }", encoding="utf-8")
+    monkeypatch.setattr(gateway_server, "_REPO_ROOT", repo)
+
+    client = TestClient(app)
+    r = client.get("/artifact-docs/docs_task/styles/site.css")
+
+    assert r.status_code == 200
+    assert b"background-image" in r.content
 
 
 def test_artifact_docs_image_route_serves_parent_task_branch_docs_assets(tmp_path, monkeypatch):
@@ -368,6 +403,34 @@ async def test_changed_html_artifact_is_appended_from_disk(tmp_path):
     assert "Rendered HTML artifact from `docs/index.html`" in result
     assert "```html" in result
     assert "<body>preview</body>" in result
+
+
+async def test_docs_asset_change_appends_index_preview_from_disk(tmp_path):
+    from core.agents import manager
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _run(["git", "init", "-q", "-b", "main"], repo)
+    _run(["git", "config", "user.email", "t@t.t"], repo)
+    _run(["git", "config", "user.name", "t"], repo)
+
+    html = repo / "docs" / "index.html"
+    css = repo / "docs" / "styles" / "site.css"
+    css.parent.mkdir(parents=True)
+    html.write_text('<!doctype html><html><head><link rel="stylesheet" href="styles/site.css"></head><body>site</body></html>', encoding="utf-8")
+    css.write_text("body { color: black; }\n", encoding="utf-8")
+    _run(["git", "add", "docs/index.html", "docs/styles/site.css"], repo)
+    _run(["git", "commit", "-q", "-m", "seed docs site"], repo)
+    start = _run(["git", "rev-parse", "HEAD"], repo)
+
+    css.write_text("body { color: blue; }\n", encoding="utf-8")
+
+    files = await manager._changed_docs_preview_html_files(repo, start)
+    result = manager._append_html_artifacts("Done.", files, repo)
+
+    assert [str(p.relative_to(repo)) for p in files] == ["docs/index.html"]
+    assert "Rendered HTML artifact from `docs/index.html`" in result
+    assert 'href="styles/site.css"' in result
 
 
 def test_referenced_html_artifact_is_appended_from_disk(tmp_path):

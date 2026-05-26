@@ -728,7 +728,7 @@ _TASK_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 #    extends past the body box. We skip translucent solid colors (alpha < 0.99)
 #    to avoid the double-blend "two-tone" split, but always copy gradients.
 _HTML_BG_FIX = (
-    '<style>html{background:var(--bg,#f4f0eb);}body{margin:0;}</style>'
+    '<style>html{background-color:var(--bg,#f4f0eb);}body{margin:0;}</style>'
     '<script>addEventListener("load",function(){'
     'var s=getComputedStyle(document.body);'
     'var img=s.backgroundImage||"none";'
@@ -748,6 +748,19 @@ _HTML_BG_FIX = (
 )
 
 
+def _artifact_base_tag(task_id: str) -> str:
+    return f'<base href="/artifact-docs/{task_id}/">'
+
+
+def _inject_artifact_base(html: str, task_id: str) -> str:
+    if re.search(r"<base\s", html, flags=re.IGNORECASE):
+        return html
+    base = _artifact_base_tag(task_id)
+    if re.search(r"<head(\s[^>]*)?>", html, flags=re.IGNORECASE):
+        return re.sub(r"<head(\s[^>]*)?>", lambda m: m.group(0) + base, html, count=1, flags=re.IGNORECASE)
+    return base + html
+
+
 def _inject_html_bg_fix(html: str) -> str:
     if "</head>" in html:
         return html.replace("</head>", _HTML_BG_FIX + "</head>", 1)
@@ -765,7 +778,7 @@ async def save_artifact(req: ArtifactRequest) -> ArtifactResponse:
     slug = (req.slug or "artifact").lower().strip().replace(" ", "-")
     slug = _SLUG_RE.sub("", slug)[:40] or "artifact"
     _ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
-    content = _inject_html_bg_fix(req.content)
+    content = _inject_html_bg_fix(_inject_artifact_base(req.content, req.task_id))
     prefix = req.task_id[:8]
     for existing in sorted(_ARTIFACTS_DIR.glob(f"{prefix}-*-{slug}.html")):
         try:
@@ -829,23 +842,33 @@ async def _serve_artifact_docs_image(task_id: str, filename: str):
     does not host the site at `/one/`. The UI rewrites only preview copies to
     this task-scoped route so docs HTML can remain deployment-correct.
     """
+    return _serve_artifact_docs_asset(task_id, f"images/{filename}")
+
+
+@app.get("/artifact-docs/{task_id}/{filename:path}")
+async def _serve_artifact_docs_file(task_id: str, filename: str):
+    """Serve docs-relative assets for task preview iframes and saved artifacts."""
+    return _serve_artifact_docs_asset(task_id, filename)
+
+
+def _serve_artifact_docs_asset(task_id: str, filename: str):
     if not _TASK_ID_RE.fullmatch(task_id):
-        raise HTTPException(status_code=404, detail="image not found")
+        raise HTTPException(status_code=404, detail="artifact asset not found")
     rel = Path(filename)
     if rel.is_absolute() or ".." in rel.parts or not filename:
-        raise HTTPException(status_code=404, detail="image not found")
+        raise HTTPException(status_code=404, detail="artifact asset not found")
 
     live = workdir_registry.get(task_id)
     candidates = []
     if live:
-        candidates.append(live / "docs" / "images" / rel)
+        candidates.append(live / "docs" / rel)
 
     for p in candidates:
         resolved = _safe_child(p.parent, p)
         if resolved:
             return FileResponse(resolved)
 
-    git_path = f"docs/images/{filename}"
+    git_path = f"docs/{filename}"
     media_type = mimetypes.guess_type(filename)[0] or "application/octet-stream"
     refs = [task_id]
     parent_id = task_parent_id(task_id)
@@ -864,12 +887,12 @@ async def _serve_artifact_docs_image(task_id: str, filename: str):
         if proc and proc.returncode == 0:
             return Response(content=proc.stdout, media_type=media_type)
 
-    repo_path = _REPO_ROOT / "docs" / "images" / rel
+    repo_path = _REPO_ROOT / "docs" / rel
     resolved = _safe_child(repo_path.parent, repo_path)
     if resolved:
         return FileResponse(resolved)
 
-    raise HTTPException(status_code=404, detail="image not found")
+    raise HTTPException(status_code=404, detail="artifact asset not found")
 
 
 _STATIC = Path(__file__).resolve().parent / "static"
