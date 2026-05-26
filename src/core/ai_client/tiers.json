@@ -33,7 +33,7 @@
        "fallback": {"provider": "openai", "model": "gpt-5.4-mini"}},
       {"provider": "openai", "model": "gpt-5.4-mini",   "desc": "Cheap generalist. Use for serious coding, non-trivial research, web search, and multi-step reasoning when reliability matters.",
        "fallback": {"provider": "ollama", "model": "qwen3.5:9b"}},
-      {"provider": "claude", "model": "claude-haiku-4-5", "desc": "Cheap generalist. Use for serious coding, non-trivial research, web search, and multi-step reasoning when reliability matters.",
+      {"provider": "claude", "model": "claude-haiku-4-5", "desc": "Paused for router selection due to reliability. Treat as effectively unavailable to the router unless explicitly forced; prefer gpt-5.4-mini instead.",
        "fallback": {"provider": "openai", "model": "gpt-5.4-mini"}}
     ],
     "fallback": {
