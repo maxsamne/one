@@ -17,6 +17,22 @@
       --border: #e7e1d6;
       --tag-bg: #f4ece3;
       --shadow-soft: 0 12px 32px rgba(38, 37, 33, 0.04);
+      --grid-line: rgba(231, 225, 214, 0.4);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #10100f;
+        --surface: #171716;
+        --ink: #f4efe6;
+        --ink-muted: #a8a295;
+        --accent: #d47a3a;
+        --accent-dark: #f0a36f;
+        --border: #2d2a24;
+        --tag-bg: #1f1d19;
+        --shadow-soft: 0 12px 32px rgba(0, 0, 0, 0.3);
+        --grid-line: rgba(255, 255, 255, 0.05);
+      }
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -26,8 +42,8 @@
       padding: 0;
       background-color: var(--bg);
       background-image:
-        linear-gradient(rgba(231, 225, 214, 0.4) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(231, 225, 214, 0.4) 1px, transparent 1px);
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
       background-size: 24px 24px;
       background-position: center top;
       color: var(--ink);
