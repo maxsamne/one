@@ -218,7 +218,7 @@ def test_persistent_manager_hides_lifecycle_git_tools():
     from core.agents import manager
 
     names = {tool.name for tool in manager._PERSISTENT_TOOLS}
-    assert {"git_status", "git_diff", "git_add", "git_commit", "git_log"} <= names
+    assert {"git_status", "git_diff", "git_diff_timeline", "git_add", "git_commit", "git_log"} <= names
     assert "git_create_branch" not in names
     assert "git_checkout" not in names
     assert "git_push" not in names
