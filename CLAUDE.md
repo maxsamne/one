@@ -66,6 +66,8 @@ text   = await client.complete("task", extra_tools=[my_tool])
 
 The model is fixed per client (from `tiers.json`); the only per-call dial is `thinking` (`None` / MINIMAL / LOW / MEDIUM / HIGH). Each provider honors thinking differently — `None` omits provider reasoning, Claude uses `budget_tokens`, OpenAI maps to `reasoning.effort`, Gemini sets `thinking_config`, Ollama treats any non-`None` value as `think=True`.
 
+Cheap tier note: `gpt-5.4-nano` is available for very basic, mundane tasks only. For more serious coding, non-trivial research, web search, or broader reasoning, prefer `gpt-5.4-mini` or Claude Haiku instead.
+
 Local (Ollama) default: `qwen3.5:9b`. Any `ThinkingLevel` → `think=True`; `None` → `think=False` (must be explicit — Qwen3 thinks by default if omitted).
 
 ### Embeddings
