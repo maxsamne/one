@@ -35,6 +35,31 @@
       }
     }
 
+    :root[data-theme="dark"] {
+      --bg: #10100f;
+      --surface: #171716;
+      --ink: #f4efe6;
+      --ink-muted: #a8a295;
+      --accent: #d47a3a;
+      --accent-dark: #f0a36f;
+      --border: #2d2a24;
+      --tag-bg: #1f1d19;
+      --shadow-soft: 0 12px 32px rgba(0, 0, 0, 0.3);
+      --grid-line: rgba(255, 255, 255, 0.05);
+    }
+    :root[data-theme="light"] {
+      --bg: #f7f5ef;
+      --surface: #fffdf8;
+      --ink: #262521;
+      --ink-muted: #7d786f;
+      --accent: #b35a1e;
+      --accent-dark: #7a3612;
+      --border: #e7e1d6;
+      --tag-bg: #f4ece3;
+      --shadow-soft: 0 12px 32px rgba(38, 37, 33, 0.04);
+      --grid-line: rgba(231, 225, 214, 0.4);
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
@@ -282,7 +307,15 @@
 </head>
 <body>
   <nav>
-    <span class="wordmark" aria-label="Home"></span>
+    <a class="wordmark" href="/one/">MS</a>
+    <ul>
+      <li><a href="/one/writing">Writing</a></li>
+      <li><a href="/one/work">Work</a></li>
+      <li><button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">
+        <span class="theme-toggle__icon" aria-hidden="true">◐</span>
+        <span class="theme-toggle__label">Dark mode</span>
+      </button></li>
+    </ul>
   </nav>
 
   <article>
@@ -474,5 +507,31 @@
 
     <p class="footer-link"><a href="/one/">Return to home</a></p>
   </article>
+
+  <script>
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeLabel = themeToggle.querySelector('.theme-toggle__label');
+    const THEME_KEY = 'one-theme';
+
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      document.documentElement.style.colorScheme = theme;
+      const isDark = theme === 'dark';
+      themeToggle.setAttribute('aria-pressed', String(isDark));
+      themeLabel.textContent = isDark ? 'Light mode' : 'Dark mode';
+      themeToggle.querySelector('.theme-toggle__icon').textContent = isDark ? '◑' : '◐';
+    }
+
+    let savedTheme = null;
+    try { savedTheme = localStorage.getItem(THEME_KEY); } catch (e) {}
+    const initialTheme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(initialTheme);
+
+    themeToggle.addEventListener('click', () => {
+      const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem(THEME_KEY, nextTheme); } catch (e) {}
+      applyTheme(nextTheme);
+    });
+  </script>
 </body>
 </html>
