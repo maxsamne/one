@@ -289,7 +289,6 @@
       max-width: none;
       margin: 0;
       padding: 0;
-      display: block;
       font-family: 'Inter', sans-serif;
       line-height: 0;
       touch-action: none;
@@ -623,7 +622,7 @@
         top: rect.top,
         moved: false,
       };
-      if (themeDock.setPointerCapture) {
+      if (event.pointerId !== undefined && themeDock.setPointerCapture) {
         try { themeDock.setPointerCapture(event.pointerId); } catch (e) {}
       }
       themeDock.classList.add('is-dragging');
@@ -656,10 +655,15 @@
       }
     }
 
+    function cancelThemeDockDrag() {
+      themeDock.classList.remove('is-dragging');
+      dragState = null;
+    }
+
     themeDock.addEventListener('pointerdown', startThemeDockDrag);
     themeDock.addEventListener('pointermove', moveThemeDock);
     themeDock.addEventListener('pointerup', finishThemeDockDrag);
-    themeDock.addEventListener('pointercancel', finishThemeDockDrag);
+    themeDock.addEventListener('pointercancel', cancelThemeDockDrag);
     themeDock.addEventListener('mousedown', (event) => startThemeDockDrag(event, 'mouse'));
     window.addEventListener('mousemove', (event) => moveThemeDock(event, dragState ? dragState.pointerId : 'mouse'));
     window.addEventListener('mouseup', (event) => finishThemeDockDrag(event, dragState ? dragState.pointerId : 'mouse'));
