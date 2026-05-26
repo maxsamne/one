@@ -20,10 +20,20 @@
       --shadow-card: 0 12px 36px rgba(38, 37, 33, 0.05), 0 2px 8px rgba(38, 37, 33, 0.02);
       --shadow-card-hover: 0 18px 44px rgba(38, 37, 33, 0.08), 0 4px 12px rgba(38, 37, 33, 0.03);
       --grid-line: rgba(231, 225, 214, 0.45);
-      --glass-surface: rgba(255, 253, 248, 0.22);
-      --glass-edge: rgba(255, 255, 255, 0.4);
-      --glass-top: rgba(255, 255, 255, 0.7);
-      --glass-inset: rgba(255, 255, 255, 0.5);
+      --glass-surface: rgba(255, 253, 248, 0.16);
+      --glass-edge: rgba(255, 255, 255, 0.42);
+      --glass-top: rgba(255, 255, 255, 0.74);
+      --glass-inset: rgba(255, 255, 255, 0.42);
+      --glass-film-top: rgba(255, 255, 255, 0.4);
+      --glass-film-mid: rgba(255, 255, 255, 0.16);
+      --glass-film-bottom: rgba(255, 253, 248, 0.24);
+      --glass-spot-left: rgba(174, 196, 161, 0.16);
+      --glass-spot-right: rgba(217, 182, 113, 0.14);
+      --glass-glint: rgba(255, 255, 255, 0.24);
+      --glass-shadow: 0 12px 28px rgba(38, 37, 33, 0.035), 0 2px 6px rgba(38, 37, 33, 0.015);
+      --glass-blur: 14px;
+      --glass-saturate: 1.32;
+      --glass-brightness: 1.02;
       --cover-filter: none;
       
       /* Crisp, tight corners instead of large bubbly rounded ones */
@@ -46,10 +56,20 @@
         --shadow-card: 0 14px 40px rgba(0, 0, 0, 0.3), 0 2px 10px rgba(0, 0, 0, 0.18);
         --shadow-card-hover: 0 20px 52px rgba(0, 0, 0, 0.38), 0 4px 14px rgba(0, 0, 0, 0.24);
         --grid-line: rgba(255, 255, 255, 0.05);
-        --glass-surface: rgba(16, 16, 15, 0.58);
-        --glass-edge: rgba(255, 255, 255, 0.16);
-        --glass-top: rgba(255, 255, 255, 0.35);
-        --glass-inset: rgba(255, 255, 255, 0.16);
+        --glass-surface: rgba(18, 18, 17, 0.32);
+        --glass-edge: rgba(255, 255, 255, 0.14);
+        --glass-top: rgba(255, 255, 255, 0.24);
+        --glass-inset: rgba(255, 255, 255, 0.1);
+        --glass-film-top: rgba(255, 255, 255, 0.1);
+        --glass-film-mid: rgba(255, 248, 236, 0.035);
+        --glass-film-bottom: rgba(11, 11, 10, 0.18);
+        --glass-spot-left: rgba(122, 151, 118, 0.1);
+        --glass-spot-right: rgba(204, 164, 95, 0.1);
+        --glass-glint: rgba(255, 255, 255, 0.12);
+        --glass-shadow: 0 14px 34px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08);
+        --glass-blur: 11px;
+        --glass-saturate: 1.72;
+        --glass-brightness: 1.1;
         --cover-filter: saturate(0.92) brightness(0.84) contrast(0.98);
       }
     }
@@ -67,10 +87,20 @@
       --shadow-card: 0 14px 40px rgba(0, 0, 0, 0.3), 0 2px 10px rgba(0, 0, 0, 0.18);
       --shadow-card-hover: 0 20px 52px rgba(0, 0, 0, 0.38), 0 4px 14px rgba(0, 0, 0, 0.24);
       --grid-line: rgba(255, 255, 255, 0.05);
-      --glass-surface: rgba(16, 16, 15, 0.58);
-      --glass-edge: rgba(255, 255, 255, 0.16);
-      --glass-top: rgba(255, 255, 255, 0.35);
-      --glass-inset: rgba(255, 255, 255, 0.16);
+      --glass-surface: rgba(18, 18, 17, 0.32);
+      --glass-edge: rgba(255, 255, 255, 0.14);
+      --glass-top: rgba(255, 255, 255, 0.24);
+      --glass-inset: rgba(255, 255, 255, 0.1);
+      --glass-film-top: rgba(255, 255, 255, 0.1);
+      --glass-film-mid: rgba(255, 248, 236, 0.035);
+      --glass-film-bottom: rgba(11, 11, 10, 0.18);
+      --glass-spot-left: rgba(122, 151, 118, 0.1);
+      --glass-spot-right: rgba(204, 164, 95, 0.1);
+      --glass-glint: rgba(255, 255, 255, 0.12);
+      --glass-shadow: 0 14px 34px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08);
+      --glass-blur: 11px;
+      --glass-saturate: 1.72;
+      --glass-brightness: 1.1;
       --cover-filter: saturate(0.92) brightness(0.84) contrast(0.98);
     }
     :root[data-theme="light"] {
@@ -86,10 +116,20 @@
       --shadow-card: 0 12px 36px rgba(38, 37, 33, 0.05), 0 2px 8px rgba(38, 37, 33, 0.02);
       --shadow-card-hover: 0 18px 44px rgba(38, 37, 33, 0.08), 0 4px 12px rgba(38, 37, 33, 0.03);
       --grid-line: rgba(231, 225, 214, 0.45);
-      --glass-surface: rgba(255, 253, 248, 0.22);
-      --glass-edge: rgba(255, 255, 255, 0.4);
-      --glass-top: rgba(255, 255, 255, 0.7);
-      --glass-inset: rgba(255, 255, 255, 0.5);
+      --glass-surface: rgba(255, 253, 248, 0.16);
+      --glass-edge: rgba(255, 255, 255, 0.42);
+      --glass-top: rgba(255, 255, 255, 0.74);
+      --glass-inset: rgba(255, 255, 255, 0.42);
+      --glass-film-top: rgba(255, 255, 255, 0.4);
+      --glass-film-mid: rgba(255, 255, 255, 0.16);
+      --glass-film-bottom: rgba(255, 253, 248, 0.24);
+      --glass-spot-left: rgba(174, 196, 161, 0.16);
+      --glass-spot-right: rgba(217, 182, 113, 0.14);
+      --glass-glint: rgba(255, 255, 255, 0.24);
+      --glass-shadow: 0 12px 28px rgba(38, 37, 33, 0.035), 0 2px 6px rgba(38, 37, 33, 0.015);
+      --glass-blur: 14px;
+      --glass-saturate: 1.32;
+      --glass-brightness: 1.02;
       --cover-filter: none;
     }
 
@@ -613,18 +653,62 @@
       left: 10px;
       right: 10px;
       height: 110px;
-      background: var(--glass-surface);
+      background:
+        radial-gradient(130px 58px at 20% 10%, var(--glass-spot-left), transparent 68%),
+        radial-gradient(150px 64px at 72% 12%, var(--glass-spot-right), transparent 72%),
+        linear-gradient(180deg, var(--glass-film-top) 0%, var(--glass-film-mid) 42%, var(--glass-film-bottom) 100%),
+        var(--glass-surface);
       border: 1px solid var(--glass-edge);
       border-top: 1.5px solid var(--glass-top);
       border-radius: var(--radius-md);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      box-shadow: 
-        0 8px 24px rgba(38, 37, 33, 0.02), 
-        inset 0 1px 1px var(--glass-inset);
+      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+      box-shadow: var(--glass-shadow);
       z-index: 5;
       pointer-events: none;
       transform: perspective(800px) rotateX(3deg);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .book-glass-pocket::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 24%, transparent 54%),
+        linear-gradient(90deg, transparent 0%, var(--glass-glint) 48%, transparent 100%);
+      opacity: 0.82;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .book-glass-pocket::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.028) 0,
+          rgba(255, 255, 255, 0.028) 1px,
+          transparent 1px,
+          transparent 3px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.018) 0,
+          rgba(255, 255, 255, 0.018) 1px,
+          transparent 1px,
+          transparent 4px
+        ),
+        radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.05), transparent 32%),
+        radial-gradient(circle at 82% 74%, rgba(255, 255, 255, 0.035), transparent 30%);
+      opacity: 0.032;
+      pointer-events: none;
+      mix-blend-mode: overlay;
     }
 
     .shelf-caption-link {
