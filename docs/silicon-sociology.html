@@ -283,12 +283,12 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border: 1px solid var(--border);
       background: var(--surface);
       color: var(--ink);
-      border-radius: 10px;
+      border-radius: 8px;
       padding: 0;
       cursor: pointer;
       box-shadow: var(--shadow-soft);
@@ -303,18 +303,18 @@
       outline-offset: 3px;
     }
     .theme-toggle .theme-toggle__icon {
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
       display: block;
       line-height: 0;
     }
     .theme-toggle .theme-toggle__icon svg {
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
       display: block;
       stroke: currentColor;
       fill: none;
-      stroke-width: 1.8;
+      stroke-width: 1.7;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
@@ -539,8 +539,8 @@
     const themeToggle = document.getElementById('theme-toggle');
     const themeIcon = themeToggle.querySelector('.theme-toggle__icon');
     const THEME_KEY = 'one-theme';
-    const moonIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"></circle><path d="M12 3.5a8.5 8.5 0 0 0 0 17V3.5Z"></path><path d="M12 3.5a8.5 8.5 0 0 1 0 17V3.5Z" opacity=".34"></path><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".16"></circle></svg>`;
-    const sunIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"></circle><path d="M12 3.5a8.5 8.5 0 0 0 0 17V3.5Z" opacity=".34"></path><path d="M12 3.5a8.5 8.5 0 0 1 0 17V3.5Z"></path><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".16"></circle></svg>`;
+    const moonIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"></circle><path d="M12 3a9 9 0 0 1 0 18c3.7 0 6.8-2.2 8.2-5.4a7.9 7.9 0 0 1-3.2.7A8 8 0 0 1 12 3Z"></path><path d="M12 3a9 9 0 0 1 0 18c3.7 0 6.8-2.2 8.2-5.4a7.9 7.9 0 0 1-3.2.7A8 8 0 0 1 12 3Z" opacity=".34"></path></svg>`;
+    const sunIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"></circle><path d="M12 3a9 9 0 0 0 0 18c-3.7 0-6.8-2.2-8.2-5.4a7.9 7.9 0 0 0 3.2.7A8 8 0 0 0 12 3Z"></path><path d="M12 3a9 9 0 0 1 0 18c-3.7 0-6.8-2.2-8.2-5.4a7.9 7.9 0 0 0 3.2.7A8 8 0 0 0 12 3Z" opacity=".34"></path></svg>`;
 
     function applyTheme(theme) {
       document.documentElement.dataset.theme = theme;
