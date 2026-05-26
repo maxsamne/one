@@ -64,7 +64,7 @@ text   = await client.complete("task", web_search=WebSearch.NATIVE)            #
 text   = await client.complete("task", extra_tools=[my_tool])
 ```
 
-The model is fixed per client (from `tiers.json`); the only per-call dial is `thinking` (MINIMAL / LOW / MEDIUM / HIGH). Each provider honors thinking differently — Claude uses `budget_tokens`, OpenAI maps to `reasoning.effort`, Gemini sets `thinking_config`, Ollama treats any non-`None` value as `think=True`.
+The model is fixed per client (from `tiers.json`); the only per-call dial is `thinking` (`None` / MINIMAL / LOW / MEDIUM / HIGH). Each provider honors thinking differently — `None` omits provider reasoning, Claude uses `budget_tokens`, OpenAI maps to `reasoning.effort`, Gemini sets `thinking_config`, Ollama treats any non-`None` value as `think=True`.
 
 Local (Ollama) default: `qwen3.5:9b`. Any `ThinkingLevel` → `think=True`; `None` → `think=False` (must be explicit — Qwen3 thinks by default if omitted).
 
