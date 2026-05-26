@@ -21,7 +21,9 @@ Does the output faithfully follow the design system defined in the website-desig
 - Correct colour tokens (`--bg`, `--ink`, `--accent`, etc.) — no hardcoded hex values that deviate from the palette.
 - Typography: Lora for headings and body prose, Inter for UI elements, JetBrains Mono for labels and code. No other typefaces introduced.
 - Spacing: generous whitespace; consistent padding rhythm matching existing pages.
-- No external CSS frameworks, no build step, no JavaScript unless strictly necessary.
+- No external CSS frameworks and no build step; internal shared static CSS/JS is expected for site-wide behavior.
+- Shared site foundation: top-level pages reuse the common grid canvas, reset, and theme toggle assets instead of duplicating equivalent CSS/JS inline.
+- Reusable components: repeated controls, article shells, or site-wide visual systems are factored into shared CSS/JS when practical, so consistency does not depend on copy-pasted blocks.
 - Internal links use the `/one/` base path prefix.
 Penalise any deviation from the above, even if the result looks "fine" — consistency is load-bearing for a personal site.
 
