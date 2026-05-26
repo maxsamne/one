@@ -858,7 +858,7 @@
         <div class="panel-footer">
           <div class="system-status">
             <span class="indicator-dot"></span>
-            <span id="system-status-text">THESIS_SOC // SYNCHRONIZED</span>
+            <span id="system-status-text"></span>
           </div>
           <!-- Real link targeting appropriate files -->
           <a class="action-btn" id="thesis-cta-btn" href="/one/silicon-sociology">Read thought: Silicon Sociology →</a>
@@ -959,23 +959,24 @@
       const statusText = document.getElementById('system-status-text');
       const ctaBtn = document.getElementById('thesis-cta-btn');
 
+      // Keep the page minimal: omit the thesis status label text.
       if (id === 'soc') {
-        statusText.textContent = 'THESIS_SOC // SYNCHRONIZED';
+        statusText.textContent = '';
         ctaBtn.setAttribute('href', '/one/silicon-sociology');
         ctaBtn.textContent = 'Read thought: Silicon Sociology →';
         ctaBtn.style.display = 'inline-flex';
       } else if (id === 'cap') {
-        statusText.textContent = 'THESIS_CAP // LOCAL_RECORD';
+        statusText.textContent = '';
         ctaBtn.setAttribute('href', 'https:' + '//' + 'www.linkedin.com/in/maximiliansamne/');
         ctaBtn.textContent = 'Venture Inquiries on LinkedIn →';
         ctaBtn.style.display = 'inline-flex';
       } else if (id === 'inf') {
-        statusText.textContent = 'THESIS_INF // LOCAL_RECORD';
+        statusText.textContent = '';
         ctaBtn.setAttribute('href', 'https:' + '//' + 'www.linkedin.com/in/maximiliansamne/');
         ctaBtn.textContent = 'Inquire on Infrastructure Thesis →';
         ctaBtn.style.display = 'inline-flex';
       } else if (id === 'epi') {
-        statusText.textContent = 'THESIS_EPI // TIMEBOUND_STACK';
+        statusText.textContent = '';
         ctaBtn.setAttribute('href', '/one/the-yesterday-test');
         ctaBtn.textContent = 'Read thought: The Yesterday Test →';
         ctaBtn.style.display = 'inline-flex';
