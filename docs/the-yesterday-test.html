@@ -549,6 +549,7 @@
     const THEME_KEY = 'one-theme';
     const THEME_POSITION_KEY = 'one-theme-toggle-position';
     const THEME_GRID_SIZE = 24;
+    const THEME_DRAG_THRESHOLD = 10;
 
     function applyTheme(theme) {
       document.documentElement.dataset.theme = theme;
@@ -620,7 +621,7 @@
       if (!dragState || dragState.pointerId !== pointerId) return;
       const dx = event.clientX - dragState.startX;
       const dy = event.clientY - dragState.startY;
-      if (Math.abs(dx) + Math.abs(dy) > 4) dragState.moved = true;
+      if (Math.hypot(dx, dy) > THEME_DRAG_THRESHOLD) dragState.moved = true;
       setThemeDockPosition(dragState.left + dx, dragState.top + dy);
     }
 
