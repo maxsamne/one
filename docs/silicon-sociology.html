@@ -623,8 +623,16 @@
     restoreThemeDockPosition();
 
     let dragState = null;
-    function startThemeDockDrag(event, pointerId) {
-      if (dragState && dragState.pointerId !== 'pointer') return;
+    let ignoreNextThemeClick = false;
+
+    function toggleTheme() {
+      const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem(THEME_KEY, nextTheme); } catch (e) {}
+      applyTheme(nextTheme);
+    }
+
+    function startThemeDockDrag(event, pointerId = event.pointerId) {
+      if (dragState) return;
       const rect = themeDock.getBoundingClientRect();
       dragState = {
         pointerId,
@@ -634,42 +642,46 @@
         top: rect.top,
         moved: false,
       };
-      if (event.pointerId !== undefined && themeDock.setPointerCapture) {
+      if (themeDock.setPointerCapture) {
         try { themeDock.setPointerCapture(event.pointerId); } catch (e) {}
       }
       themeDock.classList.add('is-dragging');
     }
 
-    function moveThemeDock(event, pointerId) {
+    function moveThemeDock(event, pointerId = event.pointerId) {
       if (!dragState || dragState.pointerId !== pointerId) return;
       const dx = event.clientX - dragState.startX;
       const dy = event.clientY - dragState.startY;
       if (Math.hypot(dx, dy) > THEME_DRAG_THRESHOLD) dragState.moved = true;
-      setThemeDockPosition(dragState.left + dx, dragState.top + dy);
+      if (dragState.moved) setThemeDockPosition(dragState.left + dx, dragState.top + dy);
     }
 
-    function finishThemeDockDrag(event, pointerId) {
+    function finishThemeDockDrag(event, pointerId = event.pointerId) {
       if (!dragState || dragState.pointerId !== pointerId) return;
-      const finalPosition = snapThemeDockPosition(
-        dragState.left + event.clientX - dragState.startX,
-        dragState.top + event.clientY - dragState.startY
-      );
-      if (dragState.moved) {
-        themeDock.dataset.dragged = 'true';
-        try { localStorage.setItem(THEME_POSITION_KEY, JSON.stringify(finalPosition)); } catch (e) {}
-      }
+      const wasMoved = dragState.moved;
+      const nextX = dragState.left + event.clientX - dragState.startX;
+      const nextY = dragState.top + event.clientY - dragState.startY;
+      let finalPosition = null;
+      if (wasMoved) finalPosition = snapThemeDockPosition(nextX, nextY);
+      else setThemeDockPosition(dragState.left, dragState.top);
       themeDock.classList.remove('is-dragging');
       dragState = null;
-      window.setTimeout(() => { delete themeDock.dataset.dragged; }, 0);
+      ignoreNextThemeClick = true;
+      window.setTimeout(() => { ignoreNextThemeClick = false; }, 0);
+      if (wasMoved) {
+        try { localStorage.setItem(THEME_POSITION_KEY, JSON.stringify(finalPosition)); } catch (e) {}
+      } else {
+        toggleTheme();
+      }
     }
 
-    themeDock.addEventListener('pointerdown', (event) => startThemeDockDrag(event, 'pointer'));
-    themeDock.addEventListener('pointermove', (event) => moveThemeDock(event, 'pointer'));
-    themeDock.addEventListener('pointerup', (event) => finishThemeDockDrag(event, 'pointer'));
-    themeDock.addEventListener('pointercancel', (event) => finishThemeDockDrag(event, 'pointer'));
+    themeDock.addEventListener('pointerdown', startThemeDockDrag);
+    themeDock.addEventListener('pointermove', moveThemeDock);
+    themeDock.addEventListener('pointerup', finishThemeDockDrag);
+    themeDock.addEventListener('pointercancel', finishThemeDockDrag);
     themeDock.addEventListener('mousedown', (event) => startThemeDockDrag(event, 'mouse'));
-    window.addEventListener('mousemove', (event) => moveThemeDock(event, 'mouse'));
-    window.addEventListener('mouseup', (event) => finishThemeDockDrag(event, 'mouse'));
+    window.addEventListener('mousemove', (event) => moveThemeDock(event, dragState ? dragState.pointerId : 'mouse'));
+    window.addEventListener('mouseup', (event) => finishThemeDockDrag(event, dragState ? dragState.pointerId : 'mouse'));
     window.addEventListener('resize', () => {
       const rect = themeDock.getBoundingClientRect();
       const finalPosition = snapThemeDockPosition(rect.left, rect.top);
@@ -677,13 +689,11 @@
     });
 
     themeToggle.addEventListener('click', (event) => {
-      if (themeDock.dataset.dragged === 'true') {
+      if (ignoreNextThemeClick) {
         event.preventDefault();
         return;
       }
-      const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-      try { localStorage.setItem(THEME_KEY, nextTheme); } catch (e) {}
-      applyTheme(nextTheme);
+      toggleTheme();
     });
   </script>
 </body>
