@@ -689,9 +689,24 @@
       position: absolute;
       inset: 0;
       border-radius: inherit;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      background-size: 180px 180px;
-      opacity: 0.028;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.028) 0,
+          rgba(255, 255, 255, 0.028) 1px,
+          transparent 1px,
+          transparent 3px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.018) 0,
+          rgba(255, 255, 255, 0.018) 1px,
+          transparent 1px,
+          transparent 4px
+        ),
+        radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.05), transparent 32%),
+        radial-gradient(circle at 82% 74%, rgba(255, 255, 255, 0.035), transparent 30%);
+      opacity: 0.032;
       pointer-events: none;
       mix-blend-mode: overlay;
     }
