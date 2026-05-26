@@ -82,50 +82,17 @@
       max-width: 1200px;
       margin: 0 auto;
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-end;
       align-items: center;
-      padding: 24px 40px;
+      padding: 24px 40px 0;
       font-family: 'Inter', sans-serif;
     }
 
-    nav .wordmark {
-      font-family: 'Lora', serif;
-      font-size: 19px;
-      font-weight: 500;
-      color: var(--ink);
-      text-decoration: none;
-      letter-spacing: -0.01em;
-      transition: opacity 0.2s;
+    @media (max-width: 740px) {
+      nav {
+        padding: 18px 16px 0;
+      }
     }
-
-    nav .wordmark:hover { opacity: 0.8; }
-
-    nav ul {
-      display: flex;
-      align-items: center;
-      list-style: none;
-      gap: 16px;
-      background: rgba(255, 253, 248, 0.6);
-      padding: 6px 18px;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-    }
-
-    nav ul li { display: flex; align-items: center; }
-
-    nav ul li a {
-      color: var(--ink-muted);
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 500;
-      letter-spacing: 0.01em;
-      transition: color 0.15s;
-      padding: 4px 8px;
-    }
-
-    nav ul li a:hover, nav ul li a.active { color: var(--ink); }
 
     article {
       max-width: 700px;
@@ -298,24 +265,59 @@
     sup { font-size: .72em; vertical-align: super; line-height: 0; }
     sup a { border: none; padding: 0 2px; }
 
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 40px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--ink);
+      border-radius: 12px;
+      padding: 0;
+      cursor: pointer;
+      box-shadow: var(--shadow-soft);
+      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .theme-toggle:hover {
+      transform: translateY(-1px);
+      background: var(--tag-bg);
+    }
+    .theme-toggle:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+    }
+    .theme-toggle .theme-toggle__icon {
+      width: 18px;
+      height: 18px;
+      display: block;
+      line-height: 0;
+    }
+    .theme-toggle .theme-toggle__icon svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       a { transition: none; }
+      .theme-toggle { transition: none; }
     }
 
     svg { color: inherit; }
   </style>
 </head>
 <body>
-  <nav>
-    <a class="wordmark" href="/one/">MS</a>
-    <ul>
-      <li><a href="/one/writing">Writing</a></li>
-      <li><a href="/one/work">Work</a></li>
-      <li><button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">
-        <span class="theme-toggle__icon" aria-hidden="true">◐</span>
-        <span class="theme-toggle__label">Dark mode</span>
-      </button></li>
-    </ul>
+  <nav aria-label="Site controls">
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode" title="Switch to dark mode">
+      <span class="theme-toggle__icon" aria-hidden="true"></span>
+    </button>
   </nav>
 
   <article>
@@ -510,16 +512,19 @@
 
   <script>
     const themeToggle = document.getElementById('theme-toggle');
-    const themeLabel = themeToggle.querySelector('.theme-toggle__label');
+    const themeIcon = themeToggle.querySelector('.theme-toggle__icon');
     const THEME_KEY = 'one-theme';
+    const moonIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.2A8 8 0 1 1 9.8 4 6.5 6.5 0 0 0 20 14.2Z"></path></svg>`;
+    const sunIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.9 19.1l1.7-1.7M17.4 6.6l1.7-1.7"></path></svg>`;
 
     function applyTheme(theme) {
       document.documentElement.dataset.theme = theme;
       document.documentElement.style.colorScheme = theme;
       const isDark = theme === 'dark';
       themeToggle.setAttribute('aria-pressed', String(isDark));
-      themeLabel.textContent = isDark ? 'Light mode' : 'Dark mode';
-      themeToggle.querySelector('.theme-toggle__icon').textContent = isDark ? '◑' : '◐';
+      themeToggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+      themeToggle.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+      themeIcon.innerHTML = isDark ? sunIcon : moonIcon;
     }
 
     let savedTheme = null;
