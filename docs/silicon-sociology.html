@@ -307,23 +307,28 @@
       font-family: 'Inter', sans-serif;
       line-height: 0;
       touch-action: none;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .theme-toggle {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 24px;
-      height: 24px;
+      width: 18px;
+      height: 18px;
       border: 1px solid var(--glass-edge);
       border-top-color: var(--glass-top);
       background: var(--glass-surface);
       color: var(--ink);
-      border-radius: 5px;
+      border-radius: 4px;
       padding: 0;
       cursor: pointer;
       box-shadow:
-        0 10px 26px rgba(0, 0, 0, 0.16),
+        0 7px 18px rgba(0, 0, 0, 0.14),
         inset 0 1px 1px var(--glass-inset);
       backdrop-filter: blur(18px) saturate(1.08);
       -webkit-backdrop-filter: blur(18px) saturate(1.08);
@@ -346,7 +351,7 @@
       transition: none;
     }
     .theme-toggle .theme-toggle__icon {
-      font-size: 15px;
+      font-size: 13px;
       line-height: 1;
       display: inline-flex;
       align-items: center;
