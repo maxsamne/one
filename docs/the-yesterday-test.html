@@ -18,6 +18,8 @@
       --tag-bg: #f4ece3;
       --shadow-soft: 0 12px 32px rgba(38, 37, 33, 0.04);
       --grid-line: rgba(231, 225, 214, 0.4);
+      --article-bg: rgba(255, 253, 248, 0.7);
+      --article-shadow: var(--shadow-soft);
       --glass-surface: rgba(255, 253, 248, 0.22);
       --glass-edge: rgba(255, 255, 255, 0.4);
       --glass-top: rgba(255, 255, 255, 0.7);
@@ -36,6 +38,8 @@
         --tag-bg: #1f1d19;
         --shadow-soft: 0 12px 32px rgba(0, 0, 0, 0.3);
         --grid-line: rgba(255, 255, 255, 0.05);
+        --article-bg: var(--bg);
+        --article-shadow: none;
         --glass-surface: rgba(16, 16, 15, 0.58);
         --glass-edge: rgba(255, 255, 255, 0.16);
         --glass-top: rgba(255, 255, 255, 0.35);
@@ -54,6 +58,8 @@
       --tag-bg: #1f1d19;
       --shadow-soft: 0 12px 32px rgba(0, 0, 0, 0.3);
       --grid-line: rgba(255, 255, 255, 0.05);
+      --article-bg: var(--bg);
+      --article-shadow: none;
       --glass-surface: rgba(16, 16, 15, 0.58);
       --glass-edge: rgba(255, 255, 255, 0.16);
       --glass-top: rgba(255, 255, 255, 0.35);
@@ -70,6 +76,8 @@
       --tag-bg: #f4ece3;
       --shadow-soft: 0 12px 32px rgba(38, 37, 33, 0.04);
       --grid-line: rgba(231, 225, 214, 0.4);
+      --article-bg: rgba(255, 253, 248, 0.7);
+      --article-shadow: var(--shadow-soft);
       --glass-surface: rgba(255, 253, 248, 0.22);
       --glass-edge: rgba(255, 255, 255, 0.4);
       --glass-top: rgba(255, 255, 255, 0.7);
@@ -80,17 +88,17 @@
 
     html {
       background-color: var(--bg);
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: var(--bg);
       background-image:
         linear-gradient(var(--grid-line) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
       background-size: 24px 24px;
       background-position: center top;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
       color: var(--ink);
       font-family: 'Lora', Georgia, serif;
       font-size: 17px;
@@ -119,10 +127,10 @@
       max-width: 696px;
       margin: 48px auto 120px;
       padding: 48px 24px 72px;
-      background: rgba(255, 253, 248, 0.7);
+      background: var(--article-bg);
       border: 1px solid var(--border);
       border-radius: 6px;
-      box-shadow: var(--shadow-soft);
+      box-shadow: var(--article-shadow);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
