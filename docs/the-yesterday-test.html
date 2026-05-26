@@ -78,7 +78,11 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html, body {
+    html {
+      background-color: var(--bg);
+    }
+
+    body {
       margin: 0;
       padding: 0;
       background-color: var(--bg);
@@ -92,6 +96,7 @@
       font-size: 17px;
       line-height: 1.8;
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
     nav {
@@ -111,9 +116,9 @@
     }
 
     article {
-      max-width: 700px;
-      margin: 40px auto 120px;
-      padding: 48px 24px 84px;
+      max-width: 696px;
+      margin: 48px auto 120px;
+      padding: 48px 24px 72px;
       background: rgba(255, 253, 248, 0.7);
       border: 1px solid var(--border);
       border-radius: 6px;
@@ -124,7 +129,7 @@
 
     @media (max-width: 740px) {
       article {
-        margin: 20px 16px 80px;
+        margin: 24px 24px 72px;
         border-radius: 6px;
         padding: 32px 20px 60px;
       }
