@@ -35,7 +35,7 @@ from core.prompt import date_context
 from core.tools.calc import CALC_TOOLS
 from core.tools.ctx import REPO_ROOT, WORKDIR
 from core.tools.fs import FS_TOOLS
-from core.tools.git import GIT_ADD, GIT_COMMIT, GIT_DIFF, GIT_LOG, GIT_STATUS
+from core.tools.git import GIT_ADD, GIT_COMMIT, GIT_DIFF, GIT_DIFF_TIMELINE, GIT_LOG, GIT_STATUS
 from core.tools.shell import SHELL_TOOLS
 
 
@@ -46,7 +46,7 @@ class TaskMode(StrEnum):
 
 CONVERSATIONAL_TMP_CLEANUP_ON_SUCCESS = False
 _TMP_DIR = REPO_ROOT / "generated" / "tmp"
-_MANAGED_GIT_TOOLS = [GIT_STATUS, GIT_DIFF, GIT_ADD, GIT_COMMIT, GIT_LOG]
+_MANAGED_GIT_TOOLS = [GIT_STATUS, GIT_DIFF, GIT_DIFF_TIMELINE, GIT_ADD, GIT_COMMIT, GIT_LOG]
 _PERSISTENT_TOOLS = FS_TOOLS + SHELL_TOOLS + _MANAGED_GIT_TOOLS + CALC_TOOLS
 _CONVERSATIONAL_TOOLS = FS_TOOLS + CALC_TOOLS
 
@@ -110,7 +110,9 @@ _MANAGED_GIT_INSTRUCTIONS = """\
 ## Managed git lifecycle
 The manager already created the correct branch and will push/open/update the PR after
 your final answer. Do not create branches, check out branches, push, or open PRs.
-Use only git_status, git_diff, git_add, git_commit, and git_log for your own changes.
+Use only git_status, git_diff, git_diff_timeline, git_add, git_commit, and git_log for your own changes.
+When working on a follow-up PR branch or when the user refers to a previous version,
+use git_diff_timeline to inspect how the branch evolved across commits before editing.
 """
 
 _HTML_ARTIFACT_LIMIT = 3
