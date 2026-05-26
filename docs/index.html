@@ -18,6 +18,13 @@
       --blue-accent: #3a86c8;
       --shadow-soft: 0 4px 16px rgba(38, 37, 33, 0.03), 0 1px 4px rgba(38, 37, 33, 0.01);
       --shadow-card: 0 12px 36px rgba(38, 37, 33, 0.05), 0 2px 8px rgba(38, 37, 33, 0.02);
+      --shadow-card-hover: 0 18px 44px rgba(38, 37, 33, 0.08), 0 4px 12px rgba(38, 37, 33, 0.03);
+      --grid-line: rgba(231, 225, 214, 0.45);
+      --glass-surface: rgba(255, 253, 248, 0.22);
+      --glass-edge: rgba(255, 255, 255, 0.4);
+      --glass-top: rgba(255, 255, 255, 0.7);
+      --glass-inset: rgba(255, 255, 255, 0.5);
+      --cover-filter: none;
       
       /* Crisp, tight corners instead of large bubbly rounded ones */
       --radius-lg: 6px;
@@ -25,13 +32,74 @@
       --radius-sm: 3px;
     }
 
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #10100f;
+        --surface: #171716;
+        --ink: #f4efe6;
+        --ink-muted: #a8a295;
+        --accent: #96c6ab;
+        --border: #2d2a24;
+        --tag-bg: #1f1d19;
+        --blue-accent: #5d9bd1;
+        --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.22), 0 1px 4px rgba(0, 0, 0, 0.16);
+        --shadow-card: 0 14px 40px rgba(0, 0, 0, 0.3), 0 2px 10px rgba(0, 0, 0, 0.18);
+        --shadow-card-hover: 0 20px 52px rgba(0, 0, 0, 0.38), 0 4px 14px rgba(0, 0, 0, 0.24);
+        --grid-line: rgba(255, 255, 255, 0.05);
+        --glass-surface: rgba(16, 16, 15, 0.58);
+        --glass-edge: rgba(255, 255, 255, 0.16);
+        --glass-top: rgba(255, 255, 255, 0.35);
+        --glass-inset: rgba(255, 255, 255, 0.16);
+        --cover-filter: saturate(0.92) brightness(0.84) contrast(0.98);
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #10100f;
+      --surface: #171716;
+      --ink: #f4efe6;
+      --ink-muted: #a8a295;
+      --accent: #96c6ab;
+      --border: #2d2a24;
+      --tag-bg: #1f1d19;
+      --blue-accent: #5d9bd1;
+      --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.22), 0 1px 4px rgba(0, 0, 0, 0.16);
+      --shadow-card: 0 14px 40px rgba(0, 0, 0, 0.3), 0 2px 10px rgba(0, 0, 0, 0.18);
+      --shadow-card-hover: 0 20px 52px rgba(0, 0, 0, 0.38), 0 4px 14px rgba(0, 0, 0, 0.24);
+      --grid-line: rgba(255, 255, 255, 0.05);
+      --glass-surface: rgba(16, 16, 15, 0.58);
+      --glass-edge: rgba(255, 255, 255, 0.16);
+      --glass-top: rgba(255, 255, 255, 0.35);
+      --glass-inset: rgba(255, 255, 255, 0.16);
+      --cover-filter: saturate(0.92) brightness(0.84) contrast(0.98);
+    }
+    :root[data-theme="light"] {
+      --bg: #f7f5ef;
+      --surface: #fffdf8;
+      --ink: #262521;
+      --ink-muted: #7d786f;
+      --accent: #7fb89d;
+      --border: #e7e1d6;
+      --tag-bg: #f2eee5;
+      --blue-accent: #3a86c8;
+      --shadow-soft: 0 4px 16px rgba(38, 37, 33, 0.03), 0 1px 4px rgba(38, 37, 33, 0.01);
+      --shadow-card: 0 12px 36px rgba(38, 37, 33, 0.05), 0 2px 8px rgba(38, 37, 33, 0.02);
+      --shadow-card-hover: 0 18px 44px rgba(38, 37, 33, 0.08), 0 4px 12px rgba(38, 37, 33, 0.03);
+      --grid-line: rgba(231, 225, 214, 0.45);
+      --glass-surface: rgba(255, 253, 248, 0.22);
+      --glass-edge: rgba(255, 255, 255, 0.4);
+      --glass-top: rgba(255, 255, 255, 0.7);
+      --glass-inset: rgba(255, 255, 255, 0.5);
+      --cover-filter: none;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background-color: var(--bg);
       background-image: 
-        linear-gradient(rgba(231, 225, 214, 0.45) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(231, 225, 214, 0.45) 1px, transparent 1px);
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
       background-size: 24px 24px;
       background-position: center top;
       color: var(--ink);
@@ -42,6 +110,22 @@
       min-height: 100vh;
       overflow-x: hidden;
       padding-bottom: 120px;
+    }
+
+    nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 24px 40px 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    @media (max-width: 740px) {
+      nav {
+        padding: 18px 16px 0;
+      }
     }
 
     /* MAIN CONTAINER */
@@ -449,26 +533,22 @@
     .book-card {
       width: 270px;
       height: 390px;
-      background: #ffffff;
-      border: 1px solid #eae5db;
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: var(--radius-md);
       padding: 24px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-shadow: 
-        0 6px 18px rgba(38, 37, 33, 0.03), 
-        0 1px 3px rgba(38, 37, 33, 0.01);
-      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--shadow-card);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, background 0.25s ease;
       position: relative;
       z-index: 2;
     }
 
     .book-card:hover {
       transform: translateY(-8px) scale(1.01);
-      box-shadow: 
-        0 20px 40px rgba(38, 37, 33, 0.06), 
-        0 2px 10px rgba(38, 37, 33, 0.02);
+      box-shadow: var(--shadow-card-hover);
     }
 
     .book-header {
@@ -508,7 +588,8 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.5s ease;
+      filter: var(--cover-filter);
+      transition: transform 0.5s ease, filter 0.25s ease;
     }
 
     .book-card:hover .book-cover {
@@ -532,15 +613,15 @@
       left: 10px;
       right: 10px;
       height: 110px;
-      background: rgba(255, 253, 248, 0.22);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      border-top: 1.5px solid rgba(255, 255, 255, 0.7);
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-edge);
+      border-top: 1.5px solid var(--glass-top);
       border-radius: var(--radius-md);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       box-shadow: 
         0 8px 24px rgba(38, 37, 33, 0.02), 
-        inset 0 1px 1px rgba(255, 255, 255, 0.5);
+        inset 0 1px 1px var(--glass-inset);
       z-index: 5;
       pointer-events: none;
       transform: perspective(800px) rotateX(3deg);
@@ -656,9 +737,80 @@
       border-radius: var(--radius-sm);
       color: var(--accent-dark, #3b6b55);
     }
+
+    .theme-dock {
+      position: fixed;
+      top: var(--theme-toggle-y, 24px);
+      left: var(--theme-toggle-x, calc(100vw - 48px));
+      z-index: 1000;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      line-height: 0;
+      touch-action: none;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+    }
+
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border: 1px solid var(--glass-edge);
+      border-top-color: var(--glass-top);
+      background: var(--glass-surface);
+      color: var(--ink);
+      border-radius: 5px;
+      padding: 0;
+      cursor: grab;
+      box-shadow:
+        0 10px 26px rgba(0, 0, 0, 0.16),
+        inset 0 1px 1px var(--glass-inset);
+      backdrop-filter: blur(18px) saturate(1.08);
+      -webkit-backdrop-filter: blur(18px) saturate(1.08);
+      transform: translateX(0.5px);
+      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .theme-toggle:hover {
+      transform: translateX(0.5px) translateY(-1px) scale(1.02);
+      background: rgba(255, 253, 248, 0.3);
+    }
+    :root[data-theme="dark"] .theme-toggle:hover {
+      background: rgba(22, 22, 20, 0.72);
+    }
+    .theme-toggle:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+    }
+    .theme-dock.is-dragging .theme-toggle {
+      cursor: grabbing;
+      transform: translateX(0.5px) scale(1.04);
+      transition: none;
+    }
+    .theme-toggle .theme-toggle__icon {
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
   </style>
 </head>
 <body>
+
+  <nav class="theme-dock" id="theme-dock" aria-label="Site controls">
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode" title="Switch to dark mode">
+      <span class="theme-toggle__icon" aria-hidden="true">◐</span>
+    </button>
+  </nav>
+
   <!-- MAIN CONTAINER -->
   <main>
     <!-- HERO SECTION -->
@@ -907,6 +1059,138 @@
     window.addEventListener('scroll', updateFloatingPill, { passive: true });
     window.addEventListener('resize', updateFloatingPill);
     updateFloatingPill();
+    const themeDock = document.getElementById('theme-dock');
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeToggleIcon = themeToggle.querySelector('.theme-toggle__icon');
+    const THEME_KEY = 'one-theme';
+    const THEME_POSITION_KEY = 'one-theme-toggle-position';
+    const THEME_GRID_SIZE = 24;
+    const THEME_DRAG_THRESHOLD = 10;
+
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      document.documentElement.style.colorScheme = theme;
+      const isDark = theme === 'dark';
+      themeToggle.setAttribute('aria-pressed', String(isDark));
+      themeToggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+      themeToggle.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+      themeToggleIcon.textContent = isDark ? '◑' : '◐';
+    }
+
+    let savedTheme = null;
+    try { savedTheme = localStorage.getItem(THEME_KEY); } catch (e) {}
+    const initialTheme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(initialTheme);
+
+    function setThemeDockPosition(x, y) {
+      const rect = themeDock.getBoundingClientRect();
+      const maxX = Math.max(0, document.documentElement.clientWidth - rect.width);
+      const maxY = Math.max(0, document.documentElement.clientHeight - rect.height);
+      const nextX = Math.min(Math.max(0, x), maxX);
+      const nextY = Math.min(Math.max(0, y), maxY);
+      themeDock.style.setProperty('--theme-toggle-x', `${nextX}px`);
+      themeDock.style.setProperty('--theme-toggle-y', `${nextY}px`);
+      return { x: nextX, y: nextY };
+    }
+
+    function snapThemeDockPosition(x, y) {
+      const gridOriginX = (document.documentElement.clientWidth - THEME_GRID_SIZE) / 2;
+      const snappedX = gridOriginX + Math.round((x - gridOriginX) / THEME_GRID_SIZE) * THEME_GRID_SIZE;
+      const snappedY = Math.round(y / THEME_GRID_SIZE) * THEME_GRID_SIZE;
+      return setThemeDockPosition(snappedX, snappedY);
+    }
+
+    function restoreThemeDockPosition() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(THEME_POSITION_KEY) || 'null');
+        if (saved && Number.isFinite(saved.x) && Number.isFinite(saved.y)) {
+          snapThemeDockPosition(saved.x, saved.y);
+          return;
+        }
+      } catch (e) {}
+      snapThemeDockPosition(document.documentElement.clientWidth - 48, 24);
+    }
+
+    restoreThemeDockPosition();
+
+    let dragState = null;
+    let ignoreNextThemeClick = false;
+
+    function toggleTheme() {
+      const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem(THEME_KEY, nextTheme); } catch (e) {}
+      applyTheme(nextTheme);
+    }
+
+    function startThemeDockDrag(event, pointerId = event.pointerId) {
+      if (dragState) return;
+      const rect = themeDock.getBoundingClientRect();
+      dragState = {
+        pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        left: rect.left,
+        top: rect.top,
+        moved: false,
+      };
+      if (event.pointerId !== undefined && themeDock.setPointerCapture) {
+        try { themeDock.setPointerCapture(event.pointerId); } catch (e) {}
+      }
+      themeDock.classList.add('is-dragging');
+    }
+
+    function moveThemeDock(event, pointerId = event.pointerId) {
+      if (!dragState || dragState.pointerId !== pointerId) return;
+      const dx = event.clientX - dragState.startX;
+      const dy = event.clientY - dragState.startY;
+      if (Math.hypot(dx, dy) > THEME_DRAG_THRESHOLD) dragState.moved = true;
+      if (dragState.moved) setThemeDockPosition(dragState.left + dx, dragState.top + dy);
+    }
+
+    function finishThemeDockDrag(event, pointerId = event.pointerId) {
+      if (!dragState || dragState.pointerId !== pointerId) return;
+      const wasMoved = dragState.moved;
+      const nextX = dragState.left + event.clientX - dragState.startX;
+      const nextY = dragState.top + event.clientY - dragState.startY;
+      let finalPosition = null;
+      if (wasMoved) finalPosition = snapThemeDockPosition(nextX, nextY);
+      else setThemeDockPosition(dragState.left, dragState.top);
+      themeDock.classList.remove('is-dragging');
+      dragState = null;
+      ignoreNextThemeClick = true;
+      window.setTimeout(() => { ignoreNextThemeClick = false; }, 0);
+      if (wasMoved) {
+        try { localStorage.setItem(THEME_POSITION_KEY, JSON.stringify(finalPosition)); } catch (e) {}
+      } else {
+        toggleTheme();
+      }
+    }
+
+    function cancelThemeDockDrag() {
+      themeDock.classList.remove('is-dragging');
+      dragState = null;
+    }
+
+    themeDock.addEventListener('pointerdown', startThemeDockDrag);
+    themeDock.addEventListener('pointermove', moveThemeDock);
+    themeDock.addEventListener('pointerup', finishThemeDockDrag);
+    themeDock.addEventListener('pointercancel', cancelThemeDockDrag);
+    themeDock.addEventListener('mousedown', (event) => startThemeDockDrag(event, 'mouse'));
+    window.addEventListener('mousemove', (event) => moveThemeDock(event, dragState ? dragState.pointerId : 'mouse'));
+    window.addEventListener('mouseup', (event) => finishThemeDockDrag(event, dragState ? dragState.pointerId : 'mouse'));
+    window.addEventListener('resize', () => {
+      const rect = themeDock.getBoundingClientRect();
+      const finalPosition = snapThemeDockPosition(rect.left, rect.top);
+      try { localStorage.setItem(THEME_POSITION_KEY, JSON.stringify(finalPosition)); } catch (e) {}
+    });
+
+    themeToggle.addEventListener('click', (event) => {
+      if (ignoreNextThemeClick) {
+        event.preventDefault();
+        return;
+      }
+      toggleTheme();
+    });
   </script>
 </body>
 </html>
