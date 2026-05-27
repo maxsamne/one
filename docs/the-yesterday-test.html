@@ -306,7 +306,7 @@
 
     <p>An agent is not just scoring rows from a table. It is searching, retrieving, planning, calling tools, revising hypotheses, and increasingly expected to take actions that alter the very world it is reasoning about. The relevant input is no longer a static feature vector. It is an evolving environment. The consequential chain is much more consequential.</p>
 
-    <p>That makes leakage easier to miss and more consequential when it happens. A benchmark can look historical while the retrieval layer serves a later page version, a browser tool surfaces a quietly updated database, or a search API ranks documents using signals unavailable at the time. In other words, an agent can fail the yesterday test without anyone noticing.</p>
+    <p>That makes leakage easier to miss and more damaging when it happens. A benchmark can look historical while the retrieval layer serves a later page version – an agent can fail the yesterday test without anyone noticing.</p>
 
     <div class="note">
       <p><strong>The engineering target is stricter than archived search.</strong> A backtestable agent needs aligned boundaries across the stack: a model boundary, so the weights are frozen at time <em>T</em>; a corpus boundary, so tools expose only pre-cutoff material; a claim boundary, so reasoning steps can be checked for post-cutoff leakage; and a policy boundary, so the agent can actually be improved offline rather than merely inspected.</p>
