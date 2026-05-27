@@ -288,13 +288,13 @@
 
     <p>Generative AI has partially lost that discipline. We can benchmark models. We can watch demos. We can run them on canned tasks. But the thing people increasingly want from 2026-era systems is not a one-shot answer. It is a research loop. Read the filings. Search the web. Call tools. Form a view. Decide. In that world, the crucial question is not whether the answer looks persuasive now. It is whether the agent could have done the work <em>before the outcome was known</em>.</p>
 
-    <p class="leadline">My view is that backtesting can become as important for agentic AI as it was for traditional ML, but only if we treat it as a training and systems problem. The important point is simpler than a debate about prompting: we still do not have a robust way to run this kind of time-boxed analysis today. The unlock is a <em>point-in-time stack</em>: a frozen environment, a leakage auditor, and an offline policy-improvement loop built on historical traces.</p>
+    <p class="leadline">My view is that backtesting can become as important for agentic AI as it was for traditional ML, but only if we treat it as a training and systems problem. We still do not have a robust way to run this kind of time-boxed analysis today. The unlock is a <em>point-in-time stack</em>: a frozen environment, a leakage auditor, and an offline policy-improvement loop built on historical traces.</p>
 
-    <p>That is what makes the problem so practical. If we cannot reliably place an agent inside the historical world it is supposed to inhabit, then a great deal of current evaluation is weaker than it looks. A model that appears brilliant on a 2023 company analysis may simply be leaking 2024 facts from its weights, from retrieval, or from the environment around it. In that case, it is not really forecasting; it is partly recollecting.</p>
+    <p>That is what makes the problem so practical. If we cannot reliably place an agent inside the historical world it is supposed to inhabit, then a great deal of current evaluation is weaker than it looks. A model that appears brilliant on a 2020 company analysis may simply be leaking 2024 facts from its weights. The same applies, of course, to current-day analysis that uses web search. Too often, we are evaluating forward-looking edges in environments that quietly expose later flags, whether from the weights, the retrieval environment, or the world around the run. In that case, it is not really forecasting; it is partly recollecting.</p>
 
-    <p>Too often, we are evaluating forward-looking agents in environments that quietly expose later facts.</p>
+    <p>We used to obsess about leakage when the feature table made it visible. With agents, the same failure mode has become easier to hide.</p>
 
-    <p>For real-world agents, that is the test that matters: could this system have done the work before the outcome was known?</p>
+    <p>For qualitative decision agents in company analysis, organizational planning, policy, and economics, that is the test that matters: did the system do the work before the outcome was known?</p>
 
     <h2>The familiar part</h2>
 
@@ -425,7 +425,7 @@
 
     <p>First, many agents are not passive predictors. They intervene. A trading agent moves markets. A negotiation agent changes counterpart behavior. A coding agent alters the codebase it is later evaluated against. Historical replay is therefore truest for read-heavy systems and roughest for write-heavy ones. That is another reason this matters so much for research, analysis, and advisory tasks in economics, politics, and institutional decision-making: these are exactly the areas where people want help with long-horizon judgments about the world, yet where the environment is difficult to control and the time dependence of knowledge makes clean testing unusually hard.</p>
 
-    <p>Second, the compute bill is ugly. A tabular model can be backtested over millions of rows quickly. A deep-research agent may need dozens of searches, hundreds of tool calls, and long traces for a single case. That makes rigorous replay expensive enough that teams will be tempted to cut corners precisely where leakage is easiest.</p>
+    <p>Second, the compute bill is uglier as a change of mindset than as a raw cost line. A tabular model can be backtested over millions of rows quickly. A deep-research agent may need dozens of searches, hundreds of tool calls, and long traces for a single case. But the less sexy part is the discipline itself: spending a lot of tokens on training runs over historical corpora that deliberately do not reflect the latest frontier of human, and increasingly AI-coauthored, knowledge. That makes rigorous replay feel less glamorous, which is exactly where teams will be tempted to cut corners and let leakage back in.</p>
 
     <p>Third, tool use is not monotone. One recent forecasting study found that date-filtered web search improved average Brier Skill Score overall, but hurt performance in 6 of 50 model-checkpoint conditions.<sup id="ref10"><a href="#fn10">10</a></sup> That matters because it means the policy you are optimizing is not “always search more.” It is when to search, when to stop, and when to trust what the model already knows.</p>
 
