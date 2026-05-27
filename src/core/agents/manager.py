@@ -2,8 +2,8 @@
 
 Pivot (2026-05): the manager no longer LLM-picks domains or skills. Instead:
 1. Skills are pre-loaded from `TASK_SKILLS_CTX` (user explicitly attached via the UI).
-2. Mode is classified (conversational vs persistent) by either a heuristic or, if an
-   `orchestrator` AiClient is provided, one cheap LLM call. Mode determines tmp dir vs worktree.
+2. Mode is classified by either a heuristic or, if an `orchestrator` AiClient is
+   provided, one cheap LLM call. Mode determines tmp dir vs repo-readonly vs worktree.
 3. The DispatchRouter (`core.agents.router`) picks `(provider, model, thinking)` per dispatch.
 4. The coder gets pre-loaded skill bodies + the always-injected skills index + the
    `load_skill` tool to fetch any other skill mid-loop.
@@ -11,6 +11,7 @@ Pivot (2026-05): the manager no longer LLM-picks domains or skills. Instead:
 The result: zero LLM calls inside manager when mode is unambiguous; one when not.
 """
 
+import re
 import shutil
 import time
 from contextlib import AsyncExitStack
@@ -34,13 +35,14 @@ from core.log import transcript_load
 from core.prompt import date_context
 from core.tools.calc import CALC_TOOLS
 from core.tools.ctx import REPO_ROOT, WORKDIR
-from core.tools.fs import FS_TOOLS
+from core.tools.fs import FS_TOOLS, GREP_FILE, LIST_DIR, READ_FILE
 from core.tools.git import GIT_ADD, GIT_COMMIT, GIT_DIFF, GIT_DIFF_TIMELINE, GIT_LOG, GIT_STATUS
 from core.tools.shell import SHELL_TOOLS
 
 
 class TaskMode(StrEnum):
     CONVERSATIONAL = "conversational"  # Q&A, calc, explanations — answer is the deliverable
+    REPO_READONLY = "repo_readonly"    # Q&A that needs read-only access to repo files
     PERSISTENT = "persistent"          # code/file changes that should be committed
 
 
@@ -49,30 +51,51 @@ _TMP_DIR = REPO_ROOT / "generated" / "tmp"
 _MANAGED_GIT_TOOLS = [GIT_STATUS, GIT_DIFF, GIT_DIFF_TIMELINE, GIT_ADD, GIT_COMMIT, GIT_LOG]
 _PERSISTENT_TOOLS = FS_TOOLS + SHELL_TOOLS + _MANAGED_GIT_TOOLS + CALC_TOOLS
 _CONVERSATIONAL_TOOLS = FS_TOOLS + CALC_TOOLS
+_REPO_READONLY_TOOLS = [READ_FILE, GREP_FILE, LIST_DIR] + CALC_TOOLS
 
 _MODE_INSTRUCTIONS = (
-    "Classify this task as either 'conversational' or 'persistent'.\n\n"
+    "Classify this task as 'conversational', 'repo_readonly', or 'persistent'.\n\n"
     "- 'conversational': the answer itself is the deliverable. Q&A, calculations, "
-    "explanations, simple lookups, summaries, code review without changes. No need "
-    "to modify the codebase.\n"
+    "explanations, simple lookups, summaries, and analysis that does not need to "
+    "inspect repository files.\n"
+    "- 'repo_readonly': the answer itself is the deliverable, but the task needs "
+    "to inspect repository files, website files, source code, docs, logs, or a "
+    "previous implementation. Use this for codebase/site questions with no requested "
+    "file changes.\n"
     "- 'persistent': the task requires creating or modifying files that should be kept. "
     "Code changes, new features, generated reports/scripts, anything that modifies the "
     "repo and should be committed.\n\n"
     "When in doubt: prefer 'conversational' for short questions and 'persistent' for "
-    "anything mentioning files, scripts, code, building, or generating an artifact."
+    "anything that asks to edit, remove, add, build, or generate an artifact."
 )
 
 
 class _ModePlan(BaseModel):
-    mode: TaskMode = Field(description="One of: conversational, persistent")
+    mode: TaskMode = Field(description="One of: conversational, repo_readonly, persistent")
+
+
+_PERSISTENT_HINTS = (
+    "add", "build", "change", "commit", "create", "delete", "edit", "fix",
+    "generate", "implement", "open pr", "pull request", "push", "remove",
+    "update", "write",
+)
+_REPO_READONLY_HINTS = (
+    "code", "codebase", "docs", "file", "files", "grep", "log", "logs",
+    "repo", "repository", "search", "site", "source", "website", "where is",
+)
 
 
 def _heuristic_mode(task: str) -> TaskMode:
+    lower = task.lower()
+    if any(re.search(rf"\b{re.escape(hint)}\b", lower) for hint in _PERSISTENT_HINTS):
+        return TaskMode.PERSISTENT
+    if any(re.search(rf"\b{re.escape(hint)}\b", lower) for hint in _REPO_READONLY_HINTS):
+        return TaskMode.REPO_READONLY
     return TaskMode.CONVERSATIONAL if len(task.split()) < 3 else TaskMode.PERSISTENT
 
 
 async def _classify_mode(task: str, orchestrator: AiClient | None) -> TaskMode:
-    """One cheap LLM call to decide conversational vs persistent. Falls back to heuristic."""
+    """One cheap LLM call to decide execution mode. Falls back to heuristic."""
     if orchestrator is None or len(task.split()) < 3:
         return _heuristic_mode(task)
     try:
@@ -104,6 +127,21 @@ Output: cite sources as [text](url), never bare URLs. Don't name tools, provider
 """
 
 _CONVERSATIONAL_BASE = "\n\n---\n\n".join([_INSTRUCTIONS_BASE, _CONVERSATIONAL_INSTRUCTIONS])
+
+_REPO_READONLY_INSTRUCTIONS = """\
+This task is a read-only repository lookup — your final answer is the deliverable,
+not files in the repo.
+
+You can inspect the repository with read_file, grep_file, and list_dir. You cannot
+write, edit, delete, run shell commands, commit, push, or open PRs.
+
+Use grep/read_file directly when the user asks about something on the website, in
+source code, in docs, or in logs. When you're done, answer clearly and concisely.
+
+Do not commit anything. Do not git_add.\
+"""
+
+_REPO_READONLY_BASE = "\n\n---\n\n".join([_INSTRUCTIONS_BASE, _REPO_READONLY_INSTRUCTIONS])
 _PERSISTENT_BASE = "\n\n---\n\n".join([_INSTRUCTIONS_BASE, _INSTRUCTIONS_PERSISTENT])
 
 _MANAGED_GIT_INSTRUCTIONS = """\
@@ -464,6 +502,14 @@ async def _dispatch(
             _log(Category.AGENT, "conversational dispatch",
                  provider=provider, model=ai.model_name, thinking=str(thinking),
                  tmp=str(workdir.relative_to(REPO_ROOT)), write_scope="workdir")
+        elif mode == TaskMode.REPO_READONLY:
+            workdir = REPO_ROOT
+            tools = list(_REPO_READONLY_TOOLS) + list(extra_tools or [])
+            instructions = _build_instructions(_REPO_READONLY_BASE, plan.skill_bodies, plan.skill_index, plan.date_ctx)
+            base_branch = starting_ref = ""
+            _log(Category.AGENT, "repo readonly dispatch",
+                 provider=provider, model=ai.model_name, thinking=str(thinking),
+                 write_scope="repo_readonly")
         else:
             parent_base = await _resolve_parent_base(parent_task_id)
             # Single-provider follow-up: extend the parent's task branch directly
@@ -514,6 +560,7 @@ async def _dispatch(
                 prior_history=prior_history,
                 extra_hooks=extra_hooks,
                 hook_retries=hook_retries,
+                include_default_tools=mode != TaskMode.REPO_READONLY,
             )
             if worktrees:
                 cleanup_result = await _recover_dirty_worktree(

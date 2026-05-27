@@ -79,5 +79,5 @@ PR_URL_CTX: ContextVar[str | None] = ContextVar("pr_url_ctx", default=None)
 
 
 # Effective mode selected by manager after auto-classification / override resolution.
-# Persisted by the gateway so follow-ups can inherit persistent vs conversational behavior.
+# Persisted by the gateway so follow-ups can inherit execution-mode behavior.
 TASK_EFFECTIVE_MODE_CTX: ContextVar[str | None] = ContextVar("task_effective_mode_ctx", default=None)

@@ -1,5 +1,5 @@
 const TIERS = ["ultra_cheap", "cheap", "default", "pro"];
-const MODES = ["persistent", "conversational"];
+const MODES = ["persistent", "repo_readonly", "conversational"];
 
 let _markedInstance = null;
 function getMarked() {
@@ -40,7 +40,7 @@ const state = {
   attachedGraders: [],  // list of grader paths
   attachedImages: [],   // list of {dataUri, name, mime, size, thumb}
   attachedParentId: null,  // task_id of the parent task this follow-up resumes from
-  mode: "",                // "" = auto, "conversational", "persistent"
+  mode: "",                // "" = auto, "conversational", "repo_readonly", "persistent"
   // Autocomplete dropdown UI state. `kind` = "skill" | "grader" | "parent".
   dropdown: { open: false, items: [], active: 0, query: "", kind: "skill" },
 };
@@ -76,7 +76,7 @@ function clampPromptHeight() {
 }
 
 function promptHighlightedHtml(text) {
-  const re = /\/(ultra_cheap|cheap|default|pro)\b|--\s*(persistent|conversational)\b/gi;
+  const re = /\/(ultra_cheap|cheap|default|pro)\b|--\s*(persistent|repo[_-]readonly|conversational)\b/gi;
   let out = "";
   let last = 0;
   let m;
@@ -127,7 +127,7 @@ function parseTierPrefix(raw) {
 }
 
 const AT_TIER_RE = /\/(ultra_cheap|cheap|default|pro)\b/gi;
-const MODE_FLAG_RE = /--\s*(persistent|conversational)\b/gi;
+const MODE_FLAG_RE = /--\s*(persistent|repo[_-]readonly|conversational)\b/gi;
 
 function lastAtTierInText(text) {
   let m;
@@ -173,7 +173,7 @@ function lastModeFlagInText(text) {
   let last = null;
   MODE_FLAG_RE.lastIndex = 0;
   while ((m = MODE_FLAG_RE.exec(text)) !== null) {
-    last = m[1].toLowerCase();
+    last = m[1].toLowerCase().replace("-", "_");
   }
   return last;
 }
@@ -197,7 +197,7 @@ function stripTierMentions(text) {
 
 function stripModeMentions(text) {
   return text
-    .replace(/--\s*(persistent|conversational)\b/gi, "")
+    .replace(/--\s*(persistent|repo[_-]readonly|conversational)\b/gi, "")
     .replace(/\s{2,}/g, " ")
     .trim();
 }

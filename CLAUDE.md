@@ -153,7 +153,7 @@ Every skill has:
 - Manager no longer auto-loads anything from text. Pre-loaded skills come from `TASK_SKILLS_CTX`, which the gateway populates from the request body — the user explicitly attaches skills via the UI (chips / `/skill` autocomplete).
 - Coder's system prompt always contains an index of all available skills with one-line summaries (cheap, ~200 tokens).
 - Coder has the `load_skill(name)` tool to fetch any skill body mid-loop when the task drifts.
-- Manager keeps one cheap LLM call: mode classification (`conversational` vs `persistent`) — needed to decide tmp dir vs worktree. Falls back to a length heuristic if the orchestrator is unavailable.
+- Manager keeps one cheap LLM call: mode classification (`conversational` vs `repo_readonly` vs `persistent`) — needed to decide tmp dir vs repo lookup vs worktree. Falls back to a length heuristic if the orchestrator is unavailable.
 
 **Gateway endpoints for skills:**
 - `GET /skills` — full catalog with `path`, `summary`, `keywords`, `domain`. UI uses this to populate autocomplete on page load.
@@ -204,7 +204,7 @@ Sizes accepted: `1024x1024` (default), `1024x1536`, `1536x1024`, `auto`. (gpt-im
 
 ## Agent pattern
 
-- **Manager** — mode classification (1 LLM call: conversational vs persistent) + deterministic trigger-based skill pre-loading + dispatch
+- **Manager** — mode classification (1 LLM call: conversational vs repo_readonly vs persistent) + deterministic trigger-based skill pre-loading + dispatch
 - **DispatchRouter** — auto-runs at every delegation seam to pick `(provider, model, thinking)` (see below)
 - **Coder** — agentic tool loop; can spawn sub-agents (see below); has `load_skill` tool for mid-loop pulls; runs **post-response hooks** before declaring done (see Hooks)
 - **Hooks** — pluggable deterministic checks (lint, validators, critics) that gate the coder's final output. Can request a fix-up turn with feedback. See `core/agents/hooks.py`
@@ -420,7 +420,7 @@ collapsing missed windows into a single catch-up). Fires call into the same `_sp
 path as `POST /task`, with `schedule_id` set on the resulting `TaskRecord` for join-back.
 
 Schedule fields: `id, cron, prompt, tier, skills[], enabled, mode, created_at, last_run_at`.
-`mode` (`null | "conversational" | "persistent"`) bypasses manager classification when set.
+`mode` (`null | "conversational" | "repo_readonly" | "persistent"`) bypasses manager classification when set.
 Cron strings are validated via `croniter` at create/update time — bad expressions → 400.
 `POST /cron-from-nl` translates plain English ("every weekday at 9am") via `gpt-5.4-mini`,
 interpreted in `Europe/Stockholm` (no timezone conversion).

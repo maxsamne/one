@@ -38,12 +38,13 @@
             id="prompt"
             rows="1"
             spellcheck="false"
-            placeholder="Ask anything…  (drag images, type /skill, @task, --persistent)"
+            placeholder="Ask anything…  (drag images, type /skill, @task, --repo_readonly)"
           ></textarea>
         </div>
-        <select id="mode-select" class="mode-select" title="Force conversational (tmp scratch) or persistent (worktree). Default = auto.">
+        <select id="mode-select" class="mode-select" title="Force conversational (tmp scratch), repo_readonly (repo lookup), or persistent (worktree). Default = auto.">
           <option value="">auto</option>
           <option value="conversational">conversational</option>
+          <option value="repo_readonly">repo readonly</option>
           <option value="persistent">persistent</option>
         </select>
         <button type="button" class="chip-add" id="parent-add" title="Continue from previous task (@task)" aria-label="Continue from previous task">@</button>
@@ -76,6 +77,7 @@
                 <select id="sched-mode" aria-label="mode">
                   <option value="">auto</option>
                   <option value="conversational">conversational</option>
+                  <option value="repo_readonly">repo readonly</option>
                   <option value="persistent">persistent</option>
                 </select>
               </div>

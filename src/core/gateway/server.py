@@ -97,7 +97,7 @@ class TaskRequest(BaseModel):
     # parent task's persisted transcript (full message history). Auto-compaction
     # keeps token cost bounded.
     parent_task_id: str | None = None
-    # null = let the manager auto-classify (default). "conversational" / "persistent" force the mode.
+    # null = let the manager auto-classify (default). "conversational" / "repo_readonly" / "persistent" force the mode.
     mode: str | None = None
 
 
@@ -528,7 +528,7 @@ async def stream_events(task_id: str, request: Request) -> EventSourceResponse:
 
 # --- Schedules ---
 
-_VALID_MODES = {"conversational", "persistent"}
+_VALID_MODES = {"conversational", "repo_readonly", "persistent"}
 
 
 class ScheduleCreate(BaseModel):
@@ -538,7 +538,7 @@ class ScheduleCreate(BaseModel):
     skills: list[str] = []
     graders: list[str] = []
     enabled: bool = True
-    mode: str | None = None  # null = auto-classify; "conversational" / "persistent" = force
+    mode: str | None = None  # null = auto-classify; "conversational" / "repo_readonly" / "persistent" = force
 
 
 class ScheduleUpdate(BaseModel):
