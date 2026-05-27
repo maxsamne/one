@@ -225,6 +225,73 @@ def test_persistent_manager_hides_lifecycle_git_tools():
     assert "git_create_pr" not in names
 
 
+def test_mode_heuristic_routes_repo_questions_to_readonly():
+    from core.agents import manager
+
+    assert manager._heuristic_mode("what does this text on my website show?") == manager.TaskMode.REPO_READONLY
+    assert manager._heuristic_mode("remove this text from my website") == manager.TaskMode.PERSISTENT
+
+
+async def test_repo_readonly_mode_searches_repo_without_write_tools(tmp_path, monkeypatch):
+    from core.agents import manager
+    from core.ai_client.models import ThinkingLevel
+
+    repo = tmp_path / "repo"
+    docs = repo / "docs"
+    docs.mkdir(parents=True)
+    (docs / "index.html").write_text("<span>THESIS_SOC // SYNCHRONIZED</span>\n", encoding="utf-8")
+
+    monkeypatch.setattr(manager, "REPO_ROOT", repo)
+
+    captured: dict[str, object] = {}
+
+    class _RepoLookupClient:
+        model_name = "fake-model"
+        provider = "fake"
+
+        async def complete(self, prompt, *, instructions=None, thinking=None, extra_tools=(), images=None, response_model=None):
+            by_name = {tool.name: tool for tool in extra_tools}
+            captured["tool_names"] = set(by_name)
+            captured["instructions"] = instructions or ""
+            return await by_name["grep_file"].fn("", "THESIS_SOC", output_mode="content", fixed_string=True)
+
+    async def fake_route(task: str, pre_loaded_paths: list[str]):
+        return _RepoLookupClient(), ThinkingLevel.MINIMAL, "fakeprov"
+
+    monkeypatch.setattr(manager, "_route", fake_route)
+
+    task_tok = TASK_CTX.set(TaskContext(task_id="repo_ro", prompt="what is this website label?"))
+    tier_tok = TIER_CTX.set("cheap")
+    try:
+        plan = manager._Plan(
+            pre_loaded_paths=[],
+            skill_bodies="",
+            skill_index="",
+            images=[],
+            n_skill_images=0,
+            n_user_images=0,
+            date_ctx="",
+        )
+        result = await manager._dispatch(
+            "what is this website label?",
+            manager.TaskMode.REPO_READONLY,
+            plan,
+            extra_tools=None,
+        )
+    finally:
+        TIER_CTX.reset(tier_tok)
+        TASK_CTX.reset(task_tok)
+
+    assert "docs/index.html" in result
+    assert "THESIS_SOC // SYNCHRONIZED" in result
+    assert {"read_file", "grep_file", "list_dir"} <= captured["tool_names"]
+    assert "edit_file" not in captured["tool_names"]
+    assert "write_file" not in captured["tool_names"]
+    assert "generate_image" not in captured["tool_names"]
+    assert "spawn_subagent" not in captured["tool_names"]
+    assert "read-only repository lookup" in captured["instructions"]
+
+
 async def test_persistent_run_serves_generated_image_after_cleanup(tmp_path, monkeypatch):
     from core.agents import manager, worktree
     from core.ai_client.models import ThinkingLevel

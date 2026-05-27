@@ -26,7 +26,7 @@ class Schedule:
     enabled: bool = True
     created_at: float = field(default_factory=time.time)
     last_run_at: float | None = None
-    # null = let manager auto-classify; "conversational" / "persistent" = force the mode.
+    # null = let manager auto-classify; "conversational" / "repo_readonly" / "persistent" = force the mode.
     mode: str | None = None
 
     def to_dict(self) -> dict:
@@ -63,7 +63,7 @@ def validate_cron(expr: str) -> None:
         raise ValueError(f"invalid cron expression {expr!r}: {e}")
 
 
-_VALID_MODES = {None, "conversational", "persistent"}
+_VALID_MODES = {None, "conversational", "repo_readonly", "persistent"}
 
 
 def _validate_mode(mode: str | None) -> None:

@@ -30,7 +30,7 @@ class TaskRecord:
     #   parent_task_id — set when this task is an `@task_id` follow-up; coder seeds from parent's transcript.
     schedule_id: str | None = None
     parent_task_id: str | None = None
-    # null = let manager auto-classify; "conversational" / "persistent" = force.
+    # null = let manager auto-classify; "conversational" / "repo_readonly" / "persistent" = force.
     mode_override: str | None = None
     # Effective mode the manager actually ran with.
     mode: str | None = None

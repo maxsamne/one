@@ -96,6 +96,7 @@ async def run(
     extra_hooks: list[Hook] | None = None,
     hook_retries: int = DEFAULT_HOOK_RETRIES,
     prior_history: dict | None = None,
+    include_default_tools: bool = True,
 ) -> str:
     """Run the coder loop for a task. Returns the final response.
 
@@ -110,16 +111,15 @@ async def run(
     up where the parent left off. Compaction kicks in naturally if context fills.
     """
 
-    effective_tools = _dedupe_tools(
-        list(tools or (FS_TOOLS + SHELL_TOOLS + GIT_TOOLS))
-        + [TODO_TOOL, BOARD_POST_TOOL, LOAD_SKILL_TOOL, GENERATE_IMAGE_TOOL, LOAD_WEBSITE_IMAGE_REFS_TOOL]
-    )
-    if web_tool := make_web_search_tool():
-        effective_tools.append(web_tool)
-    # Only top-level coders can spawn sub-agents (SUBAGENT_DEPTH=0). Sub-agents
-    # cannot themselves spawn — keeps trees shallow and predictable for v1.
-    if SUBAGENT_DEPTH.get() == 0:
-        effective_tools.append(SPAWN_TOOL)
+    effective_tools = list(tools or (FS_TOOLS + SHELL_TOOLS + GIT_TOOLS))
+    if include_default_tools:
+        effective_tools += [TODO_TOOL, BOARD_POST_TOOL, LOAD_SKILL_TOOL, GENERATE_IMAGE_TOOL, LOAD_WEBSITE_IMAGE_REFS_TOOL]
+        if web_tool := make_web_search_tool():
+            effective_tools.append(web_tool)
+        # Only top-level coders can spawn sub-agents (SUBAGENT_DEPTH=0). Sub-agents
+        # cannot themselves spawn — keeps trees shallow and predictable for v1.
+        if SUBAGENT_DEPTH.get() == 0:
+            effective_tools.append(SPAWN_TOOL)
     effective_tools = _dedupe_tools(effective_tools)
     effective_instructions = "\n\n---\n\n".join(filter(None, [instructions, tools_prompt(effective_tools)]))
     effective_agent_id = agent_id or current_task_id() or "default"
