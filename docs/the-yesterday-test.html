@@ -427,8 +427,6 @@
 
     <p>Second, the compute bill is uglier; not as a raw cost line, but as a change of mindset. Working toward rigorous replay by spending a lot of tokens on training runs over historical corpora that deliberately do not reflect the latest frontier of human, and increasingly AI-coauthored, knowledge feels less glamorous. This is also exactly where teams will be tempted to cut corners and let leakage back in.</p>
 
-    <p>Third, tool use is not monotone. One recent forecasting study found that date-filtered web search improved average Brier Skill Score overall, but hurt performance in 6 of 50 model-checkpoint conditions.<sup id="ref10"><a href="#fn10">10</a></sup> That matters because it means the policy you are optimizing is not “always search more.” It is when to search, when to stop, and when to trust what the model already knows.</p>
-
     <p>So the right claim is not that backtesting will make LLM agents easy. It is that it will make them testable in a way many current agent evaluations are not. That is still a meaningful shift, especially for systems meant to search, synthesize, and decide under changing real-world conditions.</p>
 
     <h2>What this would change</h2>
@@ -454,7 +452,6 @@
         <li id="fn7">Yuval Paleka et al., <a href="https://arxiv.org/html/2605.18843">“TEMPO: Temporal Enforcement via Mode-separated Policy Optimization for Trustworthy LLM Backtesting”</a> (2026). <a href="#ref7">↩</a></li>
         <li id="fn8">Yifan Wang et al., <a href="https://aclanthology.org/2025.findings-acl.464.pdf">“Offline Reinforcement Learning for LLM Multi-step Reasoning”</a> (ACL Findings 2025). <a href="#ref8">↩</a></li>
         <li id="fn9">Borui Wang, Kathleen McKeown, and Rex Ying, <a href="https://arxiv.org/html/2505.03209">“DYSTIL: Dynamic Strategy Induction with Large Language Models for Reinforcement Learning”</a> (2025). <a href="#ref9">↩</a></li>
-        <li id="fn10"><a href="https://arxiv.org/abs/2604.04220">2026 forecasting study on selective tool use with date-filtered web search</a>, showing average retrieval gains can still mask negative ΔBSS in 6 of 50 model-checkpoint settings. <a href="#ref10">↩</a></li>
       </ol>
     </section>
 
