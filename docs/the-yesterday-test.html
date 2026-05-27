@@ -292,9 +292,7 @@
 
     <p>That is what makes the problem so practical. If we cannot reliably place an agent inside the historical world it is supposed to inhabit, then a great deal of current evaluation is weaker than it looks. A model that appears brilliant on a 2023 company analysis may simply be leaking 2024 facts from its weights. The same applies, of course, to current-day analysis that uses web search. Too often, we are evaluating forward-looking edges in environments that quietly expose later flags, whether from the weights, the retrieval environment, or the world around the run. Accepting recollection inside the forecast is leakage by another name.</p>
 
-    <p>In classical ML, we obsessed over temporal leakage. With agents, the same failure mode has become easier to hide.</p>
-
-    <p>For agents making qualitative decisions at macro scope, that is the test that matters: could this system have done the work before the outcome was known?</p>
+    <p>In classical ML, we obsessed over temporal leakage. With agents, the same failure mode has become easier to hide. Yet, for agents making qualitative decisions at macro scope, that is the test that matters: could this system have done the work before the outcome was known?</p>
 
     <h2>The familiar part</h2>
 
@@ -425,7 +423,7 @@
 
     <p>First, many agents are not passive predictors. They intervene. Historical replay is therefore truest for read-heavy systems and roughest for write-heavy ones.</p>
 
-    <p>Second, the compute bill is uglier; not as a raw cost line, but as a change of mindset. Working toward rigorous replay by spending a lot of tokens on training runs over historical corpora that deliberately do not reflect the latest frontier of human, and increasingly AI-coauthored, knowledge feels less glamorous. This is also exactly where teams will be tempted to cut corners and let leakage back in.</p>
+    <p>Second, the compute bill is uglier; not as a raw cost line, but as a change of mindset. Working toward rigorous replay by spending a lot of tokens on training runs over historical corpora that deliberately do not reflect the latest frontier of human (and AI-coauthored) knowledge feels less glamorous. This is also exactly where teams will be tempted to cut corners and let leakage back in.</p>
 
     <p>So the right claim is not that backtesting will make LLM agents easy. It is that it will make them testable in a way many current agent evaluations are not. That is still a meaningful shift, especially for systems meant to search, synthesize, and decide under changing real-world conditions.</p>
 
